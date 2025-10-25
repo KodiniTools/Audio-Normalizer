@@ -1,0 +1,123 @@
+{
+  "guide": {
+    "back": "Zurück",
+    "title": "Detaillierte Anleitung",
+    "toc": "Inhaltsverzeichnis",
+    "sections": {
+      "main": "Hauptfunktionen",
+      "normalization": "Normalisierungsmethoden",
+      "enhancement": "Audio-Verbesserung",
+      "batch": "Batch-Operationen",
+      "export": "Export",
+      "tips": "Tipps & Best Practices"
+    },
+    "upload": {
+      "title": "Audio-Dateien hochladen",
+      "desc": "Laden Sie Audio-Dateien in den unterstützten Formaten hoch: MP3, WAV, FLAC, OGG, M4A, AAC.",
+      "tip": "Tipp: Sie können mehrere Dateien gleichzeitig hochladen oder per Drag & Drop hinzufügen."
+    },
+    "analyze": {
+      "title": "Audio analysieren",
+      "desc": "Die Analysefunktion ermittelt wichtige Audio-Parameter:",
+      "peak": "Peak Level (dBFS): Höchster Lautstärkepegel der Audio-Datei",
+      "rms": "RMS Level (dBFS): Durchschnittliche Lautstärke",
+      "lufs": "LUFS: Loudness Units relative to Full Scale (Broadcast-Standard)",
+      "dynamic": "Dynamic Range: Unterschied zwischen lautesten und leisesten Stellen",
+      "clipping": "Clipping: Anzahl der übersteuerter Samples",
+      "noise": "Noise Floor: Grundrauschen der Aufnahme"
+    },
+    "normalization": {
+      "rms": {
+        "title": "RMS-Normalisierung",
+        "desc": "Normalisiert die durchschnittliche Lautstärke auf einen Zielwert.",
+        "values": "Empfohlene Werte:",
+        "music": "Musik: -18 dB bis -14 dB",
+        "podcast": "Podcasts/Sprache: -20 dB bis -16 dB",
+        "mastering": "Mastering: -12 dB bis -8 dB",
+        "note": "Hinweis: Niedrigere dB-Werte bedeuten leisere Audio-Signale."
+      },
+      "peak": {
+        "title": "Peak/dB-Normalisierung",
+        "desc": "Normalisiert den höchsten Pegel (Peak) auf einen Zielwert.",
+        "values": "Empfohlene Werte:",
+        "standard": "Standard: -1.0 dB (verhindert Clipping)",
+        "conservative": "Konservativ: -3.0 dB (mehr Headroom)",
+        "streaming": "Streaming: -2.0 dB"
+      },
+      "ebu": {
+        "title": "EBU R128 (LUFS)",
+        "desc": "Broadcast-Standard für konsistente Lautstärke über verschiedene Programme/Tracks.",
+        "values": "Standard-Werte:",
+        "tv": "TV/Radio (Europa): -23 LUFS",
+        "streaming": "Streaming (Spotify, Apple Music): -14 LUFS",
+        "youtube": "YouTube: -14 LUFS",
+        "film": "Film: -24 LUFS"
+      }
+    },
+    "enhancement": {
+      "noise": {
+        "title": "Rauschunterdrückung",
+        "desc": "Reduziert Hintergrundrauschen und verbessert die Sprachverständlichkeit.",
+        "ideal": "Ideal für: Podcasts, Voice-Overs, Interview-Aufnahmen"
+      },
+      "clipping": {
+        "title": "Clipping reduzieren",
+        "desc": "Korrigiert übersteuerter Signale und stellt Details in verzerrten Bereichen wieder her.",
+        "note": "Wichtig: Diese Funktion kann Verzerrungen reduzieren, aber nicht vollständig entfernen."
+      },
+      "compression": {
+        "title": "Dynamikkompression",
+        "desc": "Reduziert den Unterschied zwischen lauten und leisen Passagen für konsistentere Lautstärke.",
+        "params": "Parameter:",
+        "threshold": "Threshold: Ab welchem Pegel die Kompression einsetzt",
+        "ratio": "Ratio: Stärke der Kompression (z.B. 4:1)",
+        "attack": "Attack: Wie schnell der Kompressor reagiert",
+        "release": "Release: Wie schnell der Kompressor wieder loslässt"
+      }
+    },
+    "batch": {
+      "desc": "Führen Sie Operationen auf alle geladenen Dateien gleichzeitig aus:",
+      "analyze": "Alle analysieren",
+      "analyzeDesc": "Analysiert alle Dateien auf einmal",
+      "normalize": "RMS/dB/EBU R128 anwenden",
+      "normalizeDesc": "Normalisiert alle Dateien mit der gewählten Methode",
+      "enhance": "Verbesserung anwenden",
+      "enhanceDesc": "Rauschunterdrückung, Clipping-Reduktion oder Kompression auf alle",
+      "export": "Alle exportieren",
+      "exportDesc": "Exportiert alle verarbeiteten Dateien als ZIP",
+      "reset": "Alle zurücksetzen",
+      "resetDesc": "Setzt alle Dateien auf Original zurück",
+      "delete": "Alle löschen",
+      "deleteDesc": "Entfernt alle Dateien aus der Liste"
+    },
+    "export": {
+      "desc": "Exportieren Sie Ihre verarbeiteten Audio-Dateien:",
+      "single": "Einzelexport: Klicken Sie auf \"Exportieren\" bei einer Datei",
+      "batch": "Batch-Export: Nutzen Sie \"Alle exportieren\" für ZIP-Download",
+      "format": "Format: Exportiert im Original-Format oder als WAV"
+    },
+    "tips": {
+      "tip1": {
+        "title": "1. Immer zuerst analysieren",
+        "desc": "Analysieren Sie Ihre Dateien vor der Normalisierung, um die optimalen Parameter zu bestimmen."
+      },
+      "tip2": {
+        "title": "2. Headroom beachten",
+        "desc": "Lassen Sie immer etwas Headroom (z.B. -1 dB) um Clipping zu vermeiden."
+      },
+      "tip3": {
+        "title": "3. Vorschau nutzen",
+        "desc": "Hören Sie sich das Ergebnis an, bevor Sie exportieren (Original/Normalisiert-Toggle)."
+      },
+      "tip4": {
+        "title": "4. Richtige Methode wählen",
+        "desc": "RMS für Musik, Peak für maximale Lautstärke, EBU R128 für Broadcast/Streaming."
+      },
+      "tip5": {
+        "title": "5. Nicht überkomprimieren",
+        "desc": "Zu starke Kompression macht Audio flach und leblos. Weniger ist oft mehr."
+      }
+    },
+    "footer": "Audio Normalisierung Pro - Professionelle Audio-Bearbeitung im Browser"
+  }
+}

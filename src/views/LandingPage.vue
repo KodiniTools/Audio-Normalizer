@@ -94,7 +94,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useI18n } from '../i18n'
+import { useI18n } from '../composables/useI18n'
 
 const { t, setLocale, currentLocale } = useI18n()
 

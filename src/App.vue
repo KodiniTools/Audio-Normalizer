@@ -90,7 +90,7 @@ body {
 /* Controls Wrapper - Fixed Position */
 .controls-wrapper {
   position: fixed;
-  top: 1rem;
+  top: 6rem;
   right: 1rem;
   display: flex;
   flex-direction: row;

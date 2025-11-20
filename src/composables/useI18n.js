@@ -16,7 +16,7 @@ const translations = {
     'hero-description': 'Normalisieren Sie Ihre Audio-Dateien schnell und einfach – kostenlos, sicher und ohne Upload. Alle Verarbeitungen erfolgen lokal in Ihrem Browser.',
     'hero-cta': 'Jetzt starten',
     
-    // Guide Page
+    // Guide Page (Wird von GuidePage.vue verwendet)
     'guide-back': 'Zurück',
     'guide-title': 'Detaillierte Anleitung',
     'guide-toc': 'Inhaltsverzeichnis',
@@ -122,7 +122,93 @@ const translations = {
     // Theme
     'theme-light': 'Hell',
     'theme-dark': 'Dunkel',
-    'nav.theme': 'Theme wechseln'
+    'nav.theme': 'Theme wechseln',
+
+    // Landing Page Keys (Features, Benefits, FAQ)
+    'features-title': 'Leistungsstarke Funktionen',
+    'feature1-title': 'Echtzeit-Analyse',
+    'feature1-desc': 'Visualisieren Sie Ihre Audio-Wellenformen und -Pegel in Echtzeit während der Verarbeitung.',
+    'feature2-title': 'Stille-Erkennung',
+    'feature2-desc': 'Automatische Erkennung und Entfernung von stillen Abschnitten am Anfang und Ende Ihrer Dateien.',
+    'feature3-title': 'Schnelle Verarbeitung',
+    'feature3-desc': 'Nutzen Sie die Power Ihres Browsers für blitzschnelle Audio-Normalisierung ohne Wartezeiten.',
+    'feature4-title': 'Batch-Verarbeitung',
+    'feature4-desc': 'Laden Sie mehrere Dateien gleichzeitig hoch und verarbeiten Sie diese in einem Durchgang.',
+    'feature5-title': 'Lokale Verarbeitung',
+    'feature5-desc': 'Ihre Dateien bleiben auf Ihrem Gerät. Keine Uploads, keine Cloud – maximale Privatsphäre.',
+    'feature6-title': 'Kostenlos & Sicher',
+    'feature6-desc': 'Komplett kostenfrei nutzbar. Ihre Daten verlassen niemals Ihren Browser.',
+    
+    'benefits-title': 'Warum Audio Normalizer?',
+    'benefit1-title': 'Keine Installation nötig',
+    'benefit1-desc': 'Arbeiten Sie direkt im Browser ohne komplizierte Software-Installation.',
+    'benefit2-title': 'Datenschutz garantiert',
+    'benefit2-desc': 'Ihre Audio-Dateien werden ausschließlich lokal verarbeitet und nie hochgeladen.',
+    'benefit3-title': 'Professionelle Qualität',
+    'benefit3-desc': 'Erhalten Sie studio-qualitative Ergebnisse mit präziser Peak-Normalisierung.',
+    'benefit4-title': 'Zeitersparnis',
+    'benefit4-desc': 'Verarbeiten Sie mehrere Dateien gleichzeitig und sparen Sie wertvolle Zeit.',
+    'benefit5-title': 'Intuitive Bedienung',
+    'benefit5-desc': 'Einfache und übersichtliche Benutzeroberfläche für schnelle Ergebnisse.',
+    'benefit6-title': 'Plattformunabhängig',
+    'benefit6-desc': 'Funktioniert auf Windows, Mac, Linux und sogar auf mobilen Geräten.',
+    
+    'faq-title': 'Häufig gestellte Fragen',
+    'faq1-q': 'Was ist Audio-Normalisierung?',
+    'faq1-a': 'Audio-Normalisierung ist der Prozess, bei dem die Lautstärke einer Audio-Datei angepasst wird, um einen bestimmten Zielpegel zu erreichen. Dies sorgt für eine konstante Lautstärke über mehrere Tracks hinweg.',
+    'faq2-q': 'Welche Dateiformate werden unterstützt?',
+    'faq2-a': 'Der Audio Normalizer unterstützt alle gängigen Audio-Formate, die von modernen Browsern verarbeitet werden können, einschließlich MP3, WAV, OGG, M4A und FLAC.',
+    'faq3-q': 'Werden meine Dateien hochgeladen?',
+    'faq3-a': 'Nein! Alle Verarbeitungen erfolgen vollständig lokal in Ihrem Browser. Ihre Audio-Dateien verlassen niemals Ihr Gerät, was maximale Privatsphäre und Sicherheit garantiert.',
+    'faq4-q': 'Wie funktioniert die Stille-Erkennung?',
+    'faq4-a': 'Die Stille-Erkennung analysiert Ihre Audio-Datei und identifiziert Bereiche mit sehr geringer Lautstärke am Anfang und Ende. Diese können automatisch entfernt werden, um saubere Audio-Dateien zu erhalten.',
+    'faq5-q': 'Kann ich mehrere Dateien gleichzeitig verarbeiten?',
+    'faq5-a': 'Ja! Der Audio Normalizer unterstützt Batch-Verarbeitung. Sie können mehrere Audio-Dateien gleichzeitig hochladen und verarbeiten lassen.',
+    'faq6-q': 'Ist die Nutzung wirklich kostenlos?',
+    'faq6-a': 'Ja, der Audio Normalizer ist komplett kostenlos und ohne Einschränkungen nutzbar. Es gibt keine versteckten Kosten, Premium-Features oder Abonnements.',
+    
+    'footer-text': '© 2024 Audio Normalizer. Alle Rechte vorbehalten.',
+    'footer-privacy': 'Datenschutz',
+    'footer-terms': 'Nutzungsbedingungen',
+    
+    // App Page Keys (from src/i18n.js and AudioApp.vue)
+    'app-title': 'Audio Normalisierung', // from src/i18n.js
+    'app-back': 'Zurück zur Startseite', // from src/i18n.js
+    'app-upload': 'Dateien hochladen', // from src/i18n.js
+    'app-target-level': 'Zielpegel (dB)', // from src/i18n.js
+    'app-silence-threshold': 'Stille-Schwellwert (dB)', // from src/i18n.js
+    'app-remove-silence': 'Stille entfernen', // from src/i18n.js
+    'app-normalize': 'Normalisieren', // from src/i18n.js
+    'app-processing': 'Verarbeite...', // from src/i18n.js
+    'app-download': 'Herunterladen', // from src/i18n.js
+    'app-no-files': 'Keine Dateien ausgewählt', // from src/i18n.js
+    'app-drag-drop': 'Dateien hier ablegen oder klicken zum Auswählen', // from src/i18n.js
+
+    'nav.backToHome': 'Zurück zur Startseite',
+    'app.title': 'Audio Normalisierung Pro',
+    'app.subtitle': 'Lokal, schnell und professionell',
+    'app.selectFiles': 'Dateien hier ablegen oder klicken zum Auswählen',
+    'app.exportAll': 'Alle exportieren (ZIP)',
+    'app.deleteAll': 'Alle löschen',
+    'app.resetAll': 'Alle zurücksetzen',
+    'app.globalRms': 'Globaler RMS Zielwert',
+    'app.applyRms': 'RMS anwenden',
+    'app.globalDb': 'Globaler dB Zielwert',
+    'app.applyDb': 'dB anwenden',
+    'app.applyEBU': 'EBU R128 (-23 LUFS)',
+    'app.analyzeAll': 'Alle analysieren',
+    'app.noiseReduction': 'Rauschunterdrückung',
+    'app.reduceClipping': 'Clipping reduzieren',
+    'app.dynamicCompression': 'Dynamikkompression',
+    'app.downloadFormat': 'Exportformat',
+    'app.noFiles': 'Keine Dateien geladen',
+    'app.fileCount': '{count} Datei(en) geladen',
+    'app.rms': 'RMS',
+    'app.peak': 'Peak',
+    'app.apply': 'Anwenden',
+    'app.playOriginal': 'Original abspielen',
+    'app.playNormalized': 'Normalisiert abspielen',
+    'app.export': 'Exportieren',
   },
   
   en: {
@@ -243,15 +329,109 @@ const translations = {
     // Theme
     'theme-light': 'Light',
     'theme-dark': 'Dark',
-    'nav.theme': 'Toggle theme'
+    'nav.theme': 'Toggle theme',
+
+    // Landing Page Keys (Features, Benefits, FAQ)
+    'features-title': 'Powerful Features',
+    'feature1-title': 'Real-time Analysis',
+    'feature1-desc': 'Visualize your audio waveforms and levels in real-time during processing.',
+    'feature2-title': 'Silence Detection',
+    'feature2-desc': 'Automatic detection and removal of silent sections at the beginning and end of your files.',
+    'feature3-title': 'Fast Processing',
+    'feature3-desc': 'Leverage your browser\'s power for lightning-fast audio normalization without wait times.',
+    'feature4-title': 'Batch Processing',
+    'feature4-desc': 'Upload multiple files at once and process them in one go.',
+    'feature5-title': 'Local Processing',
+    'feature5-desc': 'Your files stay on your device. No uploads, no cloud – maximum privacy.',
+    'feature6-title': 'Free & Secure',
+    'feature6-desc': 'Completely free to use. Your data never leaves your browser.',
+    
+    'benefits-title': 'Why Audio Normalizer?',
+    'benefit1-title': 'No Installation Required',
+    'benefit1-desc': 'Work directly in your browser without complicated software installation.',
+    'benefit2-title': 'Privacy Guaranteed',
+    'benefit2-desc': 'Your audio files are processed exclusively locally and never uploaded.',
+    'benefit3-title': 'Professional Quality',
+    'benefit3-desc': 'Get studio-quality results with precise peak normalization.',
+    'benefit4-title': 'Time Savings',
+    'benefit4-desc': 'Process multiple files simultaneously and save valuable time.',
+    'benefit5-title': 'Intuitive Operation',
+    'benefit5-desc': 'Simple and clear user interface for quick results.',
+    'benefit6-title': 'Cross-platform',
+    'benefit6-desc': 'Works on Windows, Mac, Linux, and even mobile devices.',
+    
+    'faq-title': 'Frequently Asked Questions',
+    'faq1-q': 'What is audio normalization?',
+    'faq1-a': 'Audio normalization is the process of adjusting the volume of an audio file to reach a specific target level. This ensures consistent volume across multiple tracks.',
+    'faq2-q': 'Which file formats are supported?',
+    'faq2-a': 'Audio Normalizer supports all common audio formats that can be processed by modern browsers, including MP3, WAV, OGG, M4A, and FLAC.',
+    'faq3-q': 'Are my files uploaded?',
+    'faq3-a': 'No! All processing happens completely locally in your browser. Your audio files never leave your device, guaranteeing maximum privacy and security.',
+    'faq4-q': 'How does silence detection work?',
+    'faq4-a': 'Silence detection analyzes your audio file and identifies areas with very low volume at the beginning and end. These can be automatically removed to obtain clean audio files.',
+    'faq5-q': 'Can I process multiple files at once?',
+    'faq5-a': 'Yes! Audio Normalizer supports batch processing. You can upload and process multiple audio files simultaneously.',
+    'faq6-q': 'Is it really free to use?',
+    'faq6-a': 'Yes, Audio Normalizer is completely free and usable without restrictions. There are no hidden costs, premium features, or subscriptions.',
+    
+    'footer-text': '© 2024 Audio Normalizer. All rights reserved.',
+    'footer-privacy': 'Privacy Policy',
+    'footer-terms': 'Terms of Service',
+    
+    // App Page Keys (from src/i18n.js and AudioApp.vue)
+    'app-title': 'Audio Normalization', 
+    'app-back': 'Back to Home', 
+    'app-upload': 'Upload Files', 
+    'app-target-level': 'Target Level (dB)', 
+    'app-silence-threshold': 'Silence Threshold (dB)', 
+    'app-remove-silence': 'Remove Silence', 
+    'app-normalize': 'Normalize', 
+    'app-processing': 'Processing...', 
+    'app-download': 'Download', 
+    'app-no-files': 'No files selected', 
+    'app-drag-drop': 'Drop files here or click to select', 
+
+    'nav.backToHome': 'Back to Home',
+    'app.title': 'Audio Normalization Pro',
+    'app.subtitle': 'Local, fast and professional',
+    'app.selectFiles': 'Drop files here or click to select',
+    'app.exportAll': 'Export All (ZIP)',
+    'app.deleteAll': 'Delete All',
+    'app.resetAll': 'Reset All',
+    'app.globalRms': 'Global RMS Target',
+    'app.applyRms': 'Apply RMS',
+    'app.globalDb': 'Global dB Target',
+    'app.applyDb': 'Apply dB',
+    'app.applyEBU': 'EBU R128 (-23 LUFS)',
+    'app.analyzeAll': 'Analyze All',
+    'app.noiseReduction': 'Noise Reduction',
+    'app.reduceClipping': 'Reduce Clipping',
+    'app.dynamicCompression': 'Dynamic Compression',
+    'app.downloadFormat': 'Export Format',
+    'app.noFiles': 'No files loaded',
+    'app.fileCount': '{count} file(s) loaded',
+    'app.rms': 'RMS',
+    'app.peak': 'Peak',
+    'app.apply': 'Apply',
+    'app.playOriginal': 'Play Original',
+    'app.playNormalized': 'Play Normalized',
+    'app.export': 'Export',
   }
 }
 
 export function useI18n() {
   const locale = computed(() => currentLocale.value)
   
-  const t = (key) => {
-    return translations[currentLocale.value]?.[key] || key
+  // Verbesserte t-Funktion für dynamische Platzhalter wie {count}
+  const t = (key, replacements = {}) => {
+    let message = translations[currentLocale.value]?.[key] || key
+    
+    for (const [placeholder, value] of Object.entries(replacements)) {
+      const regex = new RegExp(`{\\s*${placeholder}\\s*}`, 'g')
+      message = message.replace(regex, value)
+    }
+    
+    return message
   }
   
   const toggleLocale = () => {

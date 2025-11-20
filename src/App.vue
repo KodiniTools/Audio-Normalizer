@@ -218,5 +218,18 @@ body {
   .lang-text {
     font-size: 0.75rem;
   }
+} 
+
+/* ZUSÄTZLICHE FORCIERTE SICHTBARKEITS-REGELN (müssen außerhalb der Media Query stehen) */
+/* Diese Regeln stellen sicher, dass der Toggle immer die höchste Priorität hat */
+.controls-wrapper {
+  display: flex !important;
+  /* Erhöhen der Z-Index-Priorität, falls die Leiste verdeckt wird */
+  z-index: 99999 !important; 
 }
+
+.lang-toggle {
+  display: flex !important;
+}
+
 </style>

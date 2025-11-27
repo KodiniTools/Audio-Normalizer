@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { ref, computed } from 'vue'
 
 // Globaler reaktiver State für die Sprache
@@ -434,22 +433,15 @@ export function useI18n() {
     
     return message
   }
-  
-=======
-import { useI18n as useVueI18n } from 'vue-i18n'
 
-export function useI18n() {
-  const { t, locale } = useVueI18n()
-
->>>>>>> fdc0875954d1f3cf639162f4bca5f1c26e061c30
   const toggleLocale = () => {
-    locale.value = locale.value === 'de' ? 'en' : 'de'
-    localStorage.setItem('locale', locale.value)
-    console.log('Sprache gewechselt zu:', locale.value)
+    currentLocale.value = currentLocale.value === 'de' ? 'en' : 'de'
+    localStorage.setItem('locale', currentLocale.value)
+    console.log('Sprache gewechselt zu:', currentLocale.value)
   }
 
   const setLocale = (newLocale) => {
-    locale.value = newLocale
+    currentLocale.value = newLocale
     localStorage.setItem('locale', newLocale)
   }
 

@@ -1061,33 +1061,32 @@ audio {
 /* Loading Spinner */
 .loading-spinner {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-  box-shadow: 0 8px 16px var(--shadow-color);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   z-index: 9999;
-  text-align: center;
 }
 
-.loading-spinner::before {
-  content: '';
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top: 3px solid var(--accent);
+.loading-spinner .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--spacing-md);
+  animation: spin 0.8s linear infinite;
 }
 
 .loading-spinner p {
   margin: 0;
-  color: var(--text);
+  color: white;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
@@ -1224,9 +1223,6 @@ audio {
   .app-container {
     padding: var(--spacing-md);
   }
-}
-  transition: all var(--transition-base);
-  box-shadow: 0 4px 6px var(--shadow-color);
 }
 
 .theme-toggle:hover {

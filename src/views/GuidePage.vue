@@ -5,7 +5,7 @@
       <div class="header-content">
         <button @click="router.push('/')" class="back-btn">
           <ArrowLeft :size="16" />
-          <span>{{ t('nav.backToHome') }}</span>
+          <span>{{ t('guide-back') }}</span>
         </button>
         <div class="header-title">
           <HelpCircle :size="20" />
@@ -19,136 +19,136 @@
       <nav class="toc">
         <h2 class="toc-title">
           <List :size="14" />
-          <span>inhalt</span>
+          <span>{{ t('guide-toc') }}</span>
         </h2>
         <ul class="toc-list">
           <li v-for="section in sections" :key="section.id">
-            <a :href="`#${section.id}`" class="toc-link">{{ section.title }}</a>
+            <a :href="`#${section.id}`" class="toc-link">{{ t(section.titleKey) }}</a>
           </li>
         </ul>
       </nav>
 
       <!-- Content Sections -->
       <div class="guide-content">
-        <!-- Hauptfunktionen -->
+        <!-- Main Functions -->
         <section id="hauptfunktionen" class="section">
           <div class="section-header">
             <FileAudio :size="18" class="section-icon" />
-            <h2>hauptfunktionen</h2>
+            <h2>{{ t('guide-section-main') }}</h2>
           </div>
 
           <div class="subsection">
             <h3>
               <Upload :size="14" class="subsection-icon" />
-              audio-dateien hochladen
+              {{ t('guide-upload-title') }}
             </h3>
-            <p>Laden Sie Audio-Dateien in den unterstützten Formaten hoch: MP3, WAV, FLAC, OGG, M4A, AAC.</p>
+            <p>{{ t('guide-upload-desc') }}</p>
             <div class="tip-box">
-              <strong>tipp:</strong> Sie können mehrere Dateien gleichzeitig hochladen oder per Drag & Drop hinzufügen.
+              <strong>{{ t('guide-tip-label') }}</strong> {{ t('guide-upload-tip') }}
             </div>
           </div>
 
           <div class="subsection">
             <h3>
               <Activity :size="14" class="subsection-icon" />
-              audio analysieren
+              {{ t('guide-analyze-title') }}
             </h3>
-            <p>Die Analysefunktion ermittelt wichtige Audio-Parameter:</p>
+            <p>{{ t('guide-analyze-desc') }}</p>
             <ul class="feature-list">
-              <li><strong>Peak Level (dBFS):</strong> Höchster Lautstärkepegel</li>
-              <li><strong>RMS Level (dBFS):</strong> Durchschnittliche Lautstärke</li>
-              <li><strong>LUFS:</strong> Loudness Units (Broadcast-Standard)</li>
-              <li><strong>Dynamic Range:</strong> Lautstärkeunterschied</li>
-              <li><strong>Clipping:</strong> Übersteuerte Samples</li>
-              <li><strong>Noise Floor:</strong> Grundrauschen</li>
+              <li><strong>Peak Level (dBFS):</strong> {{ t('guide-analyze-peak-desc') }}</li>
+              <li><strong>RMS Level (dBFS):</strong> {{ t('guide-analyze-rms-desc') }}</li>
+              <li><strong>LUFS:</strong> {{ t('guide-analyze-lufs-desc') }}</li>
+              <li><strong>Dynamic Range:</strong> {{ t('guide-analyze-dynamic-desc') }}</li>
+              <li><strong>Clipping:</strong> {{ t('guide-analyze-clipping-desc') }}</li>
+              <li><strong>Noise Floor:</strong> {{ t('guide-analyze-noise-desc') }}</li>
             </ul>
           </div>
         </section>
 
-        <!-- Normalisierung -->
+        <!-- Normalization -->
         <section id="normalisierung" class="section">
           <div class="section-header">
             <Sliders :size="18" class="section-icon" />
-            <h2>normalisierungsmethoden</h2>
+            <h2>{{ t('guide-section-normalization') }}</h2>
           </div>
 
           <div class="subsection">
-            <h3>rms-normalisierung</h3>
-            <p>Normalisiert die durchschnittliche Lautstärke auf einen Zielwert.</p>
+            <h3>{{ t('guide-rms-title') }}</h3>
+            <p>{{ t('guide-rms-desc') }}</p>
             <div class="info-box">
-              <strong>empfohlene werte:</strong>
+              <strong>{{ t('guide-recommended-values') }}</strong>
               <ul>
-                <li>Musik: -18 dB bis -14 dB</li>
-                <li>Podcasts/Sprache: -20 dB bis -16 dB</li>
-                <li>Mastering: -12 dB bis -8 dB</li>
+                <li>{{ t('guide-rms-music') }}</li>
+                <li>{{ t('guide-rms-podcast') }}</li>
+                <li>{{ t('guide-rms-mastering') }}</li>
               </ul>
             </div>
             <div class="warning-box">
-              <strong>hinweis:</strong> Niedrigere dB-Werte bedeuten leisere Audio-Signale.
+              <strong>{{ t('guide-note-label') }}</strong> {{ t('guide-rms-note') }}
             </div>
           </div>
 
           <div class="subsection">
-            <h3>peak/db-normalisierung</h3>
-            <p>Normalisiert den höchsten Pegel (Peak) auf einen Zielwert.</p>
+            <h3>{{ t('guide-peak-title') }}</h3>
+            <p>{{ t('guide-peak-desc') }}</p>
             <div class="info-box">
-              <strong>empfohlene werte:</strong>
+              <strong>{{ t('guide-recommended-values') }}</strong>
               <ul>
-                <li>Standard: -1.0 dB (verhindert Clipping)</li>
-                <li>Konservativ: -3.0 dB (mehr Headroom)</li>
-                <li>Streaming: -2.0 dB</li>
+                <li>{{ t('guide-peak-standard') }}</li>
+                <li>{{ t('guide-peak-conservative') }}</li>
+                <li>{{ t('guide-peak-streaming') }}</li>
               </ul>
             </div>
           </div>
 
           <div class="subsection">
-            <h3>ebu r128 (lufs)</h3>
-            <p>Broadcast-Standard für konsistente Lautstärke.</p>
+            <h3>{{ t('guide-ebu-title') }}</h3>
+            <p>{{ t('guide-ebu-desc') }}</p>
             <div class="info-box">
-              <strong>standard-werte:</strong>
+              <strong>{{ t('guide-standard-values') }}</strong>
               <ul>
-                <li>TV/Radio (Europa): -23 LUFS</li>
-                <li>Streaming (Spotify, Apple): -14 LUFS</li>
-                <li>YouTube: -14 LUFS</li>
-                <li>Film: -24 LUFS</li>
+                <li>{{ t('guide-ebu-tv') }}</li>
+                <li>{{ t('guide-ebu-streaming') }}</li>
+                <li>{{ t('guide-ebu-youtube') }}</li>
+                <li>{{ t('guide-ebu-film') }}</li>
               </ul>
             </div>
           </div>
         </section>
 
-        <!-- Verbesserung -->
+        <!-- Enhancement -->
         <section id="verbesserung" class="section">
           <div class="section-header">
             <Sparkles :size="18" class="section-icon" />
-            <h2>audio-verbesserung</h2>
+            <h2>{{ t('guide-section-enhancement') }}</h2>
           </div>
 
           <div class="subsection">
-            <h3>rauschunterdrückung</h3>
-            <p>Reduziert Hintergrundrauschen und verbessert die Sprachverständlichkeit.</p>
+            <h3>{{ t('guide-noise-title') }}</h3>
+            <p>{{ t('guide-noise-desc') }}</p>
             <div class="tip-box">
-              <strong>ideal für:</strong> Podcasts, Voice-Overs, Interview-Aufnahmen
+              <strong>{{ t('guide-ideal-for') }}</strong> {{ t('guide-noise-ideal') }}
             </div>
           </div>
 
           <div class="subsection">
-            <h3>clipping reduzieren</h3>
-            <p>Korrigiert übersteuerte Signale und stellt Details wieder her.</p>
+            <h3>{{ t('guide-clipping-title') }}</h3>
+            <p>{{ t('guide-clipping-desc') }}</p>
             <div class="warning-box">
-              <strong>wichtig:</strong> Kann Verzerrungen reduzieren, aber nicht vollständig entfernen.
+              <strong>{{ t('guide-important-label') }}</strong> {{ t('guide-clipping-note') }}
             </div>
           </div>
 
           <div class="subsection">
-            <h3>dynamikkompression</h3>
-            <p>Reduziert den Unterschied zwischen lauten und leisen Passagen.</p>
+            <h3>{{ t('guide-compression-title') }}</h3>
+            <p>{{ t('guide-compression-desc') }}</p>
             <div class="info-box">
-              <strong>parameter:</strong>
+              <strong>{{ t('guide-parameters') }}</strong>
               <ul>
-                <li><strong>Threshold:</strong> Ab welchem Pegel komprimiert wird</li>
-                <li><strong>Ratio:</strong> Stärke der Kompression (z.B. 4:1)</li>
-                <li><strong>Attack:</strong> Reaktionsgeschwindigkeit</li>
-                <li><strong>Release:</strong> Abklingzeit</li>
+                <li><strong>Threshold:</strong> {{ t('guide-compression-threshold-desc') }}</li>
+                <li><strong>Ratio:</strong> {{ t('guide-compression-ratio-desc') }}</li>
+                <li><strong>Attack:</strong> {{ t('guide-compression-attack-desc') }}</li>
+                <li><strong>Release:</strong> {{ t('guide-compression-release-desc') }}</li>
               </ul>
             </div>
           </div>
@@ -158,35 +158,35 @@
         <section id="batch" class="section">
           <div class="section-header">
             <Layers :size="18" class="section-icon" />
-            <h2>batch-operationen</h2>
+            <h2>{{ t('guide-section-batch') }}</h2>
           </div>
 
-          <p class="section-intro">Führen Sie Operationen auf alle geladenen Dateien gleichzeitig aus:</p>
+          <p class="section-intro">{{ t('guide-batch-desc') }}</p>
 
           <div class="grid-2">
             <div class="grid-item">
-              <h4>alle analysieren</h4>
-              <p>Analysiert alle Dateien auf einmal</p>
+              <h4>{{ t('guide-batch-analyze') }}</h4>
+              <p>{{ t('guide-batch-analyze-desc') }}</p>
             </div>
             <div class="grid-item">
-              <h4>normalisierung anwenden</h4>
-              <p>RMS/dB/EBU R128 auf alle Dateien</p>
+              <h4>{{ t('guide-batch-normalize') }}</h4>
+              <p>{{ t('guide-batch-normalize-desc') }}</p>
             </div>
             <div class="grid-item">
-              <h4>verbesserung anwenden</h4>
-              <p>Rauschunterdrückung, Clipping, Kompression</p>
+              <h4>{{ t('guide-batch-enhance') }}</h4>
+              <p>{{ t('guide-batch-enhance-desc') }}</p>
             </div>
             <div class="grid-item">
-              <h4>alle exportieren</h4>
-              <p>Exportiert als ZIP-Download</p>
+              <h4>{{ t('guide-batch-export') }}</h4>
+              <p>{{ t('guide-batch-export-desc') }}</p>
             </div>
             <div class="grid-item">
-              <h4>alle zurücksetzen</h4>
-              <p>Setzt alle auf Original zurück</p>
+              <h4>{{ t('guide-batch-reset') }}</h4>
+              <p>{{ t('guide-batch-reset-desc') }}</p>
             </div>
             <div class="grid-item">
-              <h4>alle löschen</h4>
-              <p>Entfernt alle aus der Liste</p>
+              <h4>{{ t('guide-batch-delete') }}</h4>
+              <p>{{ t('guide-batch-delete-desc') }}</p>
             </div>
           </div>
         </section>
@@ -195,59 +195,59 @@
         <section id="export" class="section">
           <div class="section-header">
             <Download :size="18" class="section-icon" />
-            <h2>export</h2>
+            <h2>{{ t('guide-section-export') }}</h2>
           </div>
 
-          <p class="section-intro">Exportieren Sie Ihre verarbeiteten Audio-Dateien:</p>
+          <p class="section-intro">{{ t('guide-export-desc') }}</p>
 
           <ul class="check-list">
             <li>
               <CheckCircle :size="14" class="check-icon" />
-              <span><strong>Einzelexport:</strong> Klicken Sie auf "Exportieren" bei einer Datei</span>
+              <span><strong>{{ t('guide-export-single-label') }}</strong> {{ t('guide-export-single') }}</span>
             </li>
             <li>
               <CheckCircle :size="14" class="check-icon" />
-              <span><strong>Batch-Export:</strong> Nutzen Sie "Alle exportieren" für ZIP-Download</span>
+              <span><strong>{{ t('guide-export-batch-label') }}</strong> {{ t('guide-export-batch') }}</span>
             </li>
             <li>
               <CheckCircle :size="14" class="check-icon" />
-              <span><strong>Format:</strong> WAV oder MP3 (320 kbps)</span>
+              <span><strong>{{ t('guide-export-format-label') }}</strong> {{ t('guide-export-format') }}</span>
             </li>
           </ul>
         </section>
 
-        <!-- Tipps -->
+        <!-- Tips -->
         <section id="tipps" class="section section-highlight">
           <div class="section-header">
             <Lightbulb :size="18" class="section-icon highlight" />
-            <h2>tipps & best practices</h2>
+            <h2>{{ t('guide-section-tips') }}</h2>
           </div>
 
           <div class="tips-grid">
             <div class="tip-card">
               <span class="tip-number">1</span>
-              <h4>immer zuerst analysieren</h4>
-              <p>Analysieren Sie Ihre Dateien vor der Normalisierung, um die optimalen Parameter zu bestimmen.</p>
+              <h4>{{ t('guide-tip1-title') }}</h4>
+              <p>{{ t('guide-tip1-desc') }}</p>
             </div>
             <div class="tip-card">
               <span class="tip-number">2</span>
-              <h4>headroom beachten</h4>
-              <p>Lassen Sie immer etwas Headroom (z.B. -1 dB) um Clipping zu vermeiden.</p>
+              <h4>{{ t('guide-tip2-title') }}</h4>
+              <p>{{ t('guide-tip2-desc') }}</p>
             </div>
             <div class="tip-card">
               <span class="tip-number">3</span>
-              <h4>vorschau nutzen</h4>
-              <p>Hören Sie sich das Ergebnis an, bevor Sie exportieren.</p>
+              <h4>{{ t('guide-tip3-title') }}</h4>
+              <p>{{ t('guide-tip3-desc') }}</p>
             </div>
             <div class="tip-card">
               <span class="tip-number">4</span>
-              <h4>richtige methode wählen</h4>
-              <p>RMS für Musik, Peak für maximale Lautstärke, EBU R128 für Streaming.</p>
+              <h4>{{ t('guide-tip4-title') }}</h4>
+              <p>{{ t('guide-tip4-desc') }}</p>
             </div>
             <div class="tip-card">
               <span class="tip-number">5</span>
-              <h4>nicht überkomprimieren</h4>
-              <p>Zu starke Kompression macht Audio flach und leblos.</p>
+              <h4>{{ t('guide-tip5-title') }}</h4>
+              <p>{{ t('guide-tip5-desc') }}</p>
             </div>
           </div>
         </section>
@@ -256,13 +256,13 @@
 
     <!-- Footer -->
     <footer class="guide-footer">
-      <p>audio normalizer — professionelle audio-bearbeitung im browser</p>
+      <p>{{ t('guide-footer') }}</p>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '../composables/useI18n'
 import {
@@ -281,15 +281,15 @@ import {
 } from 'lucide-vue-next'
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
-const sections = ref([
-  { id: 'hauptfunktionen', title: 'hauptfunktionen' },
-  { id: 'normalisierung', title: 'normalisierung' },
-  { id: 'verbesserung', title: 'audio-verbesserung' },
-  { id: 'batch', title: 'batch-operationen' },
-  { id: 'export', title: 'export' },
-  { id: 'tipps', title: 'tipps' }
+const sections = computed(() => [
+  { id: 'hauptfunktionen', titleKey: 'guide-section-main' },
+  { id: 'normalisierung', titleKey: 'guide-section-normalization' },
+  { id: 'verbesserung', titleKey: 'guide-section-enhancement' },
+  { id: 'batch', titleKey: 'guide-section-batch' },
+  { id: 'export', titleKey: 'guide-section-export' },
+  { id: 'tipps', titleKey: 'guide-section-tips' }
 ])
 </script>
 
@@ -390,7 +390,7 @@ const sections = ref([
   font-size: 0.65rem;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
+  text-transform: lowercase;
   letter-spacing: 0.05em;
   margin: 0 0 0.75rem 0;
 }

@@ -10,24 +10,25 @@
   /* Base Colors */
   --color-green: #22c55e;
   --color-red: #ef4444;
-  --color-yellow: #eab308;
-  
-  /* Dark Theme (Default) */
-  --bg: #0a0a0a;
-  --panel: #161616;
-  --text: #f0f0f0;
-  --muted: #888888;
-  --accent: #6ea8fe;
-  --accent-text: #0a0a0a;
-  --btn: #222222;
-  --btn-hover: #333333;
-  --ring: #3e66d3;
-  --border-color: rgb(255 255 255 / 15%);
-  --shadow-color: rgb(0 0 0 / 50%);
-  --gradient-color: rgb(255 255 255 / 3%);
-  --panel-highlight: rgb(255 255 255 / 6%);
-  --progress-bg: rgb(255 255 255 / 15%);
-  --body-gradient: radial-gradient(1200px 600px at 80% -20%, #1b2452 0%, transparent 60%), #0a0a0a;
+  --color-yellow: #F2E28E;
+
+  /* Dark Theme (Default) - New Color Scheme */
+  --bg: #0C0C10;
+  --panel: #18181c;
+  --text: #AEAFB7;
+  --muted: #5E5F69;
+  --accent: #F2E28E;
+  --accent-text: #0C0C10;
+  --accent-secondary: #A28680;
+  --btn: #1e1e24;
+  --btn-hover: #2a2a32;
+  --ring: #F2E28E;
+  --border-color: rgb(94 95 105 / 40%);
+  --shadow-color: rgb(0 0 0 / 60%);
+  --gradient-color: rgb(242 226 142 / 3%);
+  --panel-highlight: rgb(242 226 142 / 6%);
+  --progress-bg: rgb(255 255 255 / 12%);
+  --body-gradient: radial-gradient(1200px 600px at 80% -20%, #1a1a22 0%, transparent 60%), #0C0C10;
   
   /* Fixed Colors */
   --canvas-bg: #000;
@@ -66,23 +67,25 @@
   --transition-slow: 400ms ease;
 }
 
-/* Light Theme */
-body.light-mode {
-  --bg: #F0F0F0;
+/* Light Theme - New Color Scheme with improved contrast */
+body.light-mode,
+[data-theme="light"] {
+  --bg: #F5F5F5;
   --panel: #FFFFFF;
   --text: #1a1a1a;
-  --muted: #555555;
-  --accent: #005cda;
+  --muted: #5E5F69;
+  --accent: #A28680;
   --accent-text: #FFFFFF;
-  --btn: #E8E8E8;
-  --btn-hover: #D4D4D4;
-  --ring: #3e66d3;
-  --border-color: #C0C0C0;
-  --shadow-color: rgb(0 0 0 / 10%);
-  --gradient-color: rgb(0 0 0 / 2%);
-  --panel-highlight: rgb(0 0 0 / 2%);
+  --accent-secondary: #F2E28E;
+  --btn: #EBEBEB;
+  --btn-hover: #DCDCDC;
+  --ring: #A28680;
+  --border-color: #AEAFB7;
+  --shadow-color: rgb(0 0 0 / 12%);
+  --gradient-color: rgb(162 134 128 / 5%);
+  --panel-highlight: rgb(162 134 128 / 8%);
   --progress-bg: rgb(0 0 0 / 10%);
-  --body-gradient: #F0F0F0;
+  --body-gradient: #F5F5F5;
 }
 
 /* ==========================================================================
@@ -236,6 +239,7 @@ a:hover {
   cursor: pointer;
   transition: all var(--transition-base);
   text-decoration: none;
+  text-transform: lowercase;
 }
 
 .btn-primary {
@@ -304,7 +308,7 @@ a:hover {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent), var(--color-green));
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -868,7 +872,7 @@ a:hover {
 
 .progress-bar-inner {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--color-green));
+  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
   width: 0%;
   transition: width var(--transition-slow);
   position: relative;
@@ -979,6 +983,7 @@ a:hover {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
+  text-transform: lowercase;
 }
 
 .apply-btn:hover {

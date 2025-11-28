@@ -1,7 +1,12 @@
 import { ref, computed } from 'vue'
 
-// Globaler reaktiver State für die Sprache
-const currentLocale = ref(localStorage.getItem('locale') || 'de')
+// Standardsprache ist immer Deutsch - localStorage wird nur gesetzt wenn explizit gewechselt
+const storedLocale = localStorage.getItem('locale')
+// Wenn kein Wert gespeichert ist, auf Deutsch setzen
+if (!storedLocale) {
+  localStorage.setItem('locale', 'de')
+}
+const currentLocale = ref(storedLocale || 'de')
 
 const translations = {
   de: {

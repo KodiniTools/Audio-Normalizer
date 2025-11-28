@@ -1,14 +1,12 @@
 <template>
   <div class="audio-app">
     <div class="app-header">
-      <div class="container">
-        <router-link to="/" class="back-link">
-          ← {{ t('nav.backToHome') }}
-        </router-link>
-        <div class="section-header">
-          <h1 class="section-title">{{ t('app.title') }}</h1>
-          <p class="section-subtitle">{{ t('app.subtitle') }}</p>
-        </div>
+      <router-link to="/" class="back-link">
+        ← {{ t('nav.backToHome') }}
+      </router-link>
+      <div class="header-titles">
+        <h1 class="app-title">{{ t('app.title') }}</h1>
+        <p class="app-subtitle">{{ t('app.subtitle') }}</p>
       </div>
     </div>
 
@@ -243,43 +241,59 @@ const handleDrop = (event) => {
 }
 
 /* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  position: relative;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
 .back-link {
+  position: absolute;
+  left: 1.5rem;
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 0.75rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   transition: all 0.2s ease;
-  margin-bottom: 1rem;
+  text-transform: lowercase;
 }
 
 .back-link:hover {
   background: var(--primary);
   color: var(--bg-primary);
   border-color: var(--primary);
-  transform: translateY(-1px);
 }
 
-.section-header {
-  margin-bottom: 1rem;
+.header-titles {
+  text-align: center;
 }
 
-.section-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+.app-title {
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 0.25rem 0;
+  margin: 0;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
 }
 
-.section-subtitle {
-  font-size: 0.9rem;
+.app-subtitle {
+  font-size: 0.7rem;
   color: var(--text-secondary);
-  margin: 0;
+  margin: 0.15rem 0 0 0;
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
 }
 
 /* File Input */

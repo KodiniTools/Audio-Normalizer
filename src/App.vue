@@ -166,41 +166,39 @@ body {
   line-height: 1;
 }
 
-/* Language Toggle Button */
+/* Language Toggle Button - Prominent Styling */
 .lang-toggle {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-primary);
+  border: 2px solid var(--primary);
+  background: var(--primary);
+  color: var(--bg-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s ease;
-  font-weight: 600;
-  font-size: 0.7rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.4);
   flex-shrink: 0;
-  backdrop-filter: blur(8px);
   text-transform: uppercase;
 }
 
 .lang-toggle:hover {
-  transform: scale(1.08);
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--bg-primary);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
+  transform: scale(1.12);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  box-shadow: 0 6px 16px rgba(242, 226, 142, 0.5);
 }
 
 .lang-text {
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 /* Responsive */
@@ -226,21 +224,33 @@ body {
     font-size: 0.95rem;
   }
 
+  .lang-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
   .lang-text {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
   }
 } 
 
-/* ZUSÄTZLICHE FORCIERTE SICHTBARKEITS-REGELN (müssen außerhalb der Media Query stehen) */
+/* ZUSÄTZLICHE FORCIERTE SICHTBARKEITS-REGELN */
 /* Diese Regeln stellen sicher, dass der Toggle immer die höchste Priorität hat */
 .controls-wrapper {
   display: flex !important;
-  /* Erhöhen der Z-Index-Priorität, falls die Leiste verdeckt wird */
-  z-index: 99999 !important; 
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 99999 !important;
 }
 
 .lang-toggle {
   display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  background: var(--primary) !important;
+  color: var(--bg-primary) !important;
 }
 
 </style>

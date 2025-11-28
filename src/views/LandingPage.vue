@@ -6,6 +6,15 @@
         <div class="nav-logo">
           <h2>🎵 Audio Normalizer</h2>
         </div>
+        <div class="nav-controls">
+          <button
+            class="lang-btn"
+            @click="toggleLocale"
+            :title="locale === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'"
+          >
+            {{ locale === 'de' ? 'EN' : 'DE' }}
+          </button>
+        </div>
       </div>
     </nav>
 
@@ -91,7 +100,7 @@
 import { ref } from 'vue'
 import { useI18n } from '../composables/useI18n'
 
-const { t, setLocale, currentLocale } = useI18n()
+const { t, locale, toggleLocale } = useI18n()
 
 const features = [
   { icon: '📊', type: 'success', titleKey: 'feature1-title', descKey: 'feature1-desc' },
@@ -158,10 +167,42 @@ const toggleFaq = (faq) => {
 .nav-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 8rem 0 1.5rem;
+  padding: 0 1.5rem;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: var(--primary);
+  color: var(--bg-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.4);
+}
+
+.lang-btn:hover {
+  transform: scale(1.1);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  box-shadow: 0 6px 16px rgba(242, 226, 142, 0.5);
 }
 
 .nav-logo h2 {

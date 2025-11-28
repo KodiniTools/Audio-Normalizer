@@ -23,7 +23,7 @@
         @click="toggleLocale"
         :aria-label="'Language'"
       >
-        <span class="lang-text">{{ locale === 'de' ? 'EN' : 'DE' }}</span>
+        <span class="lang-text">{{ locale === 'de' ? 'en' : 'de' }}</span>
       </button>
     </div>
     
@@ -46,28 +46,32 @@ const showGuideButton = computed(() => route.path !== '/anleitung')
 </script>
 
 <style>
-/* Global CSS Variables */
+/* Global CSS Variables - New Color Scheme */
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
+  --primary: #F2E28E;
+  --primary-dark: #d4c67a;
+  --primary-secondary: #A28680;
   --success: #22c55e;
-  --warning: #f59e0b;
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-card: #1e293b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --border: #334155;
+  --warning: #F2E28E;
+  --bg-primary: #0C0C10;
+  --bg-secondary: #18181c;
+  --bg-card: #1e1e24;
+  --text-primary: #AEAFB7;
+  --text-secondary: #5E5F69;
+  --border: rgba(94, 95, 105, 0.4);
   --transition-base: 0.3s ease;
 }
 
 [data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border: #e2e8f0;
+  --primary: #A28680;
+  --primary-dark: #8a716b;
+  --primary-secondary: #F2E28E;
+  --bg-primary: #F5F5F5;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #1a1a1a;
+  --text-secondary: #5E5F69;
+  --border: #AEAFB7;
 }
 
 * {
@@ -122,8 +126,8 @@ body {
   transform: scale(1.1);
   border-color: var(--primary);
   background: var(--primary);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  color: var(--bg-primary);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.3);
 }
 
 .guide-icon {
@@ -152,7 +156,7 @@ body {
 .theme-toggle:hover {
   transform: scale(1.1);
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.3);
 }
 
 .theme-icon {
@@ -183,8 +187,8 @@ body {
   transform: scale(1.1);
   border-color: var(--primary);
   background: var(--primary);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  color: var(--bg-primary);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.3);
 }
 
 .lang-text {

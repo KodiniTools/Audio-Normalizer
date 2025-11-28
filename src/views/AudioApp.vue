@@ -32,7 +32,7 @@
               style="display: none"
             />
             <div class="file-input-content" @click="$refs.fileInputRef.click()">
-              <div class="file-input-icon">📁</div>
+              <Upload class="file-input-icon" :size="48" :stroke-width="1.5" />
               <p class="file-input-text">{{ t('app.selectFiles') }}</p>
             </div>
           </div>
@@ -174,6 +174,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { Upload } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n'
 import { useAudioProcessor } from '../composables/useAudioProcessor'
 import AudioFileItem from '../components/AudioFileItem.vue'
@@ -259,13 +260,9 @@ const handleDrop = (event) => {
 
 .back-link:hover {
   background: var(--primary);
-  color: white;
+  color: var(--bg-primary);
   border-color: var(--primary);
   transform: translateY(-1px);
-}
-
-[data-theme="light"] .back-link:hover {
-  color: black;
 }
 
 .section-header {
@@ -314,7 +311,8 @@ const handleDrop = (event) => {
 }
 
 .file-input-icon {
-  font-size: 2.5rem;
+  color: var(--primary);
+  opacity: 0.9;
 }
 
 .file-input-text {
@@ -361,7 +359,7 @@ const handleDrop = (event) => {
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--success));
+  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #A28680));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -376,6 +374,7 @@ const handleDrop = (event) => {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  text-transform: lowercase;
 }
 
 .btn:hover {
@@ -388,15 +387,11 @@ const handleDrop = (event) => {
 
 .btn-primary {
   background: var(--primary);
-  color: white;
+  color: var(--bg-primary);
 }
 
 .btn-primary:hover {
   background: var(--primary-dark);
-}
-
-[data-theme="light"] .btn-primary {
-  color: black;
 }
 
 .btn-secondary {
@@ -418,10 +413,6 @@ const handleDrop = (event) => {
 
 .btn-danger:hover {
   background: #dc2626;
-}
-
-[data-theme="light"] .btn-danger {
-  color: white;
 }
 
 .btn-sm {

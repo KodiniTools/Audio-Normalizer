@@ -146,7 +146,7 @@ const togglePlayback = () => {
 
 .file-item:hover {
   border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 2px 8px rgba(242, 226, 142, 0.15);
 }
 
 /* Header */
@@ -228,7 +228,7 @@ const togglePlayback = () => {
 .input-group input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 2px rgba(242, 226, 142, 0.15);
 }
 
 .input-group input:read-only {
@@ -239,7 +239,7 @@ const togglePlayback = () => {
 .apply-btn {
   padding: 0 1rem;
   background: var(--primary);
-  color: white;
+  color: var(--bg-primary);
   border: none;
   border-radius: 0.375rem;
   font-size: 0.8rem;
@@ -248,15 +248,12 @@ const togglePlayback = () => {
   transition: all 0.2s ease;
   align-self: end;
   white-space: nowrap;
+  text-transform: lowercase;
 }
 
 .apply-btn:hover {
   background: var(--primary-dark);
   transform: translateY(-1px);
-}
-
-[data-theme="light"] .apply-btn {
-  color: black;
 }
 
 /* Meters */
@@ -292,13 +289,13 @@ const togglePlayback = () => {
 
 .meter-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--success));
+  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #A28680));
   border-radius: 3px;
   transition: width 0.3s ease;
 }
 
 .meter-fill.rms {
-  background: linear-gradient(90deg, #f59e0b, var(--success));
+  background: linear-gradient(90deg, var(--primary-secondary, #A28680), var(--success));
 }
 
 .meter-value {
@@ -338,6 +335,7 @@ const togglePlayback = () => {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  text-transform: lowercase;
 }
 
 .control-btn.primary {
@@ -358,13 +356,9 @@ const togglePlayback = () => {
 
 .control-btn.secondary:hover {
   background: var(--primary);
-  color: white;
+  color: var(--bg-primary);
   border-color: var(--primary);
   transform: translateY(-1px);
-}
-
-[data-theme="light"] .control-btn.primary {
-  color: black;
 }
 
 /* Responsive */

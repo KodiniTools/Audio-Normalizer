@@ -181,29 +181,21 @@ const toggleFaq = (faq) => {
 .btn-primary {
   padding: 0.5rem 1.5rem;
   background: var(--primary);
-  color: white;
+  color: var(--bg-primary);
   border: none;
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  text-transform: lowercase;
+  box-shadow: 0 2px 8px rgba(242, 226, 142, 0.25);
 }
 
 .btn-primary:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-}
-
-[data-theme="light"] .btn-primary {
-  color: black !important;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-}
-
-[data-theme="light"] .btn-primary:hover {
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
 }
 
 /* Hero Section */
@@ -221,7 +213,7 @@ const toggleFaq = (faq) => {
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, var(--primary), var(--success));
+  background: linear-gradient(135deg, var(--primary), var(--primary-secondary, #A28680));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -245,28 +237,20 @@ const toggleFaq = (faq) => {
   display: inline-block;
   padding: 1rem 2.5rem;
   background: var(--primary);
-  color: white;
+  color: var(--bg-primary);
   border-radius: 0.75rem;
   font-size: 1.1rem;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  text-transform: lowercase;
+  box-shadow: 0 4px 14px rgba(242, 226, 142, 0.3);
 }
 
 .btn-hero:hover {
   background: var(--primary-dark);
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.5);
-}
-
-[data-theme="light"] .btn-hero {
-  color: black !important;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-}
-
-[data-theme="light"] .btn-hero:hover {
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 10px 25px rgba(242, 226, 142, 0.4);
 }
 
 /* Features Section */
@@ -310,7 +294,7 @@ const toggleFaq = (faq) => {
 }
 
 .feature-warning {
-  border-left: 4px solid var(--warning);
+  border-left: 4px solid var(--primary-secondary, #A28680);
 }
 
 .feature-icon {

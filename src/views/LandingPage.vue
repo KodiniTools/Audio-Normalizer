@@ -6,11 +6,6 @@
         <div class="nav-logo">
           <h2>🎵 Audio Normalizer</h2>
         </div>
-        <div class="nav-actions">
-          <router-link to="/app" class="btn-primary">
-            {{ t('nav-app') }}
-          </router-link>
-        </div>
       </div>
     </nav>
 
@@ -163,9 +158,9 @@ const toggleFaq = (faq) => {
 .nav-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 8rem 0 1.5rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -176,33 +171,6 @@ const toggleFaq = (faq) => {
   letter-spacing: -0.02em;
 }
 
-.nav-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.btn-primary {
-  padding: 0.4rem 1rem;
-  background: var(--primary);
-  color: var(--bg-primary);
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s;
-  text-transform: lowercase;
-  letter-spacing: 0.02em;
-  box-shadow: 0 1px 4px rgba(242, 226, 142, 0.2);
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(242, 226, 142, 0.3);
-}
 
 /* Hero Section */
 .hero {
@@ -467,10 +435,6 @@ const toggleFaq = (faq) => {
   .features-grid,
   .benefits-grid {
     grid-template-columns: 1fr;
-  }
-
-  .nav-actions {
-    flex-wrap: wrap;
   }
 
   .container {

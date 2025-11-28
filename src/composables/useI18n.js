@@ -33,7 +33,16 @@ const translations = {
     'guide-section-batch': 'Batch-Operationen',
     'guide-section-export': 'Export',
     'guide-section-tips': 'Tipps & Best Practices',
-    
+
+    // Guide Labels
+    'guide-tip-label': 'Tipp:',
+    'guide-note-label': 'Hinweis:',
+    'guide-important-label': 'Wichtig:',
+    'guide-ideal-for': 'Ideal für:',
+    'guide-recommended-values': 'Empfohlene Werte:',
+    'guide-standard-values': 'Standard-Werte:',
+    'guide-parameters': 'Parameter:',
+
     // Main Functions
     'guide-upload-title': 'Audio-Dateien hochladen',
     'guide-upload-desc': 'Laden Sie Audio-Dateien in den unterstützten Formaten hoch: MP3, WAV, FLAC, OGG, M4A, AAC.',
@@ -47,6 +56,12 @@ const translations = {
     'guide-analyze-dynamic': 'Dynamic Range: Unterschied zwischen lautesten und leisesten Stellen',
     'guide-analyze-clipping': 'Clipping: Anzahl der übersteuerter Samples',
     'guide-analyze-noise': 'Noise Floor: Grundrauschen der Aufnahme',
+    'guide-analyze-peak-desc': 'Höchster Lautstärkepegel',
+    'guide-analyze-rms-desc': 'Durchschnittliche Lautstärke',
+    'guide-analyze-lufs-desc': 'Loudness Units (Broadcast-Standard)',
+    'guide-analyze-dynamic-desc': 'Lautstärkeunterschied',
+    'guide-analyze-clipping-desc': 'Übersteuerte Samples',
+    'guide-analyze-noise-desc': 'Grundrauschen',
     
     // Normalization Methods
     'guide-rms-title': 'RMS-Normalisierung',
@@ -88,6 +103,10 @@ const translations = {
     'guide-compression-ratio': 'Ratio: Stärke der Kompression (z.B. 4:1)',
     'guide-compression-attack': 'Attack: Wie schnell der Kompressor reagiert',
     'guide-compression-release': 'Release: Wie schnell der Kompressor wieder loslässt',
+    'guide-compression-threshold-desc': 'Ab welchem Pegel komprimiert wird',
+    'guide-compression-ratio-desc': 'Stärke der Kompression (z.B. 4:1)',
+    'guide-compression-attack-desc': 'Reaktionsgeschwindigkeit',
+    'guide-compression-release-desc': 'Abklingzeit',
     
     // Batch Operations
     'guide-batch-desc': 'Führen Sie Operationen auf alle geladenen Dateien gleichzeitig aus:',
@@ -109,18 +128,21 @@ const translations = {
     'guide-export-single': 'Einzelexport: Klicken Sie auf "Exportieren" bei einer Datei',
     'guide-export-batch': 'Batch-Export: Nutzen Sie "Alle exportieren" für ZIP-Download',
     'guide-export-format': 'Format: Exportiert im Original-Format oder als WAV',
+    'guide-export-single-label': 'Einzelexport:',
+    'guide-export-batch-label': 'Batch-Export:',
+    'guide-export-format-label': 'Format:',
     
     // Tips
-    'guide-tip1-title': '1. Immer zuerst analysieren',
+    'guide-tip1-title': 'Immer zuerst analysieren',
     'guide-tip1-desc': 'Analysieren Sie Ihre Dateien vor der Normalisierung, um die optimalen Parameter zu bestimmen.',
-    'guide-tip2-title': '2. Headroom beachten',
+    'guide-tip2-title': 'Headroom beachten',
     'guide-tip2-desc': 'Lassen Sie immer etwas Headroom (z.B. -1 dB) um Clipping zu vermeiden.',
-    'guide-tip3-title': '3. Vorschau nutzen',
-    'guide-tip3-desc': 'Hören Sie sich das Ergebnis an, bevor Sie exportieren (Original/Normalisiert-Toggle).',
-    'guide-tip4-title': '4. Richtige Methode wählen',
-    'guide-tip4-desc': 'RMS für Musik, Peak für maximale Lautstärke, EBU R128 für Broadcast/Streaming.',
-    'guide-tip5-title': '5. Nicht überkomprimieren',
-    'guide-tip5-desc': 'Zu starke Kompression macht Audio flach und leblos. Weniger ist oft mehr.',
+    'guide-tip3-title': 'Vorschau nutzen',
+    'guide-tip3-desc': 'Hören Sie sich das Ergebnis an, bevor Sie exportieren.',
+    'guide-tip4-title': 'Richtige Methode wählen',
+    'guide-tip4-desc': 'RMS für Musik, Peak für maximale Lautstärke, EBU R128 für Streaming.',
+    'guide-tip5-title': 'Nicht überkomprimieren',
+    'guide-tip5-desc': 'Zu starke Kompression macht Audio flach und leblos.',
     
     'guide-footer': 'Audio Normalisierung Pro - Professionelle Audio-Bearbeitung im Browser',
     
@@ -240,7 +262,16 @@ const translations = {
     'guide-section-batch': 'Batch Operations',
     'guide-section-export': 'Export',
     'guide-section-tips': 'Tips & Best Practices',
-    
+
+    // Guide Labels
+    'guide-tip-label': 'Tip:',
+    'guide-note-label': 'Note:',
+    'guide-important-label': 'Important:',
+    'guide-ideal-for': 'Ideal for:',
+    'guide-recommended-values': 'Recommended values:',
+    'guide-standard-values': 'Standard values:',
+    'guide-parameters': 'Parameters:',
+
     // Main Functions
     'guide-upload-title': 'Upload Audio Files',
     'guide-upload-desc': 'Upload audio files in supported formats: MP3, WAV, FLAC, OGG, M4A, AAC.',
@@ -254,6 +285,12 @@ const translations = {
     'guide-analyze-dynamic': 'Dynamic Range: Difference between loudest and quietest parts',
     'guide-analyze-clipping': 'Clipping: Number of overdriven samples',
     'guide-analyze-noise': 'Noise Floor: Background noise of the recording',
+    'guide-analyze-peak-desc': 'Highest volume level',
+    'guide-analyze-rms-desc': 'Average loudness',
+    'guide-analyze-lufs-desc': 'Loudness Units (Broadcast Standard)',
+    'guide-analyze-dynamic-desc': 'Volume difference',
+    'guide-analyze-clipping-desc': 'Overdriven samples',
+    'guide-analyze-noise-desc': 'Background noise',
     
     // Normalization Methods
     'guide-rms-title': 'RMS Normalization',
@@ -295,6 +332,10 @@ const translations = {
     'guide-compression-ratio': 'Ratio: Strength of compression (e.g. 4:1)',
     'guide-compression-attack': 'Attack: How quickly the compressor responds',
     'guide-compression-release': 'Release: How quickly the compressor releases',
+    'guide-compression-threshold-desc': 'Level at which compression starts',
+    'guide-compression-ratio-desc': 'Strength of compression (e.g. 4:1)',
+    'guide-compression-attack-desc': 'Response speed',
+    'guide-compression-release-desc': 'Release time',
     
     // Batch Operations
     'guide-batch-desc': 'Perform operations on all loaded files simultaneously:',
@@ -316,18 +357,21 @@ const translations = {
     'guide-export-single': 'Single Export: Click "Export" on a file',
     'guide-export-batch': 'Batch Export: Use "Export All" for ZIP download',
     'guide-export-format': 'Format: Exports in original format or as WAV',
+    'guide-export-single-label': 'Single Export:',
+    'guide-export-batch-label': 'Batch Export:',
+    'guide-export-format-label': 'Format:',
     
     // Tips
-    'guide-tip1-title': '1. Always analyze first',
+    'guide-tip1-title': 'Always analyze first',
     'guide-tip1-desc': 'Analyze your files before normalization to determine optimal parameters.',
-    'guide-tip2-title': '2. Watch headroom',
+    'guide-tip2-title': 'Watch headroom',
     'guide-tip2-desc': 'Always leave some headroom (e.g. -1 dB) to avoid clipping.',
-    'guide-tip3-title': '3. Use preview',
-    'guide-tip3-desc': 'Listen to the result before exporting (Original/Normalized toggle).',
-    'guide-tip4-title': '4. Choose the right method',
-    'guide-tip4-desc': 'RMS for music, Peak for maximum loudness, EBU R128 for broadcast/streaming.',
-    'guide-tip5-title': "5. Don't over-compress",
-    'guide-tip5-desc': 'Too much compression makes audio flat and lifeless. Less is often more.',
+    'guide-tip3-title': 'Use preview',
+    'guide-tip3-desc': 'Listen to the result before exporting.',
+    'guide-tip4-title': 'Choose the right method',
+    'guide-tip4-desc': 'RMS for music, Peak for maximum loudness, EBU R128 for streaming.',
+    'guide-tip5-title': "Don't over-compress",
+    'guide-tip5-desc': 'Too much compression makes audio flat and lifeless.',
     
     'guide-footer': 'Audio Normalization Pro - Professional Audio Processing in Browser',
     

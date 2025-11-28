@@ -138,12 +138,15 @@ const toggleFaq = (faq) => {
   color: var(--text-primary);
   position: relative;
   z-index: 1;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 /* Navigation */
@@ -152,223 +155,236 @@ const toggleFaq = (faq) => {
   top: 0;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .nav-logo h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 600;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .nav-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
 .btn-primary {
-  padding: 0.5rem 1.5rem;
+  padding: 0.4rem 1rem;
   background: var(--primary);
   color: var(--bg-primary);
   border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s;
   text-transform: lowercase;
-  box-shadow: 0 2px 8px rgba(242, 226, 142, 0.25);
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 4px rgba(242, 226, 142, 0.2);
 }
 
 .btn-primary:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(242, 226, 142, 0.3);
 }
 
 /* Hero Section */
 .hero {
-  padding: 6rem 0;
+  padding: 4rem 0 3rem;
   text-align: center;
 }
 
 .hero-content {
-  max-width: 800px;
+  max-width: 680px;
   margin: 0 auto;
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
   background: linear-gradient(135deg, var(--primary), var(--primary-secondary, #A28680));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 .hero-subtitle {
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
-  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .hero-description {
-  font-size: 1.1rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-bottom: 2rem;
-  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  opacity: 0.85;
 }
 
 .btn-hero {
   display: inline-block;
-  padding: 1rem 2.5rem;
+  padding: 0.65rem 1.75rem;
   background: var(--primary);
   color: var(--bg-primary);
-  border-radius: 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 600;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: all 0.25s;
   text-transform: lowercase;
-  box-shadow: 0 4px 14px rgba(242, 226, 142, 0.3);
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 10px rgba(242, 226, 142, 0.25);
 }
 
 .btn-hero:hover {
   background: var(--primary-dark);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(242, 226, 142, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(242, 226, 142, 0.35);
 }
 
 /* Features Section */
 .features {
-  padding: 4rem 0;
+  padding: 2.5rem 0;
   background: var(--bg-secondary);
 }
 
 .section-title {
   text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 3rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
 }
 
 .feature-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  padding: 2rem;
-  transition: all 0.3s;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: all 0.25s;
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .feature-success {
-  border-left: 4px solid var(--success);
+  border-left: 3px solid var(--success);
 }
 
 .feature-primary {
-  border-left: 4px solid var(--primary);
+  border-left: 3px solid var(--primary);
 }
 
 .feature-warning {
-  border-left: 4px solid var(--primary-secondary, #A28680);
+  border-left: 3px solid var(--primary-secondary, #A28680);
 }
 
 .feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .feature-card h3 {
-  font-size: 1.3rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .feature-card p {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
+  font-size: 0.8rem;
 }
 
 /* Benefits Section */
 .benefits {
-  padding: 4rem 0;
+  padding: 2.5rem 0;
 }
 
 .benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
 }
 
 .benefit-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  padding: 2rem;
-  transition: all 0.3s;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: all 0.25s;
 }
 
 .benefit-card:hover {
   border-color: var(--primary);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .benefit-card h3 {
-  font-size: 1.3rem;
-  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
   color: var(--primary);
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .benefit-card p {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
+  font-size: 0.8rem;
 }
 
 /* FAQ Section */
 .faq {
-  padding: 4rem 0;
+  padding: 2.5rem 0;
   background: var(--bg-secondary);
 }
 
 .faq-list {
-  max-width: 800px;
+  max-width: 700px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .faq-item {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   overflow: hidden;
-  transition: all 0.3s;
+  transition: all 0.25s;
 }
 
 .faq-item:hover {
@@ -377,18 +393,19 @@ const toggleFaq = (faq) => {
 
 .faq-question {
   width: 100%;
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   background: none;
   border: none;
   color: var(--text-primary);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: all 0.2s;
+  letter-spacing: -0.01em;
 }
 
 .faq-question:hover {
@@ -396,9 +413,10 @@ const toggleFaq = (faq) => {
 }
 
 .faq-icon {
-  font-size: 1.5rem;
-  font-weight: 300;
-  transition: transform 0.3s;
+  font-size: 1.1rem;
+  font-weight: 400;
+  transition: transform 0.25s;
+  opacity: 0.7;
 }
 
 .faq-open .faq-icon {
@@ -406,16 +424,21 @@ const toggleFaq = (faq) => {
 }
 
 .faq-answer {
-  padding: 0 1.5rem 1.5rem;
+  padding: 0 1.25rem 1rem;
   color: var(--text-secondary);
-  line-height: 1.7;
-  animation: fadeIn 0.3s;
+  line-height: 1.6;
+  font-size: 0.8rem;
+  animation: fadeIn 0.25s;
+}
+
+.faq-answer p {
+  margin: 0;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -426,11 +449,19 @@ const toggleFaq = (faq) => {
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
   }
 
   .hero-subtitle {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .hero-description {
+    font-size: 0.8rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
   }
 
   .features-grid,
@@ -440,6 +471,10 @@ const toggleFaq = (faq) => {
 
   .nav-actions {
     flex-wrap: wrap;
+  }
+
+  .container {
+    padding: 0 1rem;
   }
 }
 </style>

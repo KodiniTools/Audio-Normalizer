@@ -23,7 +23,7 @@
         @click="toggleLocale"
         :aria-label="'Language'"
       >
-        <span class="lang-text">{{ locale === 'de' ? 'en' : 'de' }}</span>
+        <span class="lang-text">{{ locale === 'de' ? 'EN' : 'DE' }}</span>
       </button>
     </div>
     
@@ -94,107 +94,113 @@ body {
 /* Controls Wrapper - Fixed Position */
 .controls-wrapper {
   position: fixed;
-  top: 6rem;
-  right: 1rem;
+  top: 0.75rem;
+  right: 0.75rem;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   z-index: 9999;
 }
 
 /* Guide Toggle Button */
 .guide-toggle {
-  width: 50px;
-  height: 50px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  font-weight: 700;
-  font-size: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  backdrop-filter: blur(8px);
 }
 
 .guide-toggle:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   border-color: var(--primary);
   background: var(--primary);
   color: var(--bg-primary);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.3);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
 }
 
 .guide-icon {
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
 }
 
 /* Theme Toggle Button */
 .theme-toggle {
-  width: 50px;
-  height: 50px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  font-size: 1.2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  backdrop-filter: blur(8px);
 }
 
 .theme-toggle:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.3);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
 }
 
 .theme-icon {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
 /* Language Toggle Button */
 .lang-toggle {
-  width: 50px;
-  height: 50px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  font-weight: 700;
-  font-size: 0.875rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.7rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  text-transform: uppercase;
 }
 
 .lang-toggle:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   border-color: var(--primary);
   background: var(--primary);
   color: var(--bg-primary);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.3);
+  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
 }
 
 .lang-text {
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
-  font-size: 0.875rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 /* Responsive */
@@ -202,25 +208,26 @@ body {
   .controls-wrapper {
     top: 0.5rem;
     right: 0.5rem;
+    gap: 0.35rem;
   }
-  
+
   .guide-toggle,
   .theme-toggle,
   .lang-toggle {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
   }
-  
+
   .guide-icon {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
   }
-  
+
   .theme-icon {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
   }
-  
+
   .lang-text {
-    font-size: 0.75rem;
+    font-size: 0.6rem;
   }
 } 
 

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import JSZip from 'jszip'
 
 // Constants
 const CONSTANTS = {
@@ -614,56 +615,64 @@ export function useAudioProcessor() {
     setStatus(`${file.name} entfernt`, 'info')
   }
 
-  const exportFile = async (file) => {
-    try {
-      const exportBuffer = file.processedBuffer || file.originalBuffer
-      if (!exportBuffer) throw new Error("No audio data to export")
+  // Helper function to get file blob for export (without downloading)
+  const getFileBlob = async (file, onProgress = null) => {
+    const exportBuffer = file.processedBuffer || file.originalBuffer
+    if (!exportBuffer) throw new Error("No audio data to export")
 
-      const baseName = "processed_" + file.name.replace(/\.[^/.]+$/, "")
+    const baseName = "processed_" + file.name.replace(/\.[^/.]+$/, "")
 
-      if (downloadFormat.value === 'mp3') {
-        isLoading.value = true
-        loadingMessage.value = `MP3-Konvertierung (${file.name})...`
+    if (downloadFormat.value === 'mp3') {
+      const left = exportBuffer.getChannelData(0)
+      const right = (exportBuffer.numberOfChannels > 1) ?
+        exportBuffer.getChannelData(1) : left
 
-        const left = exportBuffer.getChannelData(0)
-        const right = (exportBuffer.numberOfChannels > 1) ?
-          exportBuffer.getChannelData(1) : left
-
-        if (!mp3Worker) {
-          mp3Worker = createMP3Worker()
-        }
-
-        await new Promise((resolve, reject) => {
-          const worker = new Worker(mp3Worker)
-          worker.onmessage = e => {
-            if (e.data.progress !== undefined) {
-              loadingMessage.value = `MP3-Konvertierung: ${e.data.progress}%`
-            }
-            if (e.data.done) {
-              const mp3Blob = new Blob([new Uint8Array(e.data.result)], {
-                type: 'audio/mp3'
-              })
-              triggerDownload(mp3Blob, `${baseName}.mp3`)
-              worker.terminate()
-              resolve()
-            }
-          }
-          worker.onerror = err => reject(err)
-          worker.postMessage({
-            left: new Float32Array(left),
-            right: new Float32Array(right),
-            sampleRate: exportBuffer.sampleRate,
-            kbps: CONSTANTS.MP3_KBPS,
-            numChannels: exportBuffer.numberOfChannels
-          })
-        })
-
-        isLoading.value = false
-      } else {
-        const wavBlob = bufferToWave(exportBuffer, 0, exportBuffer.length)
-        triggerDownload(wavBlob, `${baseName}.wav`)
+      if (!mp3Worker) {
+        mp3Worker = createMP3Worker()
       }
 
+      const mp3Blob = await new Promise((resolve, reject) => {
+        const worker = new Worker(mp3Worker)
+        worker.onmessage = e => {
+          if (e.data.progress !== undefined && onProgress) {
+            onProgress(e.data.progress)
+          }
+          if (e.data.done) {
+            const blob = new Blob([new Uint8Array(e.data.result)], {
+              type: 'audio/mp3'
+            })
+            worker.terminate()
+            resolve(blob)
+          }
+        }
+        worker.onerror = err => reject(err)
+        worker.postMessage({
+          left: new Float32Array(left),
+          right: new Float32Array(right),
+          sampleRate: exportBuffer.sampleRate,
+          kbps: CONSTANTS.MP3_KBPS,
+          numChannels: exportBuffer.numberOfChannels
+        })
+      })
+
+      return { blob: mp3Blob, filename: `${baseName}.mp3` }
+    } else {
+      const wavBlob = bufferToWave(exportBuffer, 0, exportBuffer.length)
+      return { blob: wavBlob, filename: `${baseName}.wav` }
+    }
+  }
+
+  const exportFile = async (file) => {
+    try {
+      isLoading.value = true
+      loadingMessage.value = `Exportiere ${file.name}...`
+
+      const { blob, filename } = await getFileBlob(file, (mp3Progress) => {
+        loadingMessage.value = `MP3-Konvertierung: ${mp3Progress}%`
+      })
+
+      triggerDownload(blob, filename)
+      isLoading.value = false
       setStatus(`${file.name} heruntergeladen`, 'success')
     } catch (error) {
       console.error(`Error exporting ${file.name}:`, error)
@@ -676,16 +685,51 @@ export function useAudioProcessor() {
     if (audioFiles.value.length === 0) return
 
     isProcessing.value = true
+    isLoading.value = true
+    loadingMessage.value = 'ZIP wird erstellt...'
     setProgress('Export', 0)
+
+    const zip = new JSZip()
     const total = audioFiles.value.length
+    const format = downloadFormat.value
 
-    for (let i = 0; i < total; i++) {
-      await exportFile(audioFiles.value[i])
-      setProgress('Export', ((i + 1) / total) * 100)
+    try {
+      for (let i = 0; i < total; i++) {
+        const file = audioFiles.value[i]
+        loadingMessage.value = `Verarbeite ${file.name} (${i + 1}/${total})...`
+
+        const { blob, filename } = await getFileBlob(file, (mp3Progress) => {
+          const baseProgress = (i / total) * 100
+          const fileProgress = (mp3Progress / 100) * (100 / total)
+          setProgress('Export', baseProgress + fileProgress)
+          loadingMessage.value = `MP3-Konvertierung ${file.name}: ${mp3Progress}%`
+        })
+
+        zip.file(filename, blob)
+        setProgress('Export', ((i + 1) / total) * 100)
+      }
+
+      loadingMessage.value = 'ZIP wird finalisiert...'
+      const zipBlob = await zip.generateAsync({
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 }
+      }, (metadata) => {
+        loadingMessage.value = `ZIP wird erstellt: ${Math.round(metadata.percent)}%`
+      })
+
+      const timestamp = new Date().toISOString().slice(0, 10)
+      triggerDownload(zipBlob, `audio-normalized-${timestamp}.zip`)
+
+      isLoading.value = false
+      isProcessing.value = false
+      setStatus(`${total} Datei(en) als ZIP heruntergeladen`, 'success')
+    } catch (error) {
+      console.error('Error creating ZIP:', error)
+      setStatus('Fehler beim Erstellen der ZIP-Datei', 'error')
+      isLoading.value = false
+      isProcessing.value = false
     }
-
-    isProcessing.value = false
-    setStatus('Alle Dateien heruntergeladen', 'success')
   }
 
   const deleteAll = () => {

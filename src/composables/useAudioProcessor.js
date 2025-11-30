@@ -12,6 +12,90 @@ const CONSTANTS = {
   LOWPASS_FREQ: 8000,
   LOWPASS_Q: 1,
   MP3_KBPS: 320,
+  WEBM_KBPS: 128,
+}
+
+// Helper function to convert AudioBuffer to WebM using MediaRecorder
+const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Create an offline audio context to render the buffer
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+      // Create a MediaStreamDestination
+      const dest = audioContext.createMediaStreamDestination()
+
+      // Create a buffer source and connect to destination
+      const source = audioContext.createBufferSource()
+      source.buffer = audioBuffer
+      source.connect(dest)
+      source.connect(audioContext.destination) // Also connect to hear progress
+
+      // Determine supported MIME type
+      let mimeType = 'audio/webm;codecs=opus'
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/webm'
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/ogg;codecs=opus'
+        }
+      }
+
+      // Create MediaRecorder
+      const mediaRecorder = new MediaRecorder(dest.stream, {
+        mimeType: mimeType,
+        audioBitsPerSecond: CONSTANTS.WEBM_KBPS * 1000
+      })
+
+      const chunks = []
+      const duration = audioBuffer.duration * 1000 // in ms
+      const startTime = Date.now()
+
+      // Progress tracking
+      let progressInterval = null
+      if (onProgress) {
+        progressInterval = setInterval(() => {
+          const elapsed = Date.now() - startTime
+          const progress = Math.min(Math.round((elapsed / duration) * 100), 99)
+          onProgress(progress)
+        }, 100)
+      }
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        if (progressInterval) clearInterval(progressInterval)
+        if (onProgress) onProgress(100)
+        audioContext.close()
+        const blob = new Blob(chunks, { type: mimeType })
+        resolve(blob)
+      }
+
+      mediaRecorder.onerror = (e) => {
+        if (progressInterval) clearInterval(progressInterval)
+        audioContext.close()
+        reject(e.error || new Error('MediaRecorder error'))
+      }
+
+      // Start recording and playing
+      mediaRecorder.start()
+      source.start(0)
+
+      // Stop when playback ends
+      source.onended = () => {
+        setTimeout(() => {
+          if (mediaRecorder.state === 'recording') {
+            mediaRecorder.stop()
+          }
+        }, 100) // Small delay to ensure all data is captured
+      }
+    } catch (error) {
+      reject(error)
+    }
+  })
 }
 
 // MP3 Worker (singleton)
@@ -656,6 +740,9 @@ export function useAudioProcessor() {
       })
 
       return { blob: mp3Blob, filename: `${baseName}.mp3` }
+    } else if (downloadFormat.value === 'webm') {
+      const webmBlob = await audioBufferToWebM(exportBuffer, onProgress)
+      return { blob: webmBlob, filename: `${baseName}.webm` }
     } else {
       const wavBlob = bufferToWave(exportBuffer, 0, exportBuffer.length)
       return { blob: wavBlob, filename: `${baseName}.wav` }
@@ -665,10 +752,15 @@ export function useAudioProcessor() {
   const exportFile = async (file) => {
     try {
       isLoading.value = true
+      const format = downloadFormat.value.toUpperCase()
       loadingMessage.value = `Exportiere ${file.name}...`
 
-      const { blob, filename } = await getFileBlob(file, (mp3Progress) => {
-        loadingMessage.value = `MP3-Konvertierung: ${mp3Progress}%`
+      const { blob, filename } = await getFileBlob(file, (progress) => {
+        if (downloadFormat.value === 'mp3') {
+          loadingMessage.value = `MP3-Konvertierung: ${progress}%`
+        } else if (downloadFormat.value === 'webm') {
+          loadingMessage.value = `WebM-Konvertierung: ${progress}%`
+        }
       })
 
       triggerDownload(blob, filename)
@@ -698,11 +790,15 @@ export function useAudioProcessor() {
         const file = audioFiles.value[i]
         loadingMessage.value = `Verarbeite ${file.name} (${i + 1}/${total})...`
 
-        const { blob, filename } = await getFileBlob(file, (mp3Progress) => {
+        const { blob, filename } = await getFileBlob(file, (encodeProgress) => {
           const baseProgress = (i / total) * 100
-          const fileProgress = (mp3Progress / 100) * (100 / total)
+          const fileProgress = (encodeProgress / 100) * (100 / total)
           setProgress('Export', baseProgress + fileProgress)
-          loadingMessage.value = `MP3-Konvertierung ${file.name}: ${mp3Progress}%`
+          if (format === 'mp3') {
+            loadingMessage.value = `MP3-Konvertierung ${file.name}: ${encodeProgress}%`
+          } else if (format === 'webm') {
+            loadingMessage.value = `WebM-Konvertierung ${file.name}: ${encodeProgress}%`
+          }
         })
 
         zip.file(filename, blob)

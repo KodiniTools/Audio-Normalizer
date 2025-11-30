@@ -19,17 +19,20 @@ const CONSTANTS = {
 const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
   return new Promise((resolve, reject) => {
     try {
-      // Create an offline audio context to render the buffer
+      // Create an audio context (not connected to speakers)
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+      // Suspend the context to prevent any audio output
+      audioContext.suspend()
 
       // Create a MediaStreamDestination
       const dest = audioContext.createMediaStreamDestination()
 
-      // Create a buffer source and connect to destination
+      // Create a buffer source and connect ONLY to the MediaStreamDestination
       const source = audioContext.createBufferSource()
       source.buffer = audioBuffer
       source.connect(dest)
-      source.connect(audioContext.destination) // Also connect to hear progress
+      // DO NOT connect to audioContext.destination - this prevents playback
 
       // Determine supported MIME type
       let mimeType = 'audio/webm;codecs=opus'
@@ -80,9 +83,11 @@ const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
         reject(e.error || new Error('MediaRecorder error'))
       }
 
-      // Start recording and playing
-      mediaRecorder.start()
-      source.start(0)
+      // Resume context and start recording
+      audioContext.resume().then(() => {
+        mediaRecorder.start()
+        source.start(0)
+      })
 
       // Stop when playback ends
       source.onended = () => {

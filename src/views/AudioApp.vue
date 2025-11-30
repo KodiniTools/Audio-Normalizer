@@ -48,13 +48,13 @@
 
           <!-- Main Actions -->
           <div class="action-group">
-            <button @click="exportAll" class="btn btn-primary">
+            <button @click="exportAll" class="btn btn-primary" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.exportAll') }}
             </button>
-            <button @click="deleteAll" class="btn btn-danger">
+            <button @click="confirmDeleteAll" class="btn btn-danger" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.deleteAll') }}
             </button>
-            <button @click="resetAll" class="btn btn-secondary">
+            <button @click="confirmResetAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.resetAll') }}
             </button>
           </div>
@@ -65,15 +65,16 @@
               <div class="control-item">
                 <label>{{ t('app.globalRms') }}</label>
                 <div class="control-input-group">
-                  <input 
-                    type="number" 
-                    v-model.number="globalRmsValue" 
-                    step="0.01" 
-                    min="0" 
-                    max="1" 
+                  <input
+                    type="number"
+                    v-model.number="globalRmsValue"
+                    step="0.01"
+                    min="0"
+                    max="1"
                     class="control-input"
+                    :disabled="isProcessing"
                   />
-                  <button @click="applyGlobalRms" class="btn btn-sm btn-secondary">
+                  <button @click="applyGlobalRms" class="btn btn-sm btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
                     {{ t('app.applyRms') }}
                   </button>
                 </div>
@@ -82,15 +83,16 @@
               <div class="control-item">
                 <label>{{ t('app.globalDb') }}</label>
                 <div class="control-input-group">
-                  <input 
-                    type="number" 
-                    v-model.number="globalDbValue" 
-                    step="1" 
-                    min="-60" 
-                    max="0" 
+                  <input
+                    type="number"
+                    v-model.number="globalDbValue"
+                    step="1"
+                    min="-60"
+                    max="0"
                     class="control-input"
+                    :disabled="isProcessing"
                   />
-                  <button @click="applyGlobalDb" class="btn btn-sm btn-secondary">
+                  <button @click="applyGlobalDb" class="btn btn-sm btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
                     {{ t('app.applyDb') }}
                   </button>
                 </div>
@@ -99,7 +101,7 @@
 
             <div class="control-item">
               <label>{{ t('app.applyEBU') }}</label>
-              <button @click="applyEBUR128" class="btn btn-primary btn-block">
+              <button @click="applyEBUR128" class="btn btn-primary btn-block" :disabled="isProcessing || audioFiles.length === 0">
                 {{ t('app.applyEBU') }}
               </button>
             </div>
@@ -107,16 +109,16 @@
 
           <!-- Effect Controls -->
           <div class="action-group">
-            <button @click="analyzeAll" class="btn btn-secondary">
+            <button @click="analyzeAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.analyzeAll') }}
             </button>
-            <button @click="applyNoiseReductionAll" class="btn btn-secondary">
+            <button @click="applyNoiseReductionAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.noiseReduction') }}
             </button>
-            <button @click="reduceClippingAll" class="btn btn-secondary">
+            <button @click="reduceClippingAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.reduceClipping') }}
             </button>
-            <button @click="applyDynamicCompressionAll" class="btn btn-secondary">
+            <button @click="applyDynamicCompressionAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
               {{ t('app.dynamicCompression') }}
             </button>
           </div>
@@ -132,10 +134,14 @@
             </div>
           </div>
 
-          <!-- File Count -->
-          <div class="file-count">
+          <!-- File Count / Empty State -->
+          <div class="file-count" :class="{ 'empty-state': audioFiles.length === 0 }">
             <template v-if="audioFiles.length === 0">
-              {{ t('app.noFiles') }}
+              <div class="empty-state-content">
+                <Upload class="empty-state-icon" :size="32" :stroke-width="1.5" />
+                <p class="empty-state-title">{{ t('app.noFiles') }}</p>
+                <p class="empty-state-hint">{{ t('app.emptyStateHint') }}</p>
+              </div>
             </template>
             <template v-else>
               {{ t('app.fileCount', { count: audioFiles.length }) }}
@@ -143,7 +149,7 @@
           </div>
 
           <!-- File List -->
-          <div class="file-list">
+          <div v-if="audioFiles.length > 0" class="file-list">
             <AudioFileItem
               v-for="file in audioFiles"
               :key="file.id"
@@ -155,8 +161,9 @@
           </div>
 
           <!-- Status Message -->
-          <div v-if="statusMessage" class="status-message">
-            {{ statusMessage }}
+          <div v-if="statusMessage" class="status-message" :class="'status-' + statusType">
+            <component :is="statusIcons[statusType]" :size="18" class="status-icon" />
+            <span>{{ statusMessage }}</span>
           </div>
         </div>
       </div>
@@ -172,7 +179,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Upload } from 'lucide-vue-next'
+import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n'
 import { useAudioProcessor } from '../composables/useAudioProcessor'
 import AudioFileItem from '../components/AudioFileItem.vue'
@@ -190,6 +197,8 @@ const {
   isLoading,
   loadingMessage,
   statusMessage,
+  statusType,
+  isProcessing,
   handleFilesInput,
   exportAll,
   deleteAll,
@@ -223,6 +232,29 @@ const handleDrop = (event) => {
   if (files && files.length > 0) {
     handleFilesInput(Array.from(files))
   }
+}
+
+// Confirmation dialogs for destructive actions
+const confirmDeleteAll = () => {
+  if (audioFiles.value.length === 0) return
+  if (confirm(t('app.confirmDeleteAll'))) {
+    deleteAll()
+  }
+}
+
+const confirmResetAll = () => {
+  if (audioFiles.value.length === 0) return
+  if (confirm(t('app.confirmResetAll'))) {
+    resetAll()
+  }
+}
+
+// Status icon component mapping
+const statusIcons = {
+  success: CheckCircle,
+  error: AlertCircle,
+  warning: AlertTriangle,
+  info: Info
 }
 </script>
 
@@ -429,6 +461,31 @@ const handleDrop = (event) => {
   background: #dc2626;
 }
 
+/* Disabled state for all buttons */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn:disabled:hover {
+  transform: none;
+}
+
+.btn-primary:disabled:hover {
+  background: var(--primary);
+}
+
+.btn-secondary:disabled:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.btn-danger:disabled:hover {
+  background: #ef4444;
+}
+
 .btn-sm {
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
@@ -535,6 +592,37 @@ const handleDrop = (event) => {
   color: var(--text-secondary);
 }
 
+/* Empty State */
+.file-count.empty-state {
+  padding: 2rem 1rem;
+}
+
+.empty-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.empty-state-icon {
+  color: var(--primary);
+  opacity: 0.7;
+}
+
+.empty-state-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.empty-state-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
 /* File List */
 .file-list {
   max-height: 600px;
@@ -573,6 +661,10 @@ const handleDrop = (event) => {
 
 /* Status Message */
 .status-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -580,6 +672,46 @@ const handleDrop = (event) => {
   font-size: 0.875rem;
   color: var(--text-primary);
   text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-icon {
+  flex-shrink: 0;
+}
+
+.status-success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.status-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.status-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.status-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
 }
 
 /* Loading Spinner */

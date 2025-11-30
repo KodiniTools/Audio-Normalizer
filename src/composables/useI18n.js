@@ -236,6 +236,9 @@ const translations = {
     'app.playOriginal': 'Original abspielen',
     'app.playNormalized': 'Normalisiert abspielen',
     'app.export': 'Exportieren',
+    'app.confirmDeleteAll': 'Möchten Sie wirklich alle Dateien löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+    'app.confirmResetAll': 'Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt.',
+    'app.emptyStateHint': 'Ziehen Sie Audio-Dateien hierher oder klicken Sie oben zum Hochladen',
   },
   
   en: {
@@ -465,6 +468,9 @@ const translations = {
     'app.playOriginal': 'Play Original',
     'app.playNormalized': 'Play Normalized',
     'app.export': 'Export',
+    'app.confirmDeleteAll': 'Are you sure you want to delete all files? This action cannot be undone.',
+    'app.confirmResetAll': 'Are you sure you want to reset all changes? Files will be restored to their original state.',
+    'app.emptyStateHint': 'Drag audio files here or click above to upload',
   }
 }
 

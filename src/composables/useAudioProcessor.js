@@ -79,6 +79,8 @@ export function useAudioProcessor() {
   const isLoading = ref(false)
   const loadingMessage = ref('Verarbeite...')
   const statusMessage = ref('')
+  const statusType = ref('info') // 'success', 'error', 'warning', 'info'
+  const isProcessing = ref(false)
 
   // Helper Functions
   const generateId = () => '_' + Math.random().toString(36).substr(2, 9)
@@ -185,11 +187,14 @@ export function useAudioProcessor() {
     }
   }
 
-  const setStatus = (message) => {
+  const setStatus = (message, type = 'info') => {
     statusMessage.value = message
+    statusType.value = type
+    // Longer duration for errors, shorter for success
+    const duration = type === 'error' ? 5000 : type === 'warning' ? 4000 : 3000
     setTimeout(() => {
       statusMessage.value = ''
-    }, 3000)
+    }, duration)
   }
 
   // Audio Processing Functions
@@ -419,36 +424,46 @@ export function useAudioProcessor() {
   }
 
   const handleFilesInput = async (files) => {
+    isProcessing.value = true
     setProgress('Upload', 0)
     const total = files.length
     let processed = 0
-    
+    let errors = 0
+
     for (const file of files) {
       if (!file.type.startsWith('audio/')) {
-        setStatus(`${file.name} ist keine gültige Audiodatei`)
+        setStatus(`${file.name} ist keine gültige Audiodatei`, 'warning')
+        errors++
         continue
       }
-      
+
       try {
         const fileData = await analyzeFile(file)
         audioFiles.value.push(fileData)
         processed++
         setProgress('Upload', (processed / total) * 100)
       } catch (error) {
-        setStatus(`Fehler bei ${file.name}`)
+        setStatus(`Fehler bei ${file.name}`, 'error')
+        errors++
       }
     }
-    
-    setStatus(`${processed} Datei(en) erfolgreich hochgeladen`)
+
+    isProcessing.value = false
+    if (processed > 0) {
+      setStatus(`${processed} Datei(en) erfolgreich hochgeladen`, 'success')
+    } else if (errors > 0) {
+      setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
+    }
   }
 
   // Global Operations - ORIGINAL LOGIC
   const applyGlobalRms = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     setProgress('RMS Skalierung', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       try {
         await scaleAudioBuffer(audioFiles.value[i], globalRmsValue.value)
@@ -457,17 +472,19 @@ export function useAudioProcessor() {
       }
       setProgress('RMS Skalierung', ((i + 1) / total) * 100)
     }
-    
-    setStatus('RMS Skalierung abgeschlossen')
+
+    isProcessing.value = false
+    setStatus('RMS Skalierung abgeschlossen', 'success')
   }
 
   const applyGlobalDb = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     const targetRms = dbToRms(globalDbValue.value)
     setProgress('dB Skalierung', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       try {
         await scaleAudioBuffer(audioFiles.value[i], targetRms)
@@ -476,16 +493,18 @@ export function useAudioProcessor() {
       }
       setProgress('dB Skalierung', ((i + 1) / total) * 100)
     }
-    
-    setStatus('dB Skalierung abgeschlossen')
+
+    isProcessing.value = false
+    setStatus('dB Skalierung abgeschlossen', 'success')
   }
 
   const applyEBUR128 = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     setProgress('EBU R128', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       try {
         await normalizeToLoudnessR128(
@@ -497,20 +516,22 @@ export function useAudioProcessor() {
       }
       setProgress('EBU R128', ((i + 1) / total) * 100)
     }
-    
-    setStatus('EBU R128 Normalisierung abgeschlossen')
+
+    isProcessing.value = false
+    setStatus('EBU R128 Normalisierung abgeschlossen', 'success')
   }
 
   const analyzeAll = async () => {
-    setStatus('Alle Dateien bereits analysiert')
+    setStatus('Alle Dateien bereits analysiert', 'info')
   }
 
   const applyNoiseReductionAll = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     setProgress('Rauschunterdrückung', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       try {
         await applyNoiseReduction(audioFiles.value[i])
@@ -519,16 +540,18 @@ export function useAudioProcessor() {
       }
       setProgress('Rauschunterdrückung', ((i + 1) / total) * 100)
     }
-    
-    setStatus('Rauschunterdrückung abgeschlossen')
+
+    isProcessing.value = false
+    setStatus('Rauschunterdrückung abgeschlossen', 'success')
   }
 
   const reduceClippingAll = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     setProgress('Clipping Reduktion', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       try {
         await reduceClipping(audioFiles.value[i])
@@ -537,16 +560,18 @@ export function useAudioProcessor() {
       }
       setProgress('Clipping Reduktion', ((i + 1) / total) * 100)
     }
-    
-    setStatus('Clipping Reduktion abgeschlossen')
+
+    isProcessing.value = false
+    setStatus('Clipping Reduktion abgeschlossen', 'success')
   }
 
   const applyDynamicCompressionAll = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     setProgress('Dynamikkompression', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       try {
         await applyDynamicCompression(audioFiles.value[i])
@@ -555,20 +580,21 @@ export function useAudioProcessor() {
       }
       setProgress('Dynamikkompression', ((i + 1) / total) * 100)
     }
-    
-    setStatus('Dynamikkompression abgeschlossen')
+
+    isProcessing.value = false
+    setStatus('Dynamikkompression abgeschlossen', 'success')
   }
 
   const updateFile = async (updatedFile) => {
     const index = audioFiles.value.findIndex(f => f.id === updatedFile.id)
     if (index === -1) return
-    
+
     isLoading.value = true
     try {
       await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms)
-      setStatus(`${updatedFile.name} aktualisiert`)
+      setStatus(`${updatedFile.name} aktualisiert`, 'success')
     } catch (error) {
-      setStatus(`Fehler bei ${updatedFile.name}`)
+      setStatus(`Fehler bei ${updatedFile.name}`, 'error')
     }
     isLoading.value = false
   }
@@ -576,37 +602,37 @@ export function useAudioProcessor() {
   const removeFile = (file) => {
     const index = audioFiles.value.findIndex(f => f.id === file.id)
     if (index === -1) return
-    
+
     if (file.processedBlobUrl) {
       URL.revokeObjectURL(file.processedBlobUrl)
     }
     if (file.originalBlobUrl) {
       URL.revokeObjectURL(file.originalBlobUrl)
     }
-    
+
     audioFiles.value.splice(index, 1)
-    setStatus(`${file.name} entfernt`)
+    setStatus(`${file.name} entfernt`, 'info')
   }
 
   const exportFile = async (file) => {
     try {
       const exportBuffer = file.processedBuffer || file.originalBuffer
       if (!exportBuffer) throw new Error("No audio data to export")
-      
+
       const baseName = "processed_" + file.name.replace(/\.[^/.]+$/, "")
-      
+
       if (downloadFormat.value === 'mp3') {
         isLoading.value = true
         loadingMessage.value = `MP3-Konvertierung (${file.name})...`
-        
+
         const left = exportBuffer.getChannelData(0)
-        const right = (exportBuffer.numberOfChannels > 1) ? 
+        const right = (exportBuffer.numberOfChannels > 1) ?
           exportBuffer.getChannelData(1) : left
-        
+
         if (!mp3Worker) {
           mp3Worker = createMP3Worker()
         }
-        
+
         await new Promise((resolve, reject) => {
           const worker = new Worker(mp3Worker)
           worker.onmessage = e => {
@@ -631,33 +657,35 @@ export function useAudioProcessor() {
             numChannels: exportBuffer.numberOfChannels
           })
         })
-        
+
         isLoading.value = false
       } else {
         const wavBlob = bufferToWave(exportBuffer, 0, exportBuffer.length)
         triggerDownload(wavBlob, `${baseName}.wav`)
       }
-      
-      setStatus(`${file.name} heruntergeladen`)
+
+      setStatus(`${file.name} heruntergeladen`, 'success')
     } catch (error) {
       console.error(`Error exporting ${file.name}:`, error)
-      setStatus(`Fehler beim Exportieren von ${file.name}`)
+      setStatus(`Fehler beim Exportieren von ${file.name}`, 'error')
       isLoading.value = false
     }
   }
 
   const exportAll = async () => {
     if (audioFiles.value.length === 0) return
-    
+
+    isProcessing.value = true
     setProgress('Export', 0)
     const total = audioFiles.value.length
-    
+
     for (let i = 0; i < total; i++) {
       await exportFile(audioFiles.value[i])
       setProgress('Export', ((i + 1) / total) * 100)
     }
-    
-    setStatus('Alle Dateien heruntergeladen')
+
+    isProcessing.value = false
+    setStatus('Alle Dateien heruntergeladen', 'success')
   }
 
   const deleteAll = () => {
@@ -666,7 +694,7 @@ export function useAudioProcessor() {
       if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
     })
     audioFiles.value = []
-    setStatus('Alle Dateien gelöscht')
+    setStatus('Alle Dateien gelöscht', 'info')
   }
 
   const resetAll = () => {
@@ -679,7 +707,7 @@ export function useAudioProcessor() {
         file.processedBlobUrl = null
       }
     })
-    setStatus('Alle Änderungen zurückgesetzt')
+    setStatus('Alle Änderungen zurückgesetzt', 'success')
   }
 
   return {
@@ -693,6 +721,8 @@ export function useAudioProcessor() {
     isLoading,
     loadingMessage,
     statusMessage,
+    statusType,
+    isProcessing,
     handleFilesInput,
     applyGlobalRms,
     applyGlobalDb,

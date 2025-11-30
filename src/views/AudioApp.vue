@@ -128,8 +128,9 @@
             <div class="control-item">
               <label>{{ t('app.downloadFormat') }}</label>
               <select v-model="downloadFormat" class="select-input">
-                <option value="wav">WAV</option>
+                <option value="wav">WAV (unkomprimiert)</option>
                 <option value="mp3">MP3 (320 kbps)</option>
+                <option value="webm">WebM/Opus (128 kbps)</option>
               </select>
             </div>
           </div>

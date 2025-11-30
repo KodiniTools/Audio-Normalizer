@@ -149,6 +149,9 @@
     "apply": "Anwenden",
     "playOriginal": "Original abspielen",
     "playNormalized": "Normalisiert abspielen",
-    "export": "Exportieren"
+    "export": "Exportieren",
+    "confirmDeleteAll": "Möchten Sie wirklich alle Dateien löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirmResetAll": "Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt.",
+    "emptyStateHint": "Ziehen Sie Audio-Dateien hierher oder klicken Sie oben zum Hochladen"
   }
 }

@@ -18,7 +18,7 @@ const translations = {
     // Hero Section
     'hero-title': 'Audio Normalizer',
     'hero-subtitle': 'Professionelle Audio-Normalisierung direkt im Browser',
-    'hero-description': 'Normalisieren Sie Ihre Audio-Dateien schnell und einfach – kostenlos, sicher und ohne Upload. Alle Verarbeitungen erfolgen lokal in Ihrem Browser.',
+    'hero-description': 'Kostenlos, sicher und ohne Upload – alle Verarbeitungen erfolgen lokal in Ihrem Browser.',
     'hero-cta': 'Jetzt starten',
     
     // Guide Page (Wird von GuidePage.vue verwendet)

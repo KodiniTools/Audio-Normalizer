@@ -239,7 +239,7 @@ a:hover {
   cursor: pointer;
   transition: all var(--transition-base);
   text-decoration: none;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .btn-primary {
@@ -983,7 +983,7 @@ a:hover {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .apply-btn:hover {

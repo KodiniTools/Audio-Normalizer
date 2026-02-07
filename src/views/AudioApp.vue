@@ -299,7 +299,7 @@ const statusIcons = {
   font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s ease;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .back-link:hover {
@@ -317,7 +317,7 @@ const statusIcons = {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-  text-transform: lowercase;
+  text-transform: none;
   letter-spacing: -0.02em;
 }
 
@@ -325,7 +325,7 @@ const statusIcons = {
   font-size: 0.7rem;
   color: var(--text-secondary);
   margin: 0.15rem 0 0 0;
-  text-transform: lowercase;
+  text-transform: none;
   letter-spacing: 0.01em;
 }
 
@@ -421,7 +421,7 @@ const statusIcons = {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .btn:hover {

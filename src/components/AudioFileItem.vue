@@ -248,7 +248,7 @@ const togglePlayback = () => {
   transition: all 0.2s ease;
   align-self: end;
   white-space: nowrap;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .apply-btn:hover {
@@ -335,7 +335,7 @@ const togglePlayback = () => {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .control-btn.primary {

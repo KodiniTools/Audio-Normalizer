@@ -67,25 +67,25 @@
   --transition-slow: 400ms ease;
 }
 
-/* Light Theme - New Color Scheme with improved contrast */
+/* Light Theme - Blue & Gold Color Scheme */
 body.light-mode,
 [data-theme="light"] {
-  --bg: #F5F5F5;
+  --bg: #F5F4D6;
   --panel: #FFFFFF;
-  --text: #1a1a1a;
-  --muted: #5E5F69;
-  --accent: #A28680;
-  --accent-text: #FFFFFF;
-  --accent-secondary: #F2E28E;
-  --btn: #EBEBEB;
-  --btn-hover: #DCDCDC;
-  --ring: #A28680;
-  --border-color: #AEAFB7;
-  --shadow-color: rgb(0 0 0 / 12%);
-  --gradient-color: rgb(162 134 128 / 5%);
-  --panel-highlight: rgb(162 134 128 / 8%);
+  --text: #003971;
+  --muted: #4a6a8a;
+  --accent: #014f99;
+  --accent-text: #F5F4D6;
+  --accent-secondary: #c9984d;
+  --btn: #f8e1a9;
+  --btn-hover: #f0d080;
+  --ring: #c9984d;
+  --border-color: rgb(201 152 77 / 35%);
+  --shadow-color: rgb(0 0 0 / 10%);
+  --gradient-color: rgb(1 79 153 / 5%);
+  --panel-highlight: rgb(201 152 77 / 8%);
   --progress-bg: rgb(0 0 0 / 10%);
-  --body-gradient: #F5F5F5;
+  --body-gradient: radial-gradient(1200px 600px at 80% -20%, #f8e1a9 0%, transparent 60%), #F5F4D6;
 }
 
 /* ==========================================================================

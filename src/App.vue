@@ -63,15 +63,15 @@ const showGuideButton = computed(() => route.path !== '/anleitung')
 }
 
 [data-theme="light"] {
-  --primary: #A28680;
-  --primary-dark: #8a716b;
-  --primary-secondary: #F2E28E;
-  --bg-primary: #F5F5F5;
+  --primary: #014f99;
+  --primary-dark: #003971;
+  --primary-secondary: #c9984d;
+  --bg-primary: #F5F4D6;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --text-primary: #1a1a1a;
-  --text-secondary: #5E5F69;
-  --border: #AEAFB7;
+  --text-primary: #003971;
+  --text-secondary: #4a6a8a;
+  --border: rgb(201 152 77 / 35%);
 }
 
 * {

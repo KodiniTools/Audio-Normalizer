@@ -146,7 +146,7 @@ const togglePlayback = () => {
 
 .file-item:hover {
   border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(242, 226, 142, 0.15);
+  box-shadow: 0 2px 8px rgba(201, 152, 77, 0.15);
 }
 
 /* Header */
@@ -228,7 +228,7 @@ const togglePlayback = () => {
 .input-group input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(242, 226, 142, 0.15);
+  box-shadow: 0 0 0 2px rgba(201, 152, 77, 0.15);
 }
 
 .input-group input:read-only {
@@ -289,13 +289,13 @@ const togglePlayback = () => {
 
 .meter-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #A28680));
+  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #014f99));
   border-radius: 3px;
   transition: width 0.3s ease;
 }
 
 .meter-fill.rms {
-  background: linear-gradient(90deg, var(--primary-secondary, #A28680), var(--success));
+  background: linear-gradient(90deg, var(--primary-secondary, #014f99), var(--success));
 }
 
 .meter-value {

@@ -10,25 +10,25 @@
   /* Base Colors */
   --color-green: #22c55e;
   --color-red: #ef4444;
-  --color-yellow: #F2E28E;
+  --color-yellow: #f8e1a9;
 
-  /* Dark Theme (Default) - New Color Scheme */
-  --bg: #0C0C10;
-  --panel: #18181c;
-  --text: #AEAFB7;
-  --muted: #5E5F69;
-  --accent: #F2E28E;
-  --accent-text: #0C0C10;
-  --accent-secondary: #A28680;
-  --btn: #1e1e24;
-  --btn-hover: #2a2a32;
-  --ring: #F2E28E;
-  --border-color: rgb(94 95 105 / 40%);
+  /* Dark Theme (Default) - Navy & Gold Color Scheme */
+  --bg: #091428;
+  --panel: #142640;
+  --text: #f9f2d5;
+  --muted: #7A8DA0;
+  --accent: #c9984d;
+  --accent-text: #091428;
+  --accent-secondary: #014f99;
+  --btn: #0E1C32;
+  --btn-hover: #142640;
+  --ring: #c9984d;
+  --border-color: rgb(122 141 160 / 40%);
   --shadow-color: rgb(0 0 0 / 60%);
-  --gradient-color: rgb(242 226 142 / 3%);
-  --panel-highlight: rgb(242 226 142 / 6%);
+  --gradient-color: rgb(201 152 77 / 3%);
+  --panel-highlight: rgb(201 152 77 / 6%);
   --progress-bg: rgb(255 255 255 / 12%);
-  --body-gradient: radial-gradient(1200px 600px at 80% -20%, #1a1a22 0%, transparent 60%), #0C0C10;
+  --body-gradient: radial-gradient(1200px 600px at 80% -20%, #0E1C32 0%, transparent 60%), #091428;
   
   /* Fixed Colors */
   --canvas-bg: #000;

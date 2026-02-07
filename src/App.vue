@@ -46,19 +46,19 @@ const showGuideButton = computed(() => route.path !== '/anleitung')
 </script>
 
 <style>
-/* Global CSS Variables - New Color Scheme */
+/* Global CSS Variables - Navy & Gold Color Scheme */
 :root {
-  --primary: #F2E28E;
-  --primary-dark: #d4c67a;
-  --primary-secondary: #A28680;
+  --primary: #c9984d;
+  --primary-dark: #a67d3d;
+  --primary-secondary: #014f99;
   --success: #22c55e;
-  --warning: #F2E28E;
-  --bg-primary: #0C0C10;
-  --bg-secondary: #18181c;
-  --bg-card: #1e1e24;
-  --text-primary: #AEAFB7;
-  --text-secondary: #5E5F69;
-  --border: rgba(94, 95, 105, 0.4);
+  --warning: #c9984d;
+  --bg-primary: #091428;
+  --bg-secondary: #0E1C32;
+  --bg-card: #142640;
+  --text-primary: #f9f2d5;
+  --text-secondary: #7A8DA0;
+  --border: rgba(122, 141, 160, 0.4);
   --transition-base: 0.3s ease;
 }
 
@@ -128,7 +128,7 @@ body {
   border-color: var(--primary);
   background: var(--primary);
   color: var(--bg-primary);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
+  box-shadow: 0 4px 12px rgba(201, 152, 77, 0.35);
 }
 
 .guide-icon {
@@ -158,7 +158,7 @@ body {
 .theme-toggle:hover {
   transform: scale(1.08);
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.35);
+  box-shadow: 0 4px 12px rgba(201, 152, 77, 0.35);
 }
 
 .theme-icon {
@@ -181,7 +181,7 @@ body {
   transition: all 0.25s ease;
   font-weight: 700;
   font-size: 0.75rem;
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.4);
+  box-shadow: 0 4px 12px rgba(201, 152, 77, 0.4);
   flex-shrink: 0;
   text-transform: uppercase;
 }
@@ -190,7 +190,7 @@ body {
   transform: scale(1.12);
   background: var(--primary-dark);
   border-color: var(--primary-dark);
-  box-shadow: 0 6px 16px rgba(242, 226, 142, 0.5);
+  box-shadow: 0 6px 16px rgba(201, 152, 77, 0.5);
 }
 
 .lang-text {

@@ -8,6 +8,9 @@
         <h1 class="app-title">{{ t('app.title') }}</h1>
         <p class="app-subtitle">{{ t('app.subtitle') }}</p>
       </div>
+      <div class="header-controls-slot">
+        <HeaderControls />
+      </div>
     </div>
 
     <section class="app-section">
@@ -184,6 +187,7 @@ import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-vu
 import { useI18n } from '../composables/useI18n'
 import { useAudioProcessor } from '../composables/useAudioProcessor'
 import AudioFileItem from '../components/AudioFileItem.vue'
+import HeaderControls from '../components/HeaderControls.vue'
 
 const { t } = useI18n()
 
@@ -283,6 +287,11 @@ const statusIcons = {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   margin-bottom: 1rem;
+}
+
+.header-controls-slot {
+  position: absolute;
+  right: 1.5rem;
 }
 
 .back-link {

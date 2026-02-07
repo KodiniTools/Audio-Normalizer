@@ -299,7 +299,7 @@ const downloadAll = () => {
 }
 
 [data-theme="light"] .btn-upload {
-  color: black !important;
+  color: #F5F4D6 !important;
 }
 
 /* File List */
@@ -469,11 +469,11 @@ const downloadAll = () => {
 }
 
 [data-theme="light"] .btn-process {
-  color: black !important;
+  color: #F5F4D6 !important;
 }
 
 [data-theme="light"] .btn-download {
-  color: black !important;
+  color: #003971 !important;
 }
 
 /* Progress Section */
@@ -550,7 +550,7 @@ const downloadAll = () => {
 }
 
 [data-theme="light"] .btn-download-single {
-  color: black !important;
+  color: #003971 !important;
 }
 
 /* Responsive */

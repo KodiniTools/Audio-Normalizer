@@ -175,12 +175,12 @@ const toggleFaq = (faq) => {
 }
 
 [data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border: #e2e8f0;
+  --bg-primary: #F5F4D6;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #003971;
+  --text-secondary: #4a6a8a;
+  --border: rgb(201 152 77 / 35%);
 }
 
 /* Layout */
@@ -266,13 +266,14 @@ const toggleFaq = (faq) => {
 }
 
 [data-theme="light"] .btn-primary {
-  background: #4f46e5;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  background: #014f99;
+  color: #F5F4D6;
+  box-shadow: 0 2px 8px rgba(1, 79, 153, 0.3);
 }
 
 [data-theme="light"] .btn-primary:hover {
-  background: #4338ca;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  background: #003971;
+  box-shadow: 0 4px 12px rgba(0, 57, 113, 0.4);
 }
 
 /* Hero Section */
@@ -330,13 +331,14 @@ const toggleFaq = (faq) => {
 }
 
 [data-theme="light"] .btn-hero {
-  background: #4f46e5;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  background: #014f99;
+  color: #F5F4D6;
+  box-shadow: 0 4px 14px rgba(1, 79, 153, 0.35);
 }
 
 [data-theme="light"] .btn-hero:hover {
-  background: #4338ca;
-  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.45);
+  background: #003971;
+  box-shadow: 0 10px 25px rgba(0, 57, 113, 0.45);
 }
 
 /* Features Section */

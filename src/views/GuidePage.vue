@@ -11,6 +11,7 @@
           <HelpCircle :size="20" />
           <h1>{{ t('guide-title') }}</h1>
         </div>
+        <HeaderControls />
       </div>
     </header>
 
@@ -279,6 +280,7 @@ import {
   CheckCircle,
   Lightbulb
 } from 'lucide-vue-next'
+import HeaderControls from '../components/HeaderControls.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()

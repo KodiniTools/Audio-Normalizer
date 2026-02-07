@@ -262,7 +262,7 @@ const toggleFaq = (faq) => {
   font-weight: 500;
   text-decoration: none;
   transition: all 0.25s;
-  text-transform: lowercase;
+  text-transform: none;
   letter-spacing: 0.02em;
   box-shadow: 0 2px 10px rgba(201, 152, 77, 0.25);
 }

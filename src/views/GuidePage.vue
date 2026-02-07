@@ -338,7 +338,7 @@ const sections = computed(() => [
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .back-btn:hover {
@@ -358,7 +358,7 @@ const sections = computed(() => [
   font-size: 0.95rem;
   font-weight: 600;
   margin: 0;
-  text-transform: lowercase;
+  text-transform: none;
   letter-spacing: -0.02em;
 }
 
@@ -390,7 +390,7 @@ const sections = computed(() => [
   font-size: 0.65rem;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: lowercase;
+  text-transform: none;
   letter-spacing: 0.05em;
   margin: 0 0 0.75rem 0;
 }
@@ -412,7 +412,7 @@ const sections = computed(() => [
   text-decoration: none;
   border-radius: 0.25rem;
   transition: all 0.2s ease;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .toc-link:hover {
@@ -436,8 +436,8 @@ const sections = computed(() => [
 }
 
 .section-highlight {
-  background: linear-gradient(135deg, var(--bg-card), rgba(242, 226, 142, 0.03));
-  border-color: rgba(242, 226, 142, 0.2);
+  background: linear-gradient(135deg, var(--bg-card), rgba(201, 152, 77, 0.03));
+  border-color: rgba(201, 152, 77, 0.2);
 }
 
 .section-header {
@@ -461,7 +461,7 @@ const sections = computed(() => [
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
-  text-transform: lowercase;
+  text-transform: none;
   letter-spacing: -0.02em;
 }
 
@@ -488,11 +488,11 @@ const sections = computed(() => [
   font-weight: 600;
   margin: 0 0 0.5rem 0;
   color: var(--text-primary);
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .subsection-icon {
-  color: var(--primary-secondary, #A28680);
+  color: var(--primary-secondary, #014f99);
 }
 
 .subsection p {
@@ -545,13 +545,13 @@ const sections = computed(() => [
 }
 
 .tip-box {
-  background: rgba(242, 226, 142, 0.08);
+  background: rgba(201, 152, 77, 0.08);
   border-left: 2px solid var(--primary);
 }
 
 .warning-box {
   background: rgba(162, 134, 128, 0.1);
-  border-left: 2px solid var(--primary-secondary, #A28680);
+  border-left: 2px solid var(--primary-secondary, #014f99);
 }
 
 .info-box strong,
@@ -559,7 +559,7 @@ const sections = computed(() => [
 .warning-box strong {
   display: block;
   font-size: 0.7rem;
-  text-transform: lowercase;
+  text-transform: none;
   margin-bottom: 0.35rem;
   color: var(--text-primary);
 }
@@ -596,7 +596,7 @@ const sections = computed(() => [
   font-weight: 600;
   margin: 0 0 0.25rem 0;
   color: var(--text-primary);
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .grid-item p {
@@ -669,7 +669,7 @@ const sections = computed(() => [
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .tip-card p {
@@ -691,7 +691,7 @@ const sections = computed(() => [
   font-size: 0.7rem;
   color: var(--text-secondary);
   margin: 0;
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 /* Responsive */

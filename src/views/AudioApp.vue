@@ -406,7 +406,7 @@ const statusIcons = {
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #A28680));
+  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #014f99));
   border-radius: 4px;
   transition: width 0.3s ease;
 }

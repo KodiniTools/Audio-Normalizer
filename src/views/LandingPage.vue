@@ -195,14 +195,14 @@ const toggleFaq = (faq) => {
   text-transform: uppercase;
   letter-spacing: 0.02em;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba(242, 226, 142, 0.4);
+  box-shadow: 0 4px 12px rgba(201, 152, 77, 0.4);
 }
 
 .lang-btn:hover {
   transform: scale(1.1);
   background: var(--primary-dark);
   border-color: var(--primary-dark);
-  box-shadow: 0 6px 16px rgba(242, 226, 142, 0.5);
+  box-shadow: 0 6px 16px rgba(201, 152, 77, 0.5);
 }
 
 .nav-logo h2 {
@@ -228,7 +228,7 @@ const toggleFaq = (faq) => {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  background: linear-gradient(135deg, var(--primary), var(--primary-secondary, #A28680));
+  background: linear-gradient(135deg, var(--primary), var(--primary-secondary, #014f99));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -264,13 +264,13 @@ const toggleFaq = (faq) => {
   transition: all 0.25s;
   text-transform: lowercase;
   letter-spacing: 0.02em;
-  box-shadow: 0 2px 10px rgba(242, 226, 142, 0.25);
+  box-shadow: 0 2px 10px rgba(201, 152, 77, 0.25);
 }
 
 .btn-hero:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(242, 226, 142, 0.35);
+  box-shadow: 0 6px 18px rgba(201, 152, 77, 0.35);
 }
 
 /* Features Section */
@@ -315,7 +315,7 @@ const toggleFaq = (faq) => {
 }
 
 .feature-warning {
-  border-left: 3px solid var(--primary-secondary, #A28680);
+  border-left: 3px solid var(--primary-secondary, #014f99);
 }
 
 .feature-icon {

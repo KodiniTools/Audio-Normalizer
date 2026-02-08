@@ -1,7 +1,6 @@
 <template>
-  <div class="header-controls">
+  <div v-if="showGuide" class="header-controls">
     <button
-      v-if="showGuide"
       class="hdr-btn"
       @click="router.push('/anleitung')"
       :aria-label="t('nav-guide')"
@@ -9,36 +8,17 @@
     >
       ?
     </button>
-    <button
-      class="hdr-btn"
-      @click="toggleTheme"
-      :aria-label="t('nav.theme')"
-      :title="t('nav.theme')"
-    >
-      <span v-if="theme === 'dark'">&#9728;&#65039;</span>
-      <span v-else>&#127769;</span>
-    </button>
-    <button
-      class="hdr-btn"
-      @click="toggleLocale"
-      :aria-label="'Language'"
-      :title="locale === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'"
-    >
-      {{ locale === 'de' ? 'EN' : 'DE' }}
-    </button>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useTheme } from '../composables/useTheme'
 import { useI18n } from '../composables/useI18n'
 
 const router = useRouter()
 const route = useRoute()
-const { theme, toggleTheme } = useTheme()
-const { locale, t, toggleLocale } = useI18n()
+const { t } = useI18n()
 
 const showGuide = computed(() => route.path !== '/anleitung')
 </script>

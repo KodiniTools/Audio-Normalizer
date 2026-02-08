@@ -476,23 +476,22 @@ const translations = {
 
 export function useI18n() {
   const locale = computed(() => currentLocale.value)
-  
+
   // Verbesserte t-Funktion für dynamische Platzhalter wie {count}
   const t = (key, replacements = {}) => {
     let message = translations[currentLocale.value]?.[key] || key
-    
+
     for (const [placeholder, value] of Object.entries(replacements)) {
       const regex = new RegExp(`{\\s*${placeholder}\\s*}`, 'g')
       message = message.replace(regex, value)
     }
-    
+
     return message
   }
 
   const toggleLocale = () => {
     currentLocale.value = currentLocale.value === 'de' ? 'en' : 'de'
     localStorage.setItem('locale', currentLocale.value)
-    console.log('Sprache gewechselt zu:', currentLocale.value)
   }
 
   const setLocale = (newLocale) => {
@@ -500,10 +499,44 @@ export function useI18n() {
     localStorage.setItem('locale', newLocale)
   }
 
+  /**
+   * Intercepts clicks on SSI navigation language buttons (.global-nav-lang-btn)
+   * to prevent page reload. Instead updates the Vue locale reactively.
+   * Must be called once after DOM is ready (e.g. in App.vue onMounted).
+   */
+  const initSsiNavLanguage = () => {
+    const nav = document.querySelector('.global-nav')
+    if (!nav) return
+
+    // Capturing listener on the nav container runs BEFORE the SSI nav's
+    // own handlers on the button, so stopPropagation() prevents the reload.
+    nav.addEventListener('click', (e) => {
+      const langBtn = e.target.closest('.global-nav-lang-btn')
+      if (!langBtn) return
+
+      e.stopPropagation()
+      e.preventDefault()
+
+      const targetLang = langBtn.getAttribute('data-lang')
+      if (targetLang === currentLocale.value) return
+
+      // Update Vue reactive locale (no page reload)
+      currentLocale.value = targetLang
+      localStorage.setItem('locale', targetLang)
+      document.documentElement.setAttribute('lang', targetLang)
+
+      // Sync active-button styling in the SSI nav
+      nav.querySelectorAll('.global-nav-lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === targetLang)
+      })
+    }, true) // ← capturing phase
+  }
+
   return {
     t,
     locale,
     toggleLocale,
-    setLocale
+    setLocale,
+    initSsiNavLanguage
   }
 }

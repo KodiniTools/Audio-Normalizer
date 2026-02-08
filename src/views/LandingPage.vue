@@ -155,7 +155,7 @@ const toggleFaq = (faq) => {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   padding: 0.75rem 0;
-  z-index: 100;
+  z-index: 10;
   backdrop-filter: blur(12px);
 }
 

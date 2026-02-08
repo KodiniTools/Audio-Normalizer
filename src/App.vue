@@ -5,10 +5,18 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useTheme } from './composables/useTheme'
+import { useI18n } from './composables/useI18n'
 
-// Initialize theme on app load
+// Initialize theme on app load (also syncs with SSI nav theme-changed events)
 useTheme()
+
+// Intercept SSI navigation language buttons to prevent page reload
+const { initSsiNavLanguage } = useI18n()
+onMounted(() => {
+  initSsiNavLanguage()
+})
 </script>
 
 <style>

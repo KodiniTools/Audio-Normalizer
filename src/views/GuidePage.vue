@@ -314,7 +314,7 @@ const sections = computed(() => [
   padding: 0.75rem 0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 10;
   backdrop-filter: blur(12px);
 }
 

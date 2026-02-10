@@ -177,27 +177,6 @@ const translations = {
     'nav.themeTitle': 'Hell/Dunkel umschalten',
     'nav.langAria': 'Sprache wählen',
 
-    // SSI Footer (global footer.html)
-    'footer.copyright': '\u00A9 2025 KodiniTools. Alle Rechte vorbehalten.',
-    'footer.privacy': 'Datenschutz',
-    'footer.terms': 'Nutzungsbedingungen',
-    'footer.imprint': 'Impressum',
-    'footer.contact': 'Kontakt',
-    'footer.about': '\u00DCber uns',
-    'footer.aria': 'Fu\u00DFzeile',
-
-    // SSI Cookie Banner (global cookie-banner.html)
-    'cookie.message': 'Diese Website verwendet Cookies, um Ihnen das beste Erlebnis zu bieten.',
-    'cookie.accept': 'Alle akzeptieren',
-    'cookie.decline': 'Ablehnen',
-    'cookie.settings': 'Einstellungen',
-    'cookie.privacyLink': 'Datenschutzerkl\u00E4rung',
-    'cookie.required': 'Erforderlich',
-    'cookie.analytics': 'Analyse',
-    'cookie.marketing': 'Marketing',
-    'cookie.save': 'Auswahl speichern',
-    'cookie.aria': 'Cookie-Einwilligung',
-
     // Landing Page Keys (Features, Benefits, FAQ)
     'features-title': 'Leistungsstarke Funktionen',
     'feature1-title': 'Echtzeit-Analyse',
@@ -456,27 +435,6 @@ const translations = {
     'nav.themeTitle': 'Switch Light/Dark',
     'nav.langAria': 'Select language',
 
-    // SSI Footer (global footer.html)
-    'footer.copyright': '\u00A9 2025 KodiniTools. All rights reserved.',
-    'footer.privacy': 'Privacy Policy',
-    'footer.terms': 'Terms of Service',
-    'footer.imprint': 'Imprint',
-    'footer.contact': 'Contact',
-    'footer.about': 'About Us',
-    'footer.aria': 'Footer',
-
-    // SSI Cookie Banner (global cookie-banner.html)
-    'cookie.message': 'This website uses cookies to provide you with the best experience.',
-    'cookie.accept': 'Accept All',
-    'cookie.decline': 'Decline',
-    'cookie.settings': 'Settings',
-    'cookie.privacyLink': 'Privacy Policy',
-    'cookie.required': 'Required',
-    'cookie.analytics': 'Analytics',
-    'cookie.marketing': 'Marketing',
-    'cookie.save': 'Save Selection',
-    'cookie.aria': 'Cookie Consent',
-
     // Landing Page Keys (Features, Benefits, FAQ)
     'features-title': 'Powerful Features',
     'feature1-title': 'Real-time Analysis',
@@ -584,51 +542,57 @@ export function useI18n() {
   }
 
   /**
-   * Translates ALL SSI-included elements (Nav, Footer, Cookie Banner)
-   * that use data-i18n / data-nav-i18n attributes.
+   * Translates ALL SSI-included elements (Nav, Footer, Cookie Banner).
    *
-   * Supported attributes (searched document-wide):
-   *   data-i18n        / data-nav-i18n        → textContent
-   *   data-i18n-aria   / data-nav-i18n-aria   → aria-label
-   *   data-i18n-title  / data-nav-i18n-title  → title
-   *   data-i18n-placeholder                   → placeholder
+   * Supported patterns:
+   *   data-nav-i18n      → textContent (nav.html, Key-basiert via Vue t())
+   *   data-nav-i18n-aria → aria-label
+   *   data-nav-i18n-title→ title
+   *   data-lang-de / data-lang-en → textContent (cookie-banner.html, footer.html)
+   *
+   * Dispatcht außerdem 'language-changed' damit SSI-Includes mit eigenem
+   * JS (z. B. CookieConsent.translate) ebenfalls reagieren können.
    */
   const translateSsiIncludes = () => {
-    // textContent: data-i18n + data-nav-i18n (backward compat)
-    document.querySelectorAll('[data-i18n], [data-nav-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n') || el.getAttribute('data-nav-i18n')
+    const lang = currentLocale.value
+
+    // ── Nav: data-nav-i18n (Key → Vue t()) ──
+    document.querySelectorAll('[data-nav-i18n]').forEach(el => {
+      const key = el.getAttribute('data-nav-i18n')
       const translated = t(key)
       if (translated !== key) el.textContent = translated
     })
 
-    // aria-label: data-i18n-aria + data-nav-i18n-aria
-    document.querySelectorAll('[data-i18n-aria], [data-nav-i18n-aria]').forEach(el => {
-      const key = el.getAttribute('data-i18n-aria') || el.getAttribute('data-nav-i18n-aria')
+    // ── Nav: data-nav-i18n-aria → aria-label ──
+    document.querySelectorAll('[data-nav-i18n-aria]').forEach(el => {
+      const key = el.getAttribute('data-nav-i18n-aria')
       const translated = t(key)
       if (translated !== key) el.setAttribute('aria-label', translated)
     })
 
-    // title: data-i18n-title + data-nav-i18n-title
-    document.querySelectorAll('[data-i18n-title], [data-nav-i18n-title]').forEach(el => {
-      const key = el.getAttribute('data-i18n-title') || el.getAttribute('data-nav-i18n-title')
+    // ── Nav: data-nav-i18n-title → title ──
+    document.querySelectorAll('[data-nav-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-nav-i18n-title')
       const translated = t(key)
       if (translated !== key) el.setAttribute('title', translated)
     })
 
-    // placeholder: data-i18n-placeholder
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-      const key = el.getAttribute('data-i18n-placeholder')
-      const translated = t(key)
-      if (translated !== key) el.setAttribute('placeholder', translated)
+    // ── Footer / Cookie Banner: data-lang-de / data-lang-en ──
+    const langAttr = 'data-lang-' + lang
+    document.querySelectorAll('[' + langAttr + ']').forEach(el => {
+      el.textContent = el.getAttribute(langAttr)
     })
 
-    // Sync active-button styling in SSI nav language switcher
+    // ── Sync aktiven Sprach-Button in SSI-Nav ──
     const nav = document.querySelector('.global-nav')
     if (nav) {
       nav.querySelectorAll('.global-nav-lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLocale.value)
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang)
       })
     }
+
+    // ── Event dispatchen für SSI-Includes mit eigenem JS ──
+    window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang } }))
   }
 
   const toggleLocale = () => {

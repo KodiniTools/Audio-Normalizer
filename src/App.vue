@@ -12,10 +12,10 @@ import { useI18n } from './composables/useI18n'
 // Initialize theme on app load (also syncs with SSI nav theme-changed events)
 useTheme()
 
-// Intercept SSI navigation language buttons to prevent page reload
-const { initSsiNavLanguage } = useI18n()
+// Intercept SSI language buttons and translate all SSI includes (Nav, Footer, Cookie Banner)
+const { initSsiLanguage } = useI18n()
 onMounted(() => {
-  initSsiNavLanguage()
+  initSsiLanguage()
 })
 </script>
 

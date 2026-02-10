@@ -151,6 +151,32 @@ const translations = {
     'theme-dark': 'Dunkel',
     'nav.theme': 'Theme wechseln',
 
+    // SSI Navigation (global nav.html)
+    'nav.aria': 'Hauptnavigation',
+    'nav.audiotools': 'Audiotools',
+    'nav.mp3converter': 'MP3 Konverter',
+    'nav.audioequalizer': 'Interactive Audio Equalizer',
+    'nav.modernplayer': 'Moderner Musikplayer',
+    'nav.ultimateplayer': 'Ultimativer Musikplayer',
+    'nav.playlistgen': 'Audio Playlist Generator',
+    'nav.playlistconv': 'Audio Playlist Konverter',
+    'nav.alarmtool': 'Modernes Alarmtool',
+    'nav.normalizer': 'Audio Normalizer',
+    'nav.visualizer': 'Audio Visualizer',
+    'nav.eq19': '19 Band Equalizer',
+    'nav.audioconv': 'Audio Konverter',
+    'nav.imagetools': 'Bildtools',
+    'nav.imageconv': 'Bildkonverter',
+    'nav.batchedit': 'Bildserie bearbeiten',
+    'nav.collage': 'Fotocollage',
+    'nav.tools': 'Tools',
+    'nav.colorextractor': 'Kodini Farbextraktor',
+    'nav.videoconv': 'Videokonverter',
+    'nav.contact': 'Kontakt',
+    'nav.themeAria': 'Theme wechseln',
+    'nav.themeTitle': 'Hell/Dunkel umschalten',
+    'nav.langAria': 'Sprache wählen',
+
     // Landing Page Keys (Features, Benefits, FAQ)
     'features-title': 'Leistungsstarke Funktionen',
     'feature1-title': 'Echtzeit-Analyse',
@@ -383,6 +409,32 @@ const translations = {
     'theme-dark': 'Dark',
     'nav.theme': 'Toggle theme',
 
+    // SSI Navigation (global nav.html)
+    'nav.aria': 'Main Navigation',
+    'nav.audiotools': 'Audio Tools',
+    'nav.mp3converter': 'MP3 Converter',
+    'nav.audioequalizer': 'Interactive Audio Equalizer',
+    'nav.modernplayer': 'Modern Music Player',
+    'nav.ultimateplayer': 'Ultimate Music Player',
+    'nav.playlistgen': 'Audio Playlist Generator',
+    'nav.playlistconv': 'Audio Playlist Converter',
+    'nav.alarmtool': 'Modern Alarm Tool',
+    'nav.normalizer': 'Audio Normalizer',
+    'nav.visualizer': 'Audio Visualizer',
+    'nav.eq19': '19 Band Equalizer',
+    'nav.audioconv': 'Audio Converter',
+    'nav.imagetools': 'Image Tools',
+    'nav.imageconv': 'Image Converter',
+    'nav.batchedit': 'Batch Image Editor',
+    'nav.collage': 'Photo Collage',
+    'nav.tools': 'Tools',
+    'nav.colorextractor': 'Kodini Color Extractor',
+    'nav.videoconv': 'Video Converter',
+    'nav.contact': 'Contact',
+    'nav.themeAria': 'Toggle theme',
+    'nav.themeTitle': 'Switch Light/Dark',
+    'nav.langAria': 'Select language',
+
     // Landing Page Keys (Features, Benefits, FAQ)
     'features-title': 'Powerful Features',
     'feature1-title': 'Real-time Analysis',
@@ -489,19 +541,60 @@ export function useI18n() {
     return message
   }
 
+  /**
+   * Translates all SSI navigation elements that have data-nav-i18n,
+   * data-nav-i18n-aria, or data-nav-i18n-title attributes.
+   * Uses the Vue i18n translations so the nav stays in sync with the app.
+   */
+  const translateSsiNav = () => {
+    const nav = document.querySelector('.global-nav')
+    if (!nav) return
+
+    // Update text content via data-nav-i18n
+    nav.querySelectorAll('[data-nav-i18n]').forEach(el => {
+      const key = el.getAttribute('data-nav-i18n')
+      const translated = t(key)
+      if (translated !== key) el.textContent = translated
+    })
+
+    // Update aria-label via data-nav-i18n-aria
+    document.querySelectorAll('[data-nav-i18n-aria]').forEach(el => {
+      const key = el.getAttribute('data-nav-i18n-aria')
+      const translated = t(key)
+      if (translated !== key) el.setAttribute('aria-label', translated)
+    })
+
+    // Update title via data-nav-i18n-title
+    document.querySelectorAll('[data-nav-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-nav-i18n-title')
+      const translated = t(key)
+      if (translated !== key) el.setAttribute('title', translated)
+    })
+
+    // Sync active-button styling with current locale
+    nav.querySelectorAll('.global-nav-lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLocale.value)
+    })
+  }
+
   const toggleLocale = () => {
     currentLocale.value = currentLocale.value === 'de' ? 'en' : 'de'
     localStorage.setItem('locale', currentLocale.value)
+    document.documentElement.setAttribute('lang', currentLocale.value)
+    translateSsiNav()
   }
 
   const setLocale = (newLocale) => {
     currentLocale.value = newLocale
     localStorage.setItem('locale', newLocale)
+    document.documentElement.setAttribute('lang', newLocale)
+    translateSsiNav()
   }
 
   /**
    * Intercepts clicks on SSI navigation language buttons (.global-nav-lang-btn)
-   * to prevent page reload. Instead updates the Vue locale reactively.
+   * to prevent page reload. Instead updates the Vue locale reactively and
+   * translates the SSI nav via the Vue i18n system.
    * Must be called once after DOM is ready (e.g. in App.vue onMounted).
    */
   const initSsiNavLanguage = () => {
@@ -525,11 +618,12 @@ export function useI18n() {
       localStorage.setItem('locale', targetLang)
       document.documentElement.setAttribute('lang', targetLang)
 
-      // Sync active-button styling in the SSI nav
-      nav.querySelectorAll('.global-nav-lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-lang') === targetLang)
-      })
+      // Translate SSI nav using Vue i18n translations
+      translateSsiNav()
     }, true) // ← capturing phase
+
+    // Initial translation to sync SSI nav with Vue locale on mount
+    translateSsiNav()
   }
 
   return {
@@ -537,6 +631,7 @@ export function useI18n() {
     locale,
     toggleLocale,
     setLocale,
+    translateSsiNav,
     initSsiNavLanguage
   }
 }

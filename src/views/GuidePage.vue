@@ -696,7 +696,7 @@ const sections = computed(() => [
   text-transform: none;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 768px) {
   .guide-main {
     grid-template-columns: 1fr;
@@ -717,8 +717,11 @@ const sections = computed(() => [
 
   .toc-link {
     font-size: 0.65rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.35rem 0.6rem;
     background: var(--bg-secondary);
+    min-height: 32px;
+    display: flex;
+    align-items: center;
   }
 
   .grid-2 {
@@ -731,6 +734,127 @@ const sections = computed(() => [
 
   .section {
     padding: 1rem;
+  }
+
+  .back-btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.65rem;
+    min-height: 36px;
+  }
+
+  .section-header h2 {
+    font-size: 0.9rem;
+  }
+
+  .guide-footer {
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+  }
+}
+
+/* Responsive - Phone */
+@media (max-width: 480px) {
+  .guide-main {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .header-content {
+    padding: 0 0.75rem;
+  }
+
+  .header-title h1 {
+    font-size: 0.85rem;
+  }
+
+  .back-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.65rem;
+    min-height: 40px;
+  }
+
+  .toc {
+    padding: 0.75rem;
+  }
+
+  .toc-link {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.5rem;
+    min-height: 30px;
+  }
+
+  .section {
+    padding: 0.85rem;
+  }
+
+  .section-header {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 0.85rem;
+  }
+
+  .section-intro {
+    font-size: 0.75rem;
+  }
+
+  .subsection h3 {
+    font-size: 0.8rem;
+  }
+
+  .subsection p {
+    font-size: 0.75rem;
+  }
+
+  .feature-list li {
+    font-size: 0.7rem;
+    padding-left: 0.6rem;
+  }
+
+  .info-box,
+  .tip-box,
+  .warning-box {
+    padding: 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .info-box strong,
+  .tip-box strong,
+  .warning-box strong {
+    font-size: 0.65rem;
+  }
+
+  .tip-card {
+    padding: 0.6rem;
+    gap: 0.2rem 0.4rem;
+  }
+
+  .check-list li {
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+
+  .grid-item {
+    padding: 0.6rem;
+  }
+
+  .grid-item h4 {
+    font-size: 0.7rem;
+  }
+
+  .grid-item p {
+    font-size: 0.65rem;
+  }
+
+  .guide-footer {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .guide-footer p {
+    font-size: 0.65rem;
   }
 }
 </style>

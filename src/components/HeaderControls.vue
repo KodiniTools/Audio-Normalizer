@@ -57,13 +57,22 @@ const showGuide = computed(() => route.path !== '/anleitung')
 
 @media (max-width: 768px) {
   .hdr-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 0.65rem;
+    width: 40px;
+    height: 40px;
+    font-size: 0.8rem;
+    border-radius: 6px;
   }
 
   .header-controls {
-    gap: 0.25rem;
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hdr-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 0.85rem;
   }
 }
 </style>

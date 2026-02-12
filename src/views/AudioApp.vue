@@ -141,11 +141,7 @@
           <!-- File Count / Empty State -->
           <div class="file-count" :class="{ 'empty-state': audioFiles.length === 0 }">
             <template v-if="audioFiles.length === 0">
-              <div class="empty-state-content">
-                <Upload class="empty-state-icon" :size="32" :stroke-width="1.5" />
-                <p class="empty-state-title">{{ t('app.noFiles') }}</p>
-                <p class="empty-state-hint">{{ t('app.emptyStateHint') }}</p>
-              </div>
+              <p class="empty-state-title">{{ t('app.noFiles') }}</p>
             </template>
             <template v-else>
               {{ t('app.fileCount', { count: audioFiles.length }) }}
@@ -604,33 +600,14 @@ const statusIcons = {
 
 /* Empty State */
 .file-count.empty-state {
-  padding: 2rem 1rem;
-}
-
-.empty-state-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.empty-state-icon {
-  color: var(--primary);
-  opacity: 0.7;
+  padding: 1rem;
 }
 
 .empty-state-title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-primary);
-}
-
-.empty-state-hint {
-  margin: 0;
-  font-size: 0.8rem;
   color: var(--text-secondary);
-  font-weight: 400;
 }
 
 /* File List */
@@ -915,11 +892,7 @@ const statusIcons = {
   }
 
   .empty-state-title {
-    font-size: 0.85rem;
-  }
-
-  .empty-state-hint {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 
   .progress-label,

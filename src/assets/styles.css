@@ -1152,63 +1152,114 @@ audio {
   .nav-menu {
     display: none;
   }
-  
+
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+
   .hero-title {
     font-size: var(--font-size-3xl);
   }
-  
+
   .hero-description {
     font-size: var(--font-size-base);
   }
-  
+
   .hero-stats {
     gap: var(--spacing-lg);
   }
-  
+
   .section-title {
     font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-lg);
   }
-  
+
+  .section-header {
+    margin-bottom: var(--spacing-lg);
+  }
+
   .features-grid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-md);
   }
-  
+
   .testimonials-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .footer-content {
     grid-template-columns: 1fr;
   }
-  
+
   .visual-box {
     width: 200px;
     height: 200px;
   }
-  
+
+  .feature-card {
+    padding: var(--spacing-lg);
+  }
+
+  .benefit-item {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
   .app-actions {
     flex-direction: column;
   }
-  
+
   .app-actions .btn {
     width: 100%;
   }
-  
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn-large {
+    padding: 0.85rem 1.5rem;
+    font-size: var(--font-size-base);
+  }
+
   .manual-inputs {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .manual-inputs input {
     width: 100%;
   }
-  
+
   .file-controls {
     flex-direction: column;
   }
-  
+
   .file-controls button {
     width: 100%;
+  }
+
+  .file-input-wrapper {
+    padding: var(--spacing-lg);
+  }
+
+  .file-input-icon {
+    font-size: 2rem;
+  }
+
+  .faq-question {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+    max-width: 320px;
   }
 }
 
@@ -1218,27 +1269,87 @@ audio {
     --spacing-2xl: 2.5rem;
     --spacing-3xl: 3rem;
   }
-  
+
+  .container {
+    padding: 0 var(--spacing-xs);
+  }
+
   .theme-toggle {
     top: var(--spacing-sm);
     right: var(--spacing-sm);
   }
-  
+
   .hero-actions {
     flex-direction: column;
   }
-  
+
   .btn-large {
     width: 100%;
   }
-  
+
+  .hero-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .hero-description {
+    font-size: var(--font-size-sm);
+  }
+
   .hero-stats {
     flex-direction: column;
     gap: var(--spacing-md);
   }
-  
+
+  .stat-number {
+    font-size: var(--font-size-2xl);
+  }
+
+  .section-title {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .section-header {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .section-subtitle {
+    font-size: var(--font-size-sm);
+  }
+
+  .feature-card {
+    padding: var(--spacing-md);
+  }
+
+  .benefit-item {
+    padding: var(--spacing-xs);
+    gap: var(--spacing-xs);
+  }
+
+  .file-input-wrapper {
+    padding: var(--spacing-md);
+  }
+
+  .file-input-icon {
+    font-size: 1.75rem;
+  }
+
+  .file-input-content p {
+    font-size: var(--font-size-sm);
+  }
+
+  .faq-question {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+
   .app-container {
     padding: var(--spacing-md);
+  }
+
+  .global-controls input[type="number"],
+  .global-controls select {
+    width: 100%;
   }
 }
 

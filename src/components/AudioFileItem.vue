@@ -361,18 +361,101 @@ const togglePlayback = () => {
   transform: translateY(-1px);
 }
 
-/* Responsive */
+/* Responsive - Tablet */
+@media (max-width: 768px) {
+  .remove-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    font-size: 1rem;
+  }
+
+  .apply-btn {
+    padding: 0.5rem 1rem;
+    min-height: 40px;
+  }
+
+  .control-btn {
+    padding: 0.65rem 1rem;
+    min-height: 44px;
+  }
+
+  .input-group input {
+    padding: 0.5rem 0.6rem;
+    min-height: 40px;
+  }
+
+  .audio-player {
+    height: 40px;
+  }
+}
+
+/* Responsive - Phone */
 @media (max-width: 640px) {
   .manual-inputs {
     grid-template-columns: 1fr;
   }
-  
+
   .file-controls {
     grid-template-columns: 1fr;
   }
-  
+
   .meter {
     grid-template-columns: 2.5rem 1fr 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .file-name {
+    font-size: 0.8rem;
+  }
+
+  .remove-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 1.1rem;
+  }
+
+  .input-group label {
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
+  }
+
+  .input-group input {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.8rem;
+    min-height: 44px;
+  }
+
+  .apply-btn {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.75rem;
+    min-height: 44px;
+  }
+
+  .meter-label {
+    font-size: 0.65rem;
+  }
+
+  .meter-value {
+    font-size: 0.7rem;
+  }
+
+  .control-btn {
+    padding: 0.7rem 1rem;
+    font-size: 0.75rem;
+    min-height: 44px;
+  }
+
+  .audio-player {
+    height: 44px;
+    margin-bottom: 0.5rem;
   }
 }
 </style>

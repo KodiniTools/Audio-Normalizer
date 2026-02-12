@@ -424,8 +424,20 @@ const toggleFaq = (faq) => {
   }
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .nav-container {
+    padding: 0 1rem;
+  }
+
+  .hero {
+    padding: 2.5rem 0 2rem;
+  }
+
   .hero-title {
     font-size: 1.75rem;
   }
@@ -436,10 +448,17 @@ const toggleFaq = (faq) => {
 
   .hero-description {
     font-size: 0.8rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .btn-hero {
+    padding: 0.75rem 1.75rem;
+    min-height: 44px;
   }
 
   .section-title {
     font-size: 1.25rem;
+    margin-bottom: 1.5rem;
   }
 
   .features-grid,
@@ -447,8 +466,105 @@ const toggleFaq = (faq) => {
     grid-template-columns: 1fr;
   }
 
+  .features,
+  .benefits,
+  .faq {
+    padding: 2rem 0;
+  }
+
+  .faq-question {
+    padding: 0.85rem 1rem;
+    min-height: 44px;
+  }
+
+  .faq-answer {
+    padding: 0 1rem 0.85rem;
+  }
+}
+
+/* Responsive - Phone */
+@media (max-width: 480px) {
   .container {
-    padding: 0 1rem;
+    padding: 0 0.75rem;
+  }
+
+  .nav-container {
+    padding: 0 0.75rem;
+  }
+
+  .nav-logo h2 {
+    font-size: 0.9rem;
+  }
+
+  .hero {
+    padding: 2rem 0 1.5rem;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-description {
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .btn-hero {
+    padding: 0.8rem 2rem;
+    font-size: 0.75rem;
+    min-height: 44px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .features,
+  .benefits,
+  .faq {
+    padding: 1.5rem 0;
+  }
+
+  .feature-card,
+  .benefit-card {
+    padding: 1rem;
+  }
+
+  .feature-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-card h3,
+  .benefit-card h3 {
+    font-size: 0.875rem;
+  }
+
+  .feature-card p,
+  .benefit-card p {
+    font-size: 0.75rem;
+  }
+
+  .faq-question {
+    padding: 0.85rem 0.85rem;
+    font-size: 0.8rem;
+    min-height: 44px;
+  }
+
+  .faq-answer {
+    padding: 0 0.85rem 0.85rem;
+    font-size: 0.75rem;
+  }
+
+  .faq-icon {
+    font-size: 1rem;
   }
 }
 </style>

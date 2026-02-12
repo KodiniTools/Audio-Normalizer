@@ -760,10 +760,37 @@ const statusIcons = {
   margin: 0;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
+  }
+
+  .app-header {
+    padding: 0.6rem 1rem;
+  }
+
+  .back-link {
+    position: static;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .header-controls-slot {
+    position: static;
+  }
+
+  .header-titles {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .app-title {
+    font-size: 0.95rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.65rem;
   }
 
   .section-title {
@@ -771,7 +798,8 @@ const statusIcons = {
   }
 
   .action-group {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
 
   .control-grid {
@@ -784,6 +812,129 @@ const statusIcons = {
 
   .file-input-icon {
     font-size: 2rem;
+  }
+
+  .btn {
+    padding: 0.7rem 1rem;
+    font-size: 0.8rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-sm {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.75rem;
+    min-height: 40px;
+  }
+
+  .file-list {
+    max-height: 50vh;
+  }
+
+  .file-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .control-section {
+    padding: 0.85rem;
+  }
+
+  .status-message {
+    font-size: 0.8rem;
+    padding: 0.65rem 0.75rem;
+  }
+}
+
+/* Responsive - Phone */
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .app-header {
+    padding: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .back-link {
+    font-size: 0.65rem;
+    padding: 0.45rem 0.65rem;
+  }
+
+  .app-title {
+    font-size: 0.85rem;
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .action-group {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .file-input-wrapper {
+    padding: 1.25rem;
+  }
+
+  .file-input-text {
+    font-size: 0.8rem;
+  }
+
+  .control-input-group {
+    flex-direction: column;
+  }
+
+  .control-item label {
+    font-size: 0.7rem;
+  }
+
+  .control-input {
+    font-size: 0.8rem;
+    padding: 0.55rem;
+  }
+
+  .select-input {
+    font-size: 0.8rem;
+    padding: 0.55rem;
+    min-height: 44px;
+  }
+
+  .file-list {
+    max-height: 40vh;
+    padding: 0.35rem;
+  }
+
+  .file-count {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+  }
+
+  .empty-state-title {
+    font-size: 0.85rem;
+  }
+
+  .empty-state-hint {
+    font-size: 0.75rem;
+  }
+
+  .progress-label,
+  .progress-percentage {
+    font-size: 0.75rem;
+  }
+
+  .loading-spinner p {
+    font-size: 0.85rem;
+  }
+
+  .status-message {
+    font-size: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    gap: 0.35rem;
   }
 }
 </style>

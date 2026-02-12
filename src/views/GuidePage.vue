@@ -301,7 +301,7 @@ const sections = computed(() => [
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Supreme', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   line-height: 1.6;
   letter-spacing: -0.01em;

@@ -137,7 +137,7 @@ const toggleFaq = (faq) => {
   color: var(--text-primary);
   position: relative;
   z-index: 1;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Supreme', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
   letter-spacing: -0.01em;
 }

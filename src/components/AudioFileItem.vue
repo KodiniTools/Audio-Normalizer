@@ -312,10 +312,21 @@ const togglePlayback = () => {
   height: 36px;
   margin-bottom: 0.75rem;
   border-radius: 0.375rem;
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  color-scheme: dark;
 }
 
 .audio-player::-webkit-media-controls-panel {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .audio-player {
+  background: var(--bg-secondary);
+  color-scheme: light;
+}
+
+[data-theme="light"] .audio-player::-webkit-media-controls-panel {
   background: var(--bg-secondary);
 }
 

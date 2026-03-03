@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import JSZip from 'jszip'
+import { Muxer, ArrayBufferTarget } from 'webm-muxer'
 
 // Constants
 const CONSTANTS = {
@@ -15,26 +16,106 @@ const CONSTANTS = {
   WEBM_KBPS: 128,
 }
 
-// Helper function to convert AudioBuffer to WebM using MediaRecorder
+// Fast WebM encoding using AudioEncoder (WebCodecs) + webm-muxer
 const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
+  // Check if AudioEncoder is available (Chrome 94+, Edge)
+  if (typeof AudioEncoder !== 'undefined') {
+    return audioBufferToWebMFast(audioBuffer, onProgress)
+  }
+  // Fallback to MediaRecorder for unsupported browsers
+  return audioBufferToWebMFallback(audioBuffer, onProgress)
+}
+
+// Fast path: AudioEncoder + webm-muxer (encodes at CPU speed, not real-time)
+const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
+  const numberOfChannels = audioBuffer.numberOfChannels
+  const sampleRate = audioBuffer.sampleRate
+  const totalFrames = audioBuffer.length
+
+  const target = new ArrayBufferTarget()
+  const muxer = new Muxer({
+    target,
+    type: 'audio',
+    audio: {
+      codec: 'A_OPUS',
+      numberOfChannels,
+      sampleRate,
+    }
+  })
+
+  // Collect encoded chunks
+  const encoder = new AudioEncoder({
+    output: (chunk, meta) => {
+      muxer.addAudioChunk(chunk, meta)
+    },
+    error: (e) => {
+      throw e
+    }
+  })
+
+  encoder.configure({
+    codec: 'opus',
+    numberOfChannels,
+    sampleRate,
+    bitrate: CONSTANTS.WEBM_KBPS * 1000,
+  })
+
+  // Encode in chunks of 960 frames (20ms at 48kHz, Opus standard frame size)
+  const chunkSize = 960 * Math.max(1, Math.round(sampleRate / 48000))
+  let processedFrames = 0
+
+  // Interleave channel data for AudioData
+  for (let offset = 0; offset < totalFrames; offset += chunkSize) {
+    const framesInChunk = Math.min(chunkSize, totalFrames - offset)
+
+    // Create planar float32 data
+    const planarData = new Float32Array(framesInChunk * numberOfChannels)
+    for (let ch = 0; ch < numberOfChannels; ch++) {
+      const channelData = audioBuffer.getChannelData(ch)
+      planarData.set(
+        channelData.subarray(offset, offset + framesInChunk),
+        ch * framesInChunk
+      )
+    }
+
+    const audioData = new AudioData({
+      format: 'f32-planar',
+      sampleRate,
+      numberOfFrames: framesInChunk,
+      numberOfChannels,
+      timestamp: Math.round((offset / sampleRate) * 1_000_000), // microseconds
+      data: planarData,
+    })
+
+    encoder.encode(audioData)
+    audioData.close()
+
+    processedFrames += framesInChunk
+    if (onProgress) {
+      onProgress(Math.min(Math.round((processedFrames / totalFrames) * 100), 99))
+    }
+  }
+
+  await encoder.flush()
+  encoder.close()
+  muxer.finalize()
+
+  if (onProgress) onProgress(100)
+  return new Blob([target.buffer], { type: 'audio/webm' })
+}
+
+// Fallback: MediaRecorder (real-time, slower)
+const audioBufferToWebMFallback = async (audioBuffer, onProgress = null) => {
   return new Promise((resolve, reject) => {
     try {
-      // Create an audio context (not connected to speakers)
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-
-      // Suspend the context to prevent any audio output
       audioContext.suspend()
 
-      // Create a MediaStreamDestination
       const dest = audioContext.createMediaStreamDestination()
-
-      // Create a buffer source and connect ONLY to the MediaStreamDestination
       const source = audioContext.createBufferSource()
       source.buffer = audioBuffer
       source.connect(dest)
-      // DO NOT connect to audioContext.destination - this prevents playback
 
-      // Determine supported MIME type
       let mimeType = 'audio/webm;codecs=opus'
       if (!MediaRecorder.isTypeSupported(mimeType)) {
         mimeType = 'audio/webm'
@@ -43,38 +124,32 @@ const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
         }
       }
 
-      // Create MediaRecorder
       const mediaRecorder = new MediaRecorder(dest.stream, {
-        mimeType: mimeType,
+        mimeType,
         audioBitsPerSecond: CONSTANTS.WEBM_KBPS * 1000
       })
 
       const chunks = []
-      const duration = audioBuffer.duration * 1000 // in ms
+      const duration = audioBuffer.duration * 1000
       const startTime = Date.now()
 
-      // Progress tracking
       let progressInterval = null
       if (onProgress) {
         progressInterval = setInterval(() => {
           const elapsed = Date.now() - startTime
-          const progress = Math.min(Math.round((elapsed / duration) * 100), 99)
-          onProgress(progress)
+          onProgress(Math.min(Math.round((elapsed / duration) * 100), 99))
         }, 100)
       }
 
       mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunks.push(e.data)
-        }
+        if (e.data.size > 0) chunks.push(e.data)
       }
 
       mediaRecorder.onstop = () => {
         if (progressInterval) clearInterval(progressInterval)
         if (onProgress) onProgress(100)
         audioContext.close()
-        const blob = new Blob(chunks, { type: mimeType })
-        resolve(blob)
+        resolve(new Blob(chunks, { type: mimeType }))
       }
 
       mediaRecorder.onerror = (e) => {
@@ -83,19 +158,15 @@ const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
         reject(e.error || new Error('MediaRecorder error'))
       }
 
-      // Resume context and start recording
       audioContext.resume().then(() => {
         mediaRecorder.start()
         source.start(0)
       })
 
-      // Stop when playback ends
       source.onended = () => {
         setTimeout(() => {
-          if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop()
-          }
-        }, 100) // Small delay to ensure all data is captured
+          if (mediaRecorder.state === 'recording') mediaRecorder.stop()
+        }, 100)
       }
     } catch (error) {
       reject(error)
@@ -103,60 +174,7 @@ const audioBufferToWebM = async (audioBuffer, onProgress = null) => {
   })
 }
 
-// MP3 Worker (singleton)
-let mp3Worker = null
-const createMP3Worker = () => {
-  const mp3WorkerCode = `
-    importScripts("https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js");
-
-    function convertFloat32ToInt16(buffer) {
-      const l = buffer.length;
-      const buf = new Int16Array(l);
-      for (let i = 0; i < l; i++) {
-        let s = Math.max(-1, Math.min(1, buffer[i]));
-        buf[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-      }
-      return buf;
-    }
-
-    self.onmessage = function(e) {
-      const { left, right, sampleRate, kbps, numChannels } = e.data;
-      const mp3encoder = new lamejs.Mp3Encoder(numChannels, sampleRate, kbps);
-      const blockSize = 1152;
-      let mp3Data = [];
-      let totalSamples = left.length;
-      
-      for (let i = 0; i < totalSamples; i += blockSize) {
-        const leftChunk = left.subarray(i, i + blockSize);
-        const rightChunk = numChannels > 1 ? right.subarray(i, i + blockSize) : leftChunk;
-        const leftInt16 = convertFloat32ToInt16(leftChunk);
-        const rightInt16 = convertFloat32ToInt16(rightChunk);
-        const mp3buf = mp3encoder.encodeBuffer(leftInt16, rightInt16);
-        if (mp3buf.length > 0) {
-          mp3Data.push(new Int8Array(mp3buf));
-        }
-        let progress = Math.min(Math.round((i + blockSize) / totalSamples * 100), 100);
-        self.postMessage({ progress });
-      }
-      
-      const mp3buf = mp3encoder.flush();
-      if (mp3buf.length > 0) {
-        mp3Data.push(new Int8Array(mp3buf));
-      }
-      
-      let totalLength = mp3Data.reduce((sum, arr) => sum + arr.length, 0);
-      let result = new Uint8Array(totalLength);
-      let offset = 0;
-      for (let arr of mp3Data) {
-        result.set(arr, offset);
-        offset += arr.length;
-      }
-      self.postMessage({ result: result.buffer, done: true }, [result.buffer]);
-    };
-  `
-  const blob = new Blob([mp3WorkerCode], { type: "application/javascript" })
-  return URL.createObjectURL(blob)
-}
+// MP3 Worker: created inline using new Worker(new URL(...)) so Vite emits a separate file (CSP-safe)
 
 export function useAudioProcessor() {
   const audioFiles = ref([])
@@ -783,12 +801,8 @@ export function useAudioProcessor() {
       const right = (exportBuffer.numberOfChannels > 1) ?
         exportBuffer.getChannelData(1) : left
 
-      if (!mp3Worker) {
-        mp3Worker = createMP3Worker()
-      }
-
       const mp3Blob = await new Promise((resolve, reject) => {
-        const worker = new Worker(mp3Worker)
+        const worker = new Worker(new URL('../workers/mp3Worker.js', import.meta.url), { type: 'module' })
         worker.onmessage = e => {
           if (e.data.progress !== undefined && onProgress) {
             onProgress(e.data.progress)

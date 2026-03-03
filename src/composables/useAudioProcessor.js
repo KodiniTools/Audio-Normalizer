@@ -590,16 +590,26 @@ export function useAudioProcessor() {
           ? record.blob
           : new Blob([record.blob], { type: record.mimeType || 'audio/wav' })
 
+        if (blob.size === 0) {
+          console.warn(`[AudioNormalizer] Shared file "${record.name}" has empty blob, skipping`)
+          errors++
+          continue
+        }
+
         const fileData = await analyzeBlob(blob, record.name)
         audioFiles.value.push(fileData)
         processed++
         setProgress('Import', (processed / total) * 100)
       } catch (error) {
+        console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
         errors++
       }
     }
 
     isProcessing.value = false
+    if (processed > 0) {
+      setStatus(`${processed} Datei(en) importiert`, 'success')
+    }
     return { processed, errors }
   }
 

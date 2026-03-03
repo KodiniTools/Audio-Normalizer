@@ -802,7 +802,7 @@ export function useAudioProcessor() {
         exportBuffer.getChannelData(1) : left
 
       const mp3Blob = await new Promise((resolve, reject) => {
-        const worker = new Worker(new URL('../workers/mp3Worker.js', import.meta.url), { type: 'module' })
+        const worker = new Worker(new URL('../workers/mp3Worker.js', import.meta.url))
         worker.onmessage = e => {
           if (e.data.progress !== undefined && onProgress) {
             onProgress(e.data.progress)
@@ -817,6 +817,7 @@ export function useAudioProcessor() {
         }
         worker.onerror = err => reject(err)
         worker.postMessage({
+          baseUrl: import.meta.env.BASE_URL,
           left: new Float32Array(left),
           right: new Float32Array(right),
           sampleRate: exportBuffer.sampleRate,

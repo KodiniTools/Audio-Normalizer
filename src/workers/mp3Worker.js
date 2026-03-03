@@ -1,4 +1,5 @@
-import lamejs from 'lamejs'
+// lamejs is loaded via importScripts from the same origin (CSP-safe)
+let lameLoaded = false
 
 function convertFloat32ToInt16(buffer) {
   const l = buffer.length
@@ -11,6 +12,12 @@ function convertFloat32ToInt16(buffer) {
 }
 
 self.onmessage = function (e) {
+  // Load lamejs on first use - baseUrl is passed from the main thread
+  if (!lameLoaded) {
+    importScripts(e.data.baseUrl + 'lame.min.js')
+    lameLoaded = true
+  }
+
   const { left, right, sampleRate, kbps, numChannels } = e.data
   const mp3encoder = new lamejs.Mp3Encoder(numChannels, sampleRate, kbps)
   const blockSize = 1152
@@ -38,7 +45,7 @@ self.onmessage = function (e) {
   let totalLength = mp3Data.reduce((sum, arr) => sum + arr.length, 0)
   let result = new Uint8Array(totalLength)
   let offset = 0
-  for (let arr of mp3Data) {
+  for (const arr of mp3Data) {
     result.set(arr, offset)
     offset += arr.length
   }

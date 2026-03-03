@@ -38,4 +38,13 @@ const router = createRouter({
   }
 })
 
+// Redirect to /app when arriving with ?source=audiokonverter on the landing page
+router.beforeEach((to, from, next) => {
+  if (to.name === 'landing' && to.query.source === 'audiokonverter') {
+    next({ name: 'app', query: { source: 'audiokonverter' } })
+  } else {
+    next()
+  }
+})
+
 export default router

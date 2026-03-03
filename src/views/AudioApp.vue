@@ -184,8 +184,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n'
 import { useAudioProcessor } from '../composables/useAudioProcessor'
@@ -195,6 +195,7 @@ import HeaderControls from '../components/HeaderControls.vue'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 
 const {
   audioFiles,
@@ -229,13 +230,18 @@ const {
 const fileInputRef = ref(null)
 const isDragging = ref(false)
 const sharedBanner = ref(null)
+let sharedFilesHandled = false
 
 // Auto-import shared files from Audio Konverter when ?source=audiokonverter
-onMounted(async () => {
-  if (route.query.source !== 'audiokonverter') return
+// Uses watch + immediate instead of onMounted to reliably catch the query
+// after a router redirect from the landing page.
+async function loadSharedFiles() {
+  if (sharedFilesHandled) return
+  sharedFilesHandled = true
 
   try {
     const records = await getSharedFiles()
+
     if (!records || records.length === 0) {
       sharedBanner.value = {
         type: 'warning',
@@ -264,15 +270,30 @@ onMounted(async () => {
       }
     }
 
-    // Auto-hide banner after 6 seconds
-    setTimeout(() => { sharedBanner.value = null }, 6000)
+    // Auto-hide success banner after 6 seconds
+    if (sharedBanner.value?.type === 'success') {
+      setTimeout(() => { sharedBanner.value = null }, 6000)
+    }
   } catch (error) {
-    console.error('Error loading shared files:', error)
+    console.error('[AudioNormalizer] Error loading shared files:', error)
     sharedBanner.value = {
       type: 'error',
       message: t('app.sharedFilesError')
     }
-    setTimeout(() => { sharedBanner.value = null }, 6000)
+  }
+}
+
+// Wait for router to be fully ready, then check the query param
+router.isReady().then(() => {
+  if (route.query.source === 'audiokonverter') {
+    loadSharedFiles()
+  }
+})
+
+// Fallback watcher in case the query arrives after initial resolution
+watch(() => route.query.source, (source) => {
+  if (source === 'audiokonverter') {
+    loadSharedFiles()
   }
 })
 
@@ -429,6 +450,11 @@ const statusIcons = {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* File Input */

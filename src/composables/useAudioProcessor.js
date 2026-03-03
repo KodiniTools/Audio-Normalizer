@@ -35,7 +35,7 @@ const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
   const target = new ArrayBufferTarget()
   const muxer = new Muxer({
     target,
-    type: 'audio',
+    type: 'webm',
     audio: {
       codec: 'A_OPUS',
       numberOfChannels,

@@ -486,6 +486,33 @@ export function useAudioProcessor() {
     fileData.processedBlobUrl = URL.createObjectURL(wavBlob)
   }
 
+  // Analyze a Blob (used for shared files from IndexedDB where we have a Blob, not a File)
+  const analyzeBlob = async (blob, name) => {
+    try {
+      const arrayBuffer = await blob.arrayBuffer()
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+      audioContext.close()
+
+      return {
+        id: generateId(),
+        name: name,
+        file: new File([blob], name, { type: blob.type }),
+        originalBuffer: audioBuffer,
+        processedBuffer: audioBuffer,
+        peak: calculatePeak(audioBuffer),
+        rms: calculateRMS(audioBuffer),
+        originalPeak: calculatePeak(audioBuffer),
+        originalRms: calculateRMS(audioBuffer),
+        processedBlobUrl: null,
+        originalBlobUrl: URL.createObjectURL(blob)
+      }
+    } catch (error) {
+      console.error(`Error analyzing shared file ${name}:`, error)
+      throw error
+    }
+  }
+
   // File Handling - ORIGINAL LOGIC
   const analyzeFile = async (file) => {
     try {
@@ -544,6 +571,36 @@ export function useAudioProcessor() {
     } else if (errors > 0) {
       setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
     }
+  }
+
+  /**
+   * Import shared files from IndexedDB (sent by Audio Konverter).
+   * @param {{ name: string, blob: Blob, mimeType: string }[]} sharedRecords
+   */
+  const handleSharedFiles = async (sharedRecords) => {
+    isProcessing.value = true
+    setProgress('Import', 0)
+    const total = sharedRecords.length
+    let processed = 0
+    let errors = 0
+
+    for (const record of sharedRecords) {
+      try {
+        const blob = record.blob instanceof Blob
+          ? record.blob
+          : new Blob([record.blob], { type: record.mimeType || 'audio/wav' })
+
+        const fileData = await analyzeBlob(blob, record.name)
+        audioFiles.value.push(fileData)
+        processed++
+        setProgress('Import', (processed / total) * 100)
+      } catch (error) {
+        errors++
+      }
+    }
+
+    isProcessing.value = false
+    return { processed, errors }
   }
 
   // Global Operations - ORIGINAL LOGIC
@@ -869,6 +926,7 @@ export function useAudioProcessor() {
     statusType,
     isProcessing,
     handleFilesInput,
+    handleSharedFiles,
     applyGlobalRms,
     applyGlobalDb,
     applyEBUR128,

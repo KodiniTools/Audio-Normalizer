@@ -265,8 +265,12 @@ const translations = {
     'app.confirmDeleteAll': 'Möchten Sie wirklich alle Dateien löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
     'app.confirmResetAll': 'Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt.',
     'app.emptyStateHint': 'Ziehen Sie Audio-Dateien hierher oder klicken Sie oben zum Hochladen',
+    'app.sharedFilesLoading': '{count} Datei(en) vom Audio Konverter werden importiert…',
+    'app.sharedFilesLoaded': '{count} Datei(en) vom Audio Konverter erfolgreich importiert',
+    'app.sharedFilesEmpty': 'Keine Dateien vom Audio Konverter gefunden',
+    'app.sharedFilesError': 'Fehler beim Importieren der Dateien vom Audio Konverter',
   },
-  
+
   en: {
     // Navigation
     'nav-landing': 'Home',
@@ -523,6 +527,10 @@ const translations = {
     'app.confirmDeleteAll': 'Are you sure you want to delete all files? This action cannot be undone.',
     'app.confirmResetAll': 'Are you sure you want to reset all changes? Files will be restored to their original state.',
     'app.emptyStateHint': 'Drag audio files here or click above to upload',
+    'app.sharedFilesLoading': 'Importing {count} file(s) from Audio Converter…',
+    'app.sharedFilesLoaded': '{count} file(s) successfully imported from Audio Converter',
+    'app.sharedFilesEmpty': 'No files found from Audio Converter',
+    'app.sharedFilesError': 'Error importing files from Audio Converter',
   }
 }
 

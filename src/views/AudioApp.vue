@@ -16,6 +16,12 @@
     <section class="app-section">
       <div class="container">
         <div class="app-container">
+          <!-- Shared files banner (from Audio Konverter) -->
+          <div v-if="sharedBanner" class="shared-banner" :class="'shared-banner-' + sharedBanner.type">
+            <component :is="statusIcons[sharedBanner.type]" :size="18" class="shared-banner-icon" />
+            <span>{{ sharedBanner.message }}</span>
+          </div>
+
           <!-- File Input -->
           <div 
             class="file-input-wrapper"
@@ -178,14 +184,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n'
 import { useAudioProcessor } from '../composables/useAudioProcessor'
+import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository'
 import AudioFileItem from '../components/AudioFileItem.vue'
 import HeaderControls from '../components/HeaderControls.vue'
 
 const { t } = useI18n()
+const route = useRoute()
 
 const {
   audioFiles,
@@ -201,6 +210,7 @@ const {
   statusType,
   isProcessing,
   handleFilesInput,
+  handleSharedFiles,
   exportAll,
   deleteAll,
   resetAll,
@@ -218,6 +228,53 @@ const {
 
 const fileInputRef = ref(null)
 const isDragging = ref(false)
+const sharedBanner = ref(null)
+
+// Auto-import shared files from Audio Konverter when ?source=audiokonverter
+onMounted(async () => {
+  if (route.query.source !== 'audiokonverter') return
+
+  try {
+    const records = await getSharedFiles()
+    if (!records || records.length === 0) {
+      sharedBanner.value = {
+        type: 'warning',
+        message: t('app.sharedFilesEmpty')
+      }
+      return
+    }
+
+    sharedBanner.value = {
+      type: 'info',
+      message: t('app.sharedFilesLoading', { count: records.length })
+    }
+
+    const { processed, errors } = await handleSharedFiles(records)
+
+    if (processed > 0) {
+      sharedBanner.value = {
+        type: 'success',
+        message: t('app.sharedFilesLoaded', { count: processed })
+      }
+      await clearSharedFiles()
+    } else {
+      sharedBanner.value = {
+        type: 'error',
+        message: t('app.sharedFilesError')
+      }
+    }
+
+    // Auto-hide banner after 6 seconds
+    setTimeout(() => { sharedBanner.value = null }, 6000)
+  } catch (error) {
+    console.error('Error loading shared files:', error)
+    sharedBanner.value = {
+      type: 'error',
+      message: t('app.sharedFilesError')
+    }
+    setTimeout(() => { sharedBanner.value = null }, 6000)
+  }
+})
 
 const handleFiles = (event) => {
   const files = event.target.files
@@ -332,6 +389,46 @@ const statusIcons = {
   margin: 0.15rem 0 0 0;
   text-transform: none;
   letter-spacing: 0.01em;
+}
+
+/* Shared Files Banner */
+.shared-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.shared-banner-icon {
+  flex-shrink: 0;
+}
+
+.shared-banner-success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.shared-banner-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.shared-banner-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.shared-banner-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
 }
 
 /* File Input */

@@ -151,31 +151,32 @@ const translations = {
     'theme-dark': 'Dunkel',
     'nav.theme': 'Theme wechseln',
 
-    // SSI Navigation (global nav.html)
-    'nav.aria': 'Hauptnavigation',
-    'nav.audiotools': 'Audiotools',
-    'nav.mp3converter': 'MP3 Konverter',
-    'nav.audioequalizer': 'Interactive Audio Equalizer',
-    'nav.modernplayer': 'Moderner Musikplayer',
-    'nav.ultimateplayer': 'Ultimativer Musikplayer',
-    'nav.playlistgen': 'Audio Playlist Generator',
-    'nav.playlistconv': 'Audio Playlist Konverter',
-    'nav.alarmtool': 'Modernes Alarmtool',
-    'nav.normalizer': 'Audio Normalizer',
-    'nav.visualizer': 'Audio Visualizer',
-    'nav.eq19': '19 Band Equalizer',
-    'nav.audioconv': 'Audio Konverter',
-    'nav.imagetools': 'Bildtools',
-    'nav.imageconv': 'Bildkonverter',
-    'nav.batchedit': 'Bildserie bearbeiten',
-    'nav.collage': 'Fotocollage',
+    // SSI Navigation (global nav.html) - data-i18n keys (camelCase, matching nav.html attributes)
+    'nav.audioTools': 'Audiotools',
+    'nav.imageTools': 'Bildtools',
     'nav.tools': 'Tools',
-    'nav.colorextractor': 'Kodini Farbextraktor',
-    'nav.videoconv': 'Videokonverter',
     'nav.contact': 'Kontakt',
-    'nav.themeAria': 'Theme wechseln',
-    'nav.themeTitle': 'Hell/Dunkel umschalten',
-    'nav.langAria': 'Sprache wählen',
+    'nav.mp3Converter': 'MP3 Konverter',
+    'nav.audioEqualizer': 'Interaktiver Audio Equalizer',
+    'nav.modernPlayer': 'Moderner Musikplayer',
+    'nav.ultimatePlayer': 'Ultimativer Musikplayer',
+    'nav.playlistGenerator': 'Audioplaylist Generator',
+    'nav.playlistConverter': 'Playlist zu WebM Konverter',
+    'nav.alarmTool': 'Alarmtool',
+    'nav.audioNormalizer': 'Audio Normalizer',
+    'nav.visualizer': 'Visualizer',
+    'nav.equalizer19': '19-Band Equalizer',
+    'nav.audioConverter': 'Audio Konverter',
+    'nav.imageConverter': 'Bildkonverter',
+    'nav.batchImageEditor': 'Bildserie bearbeiten',
+    'nav.photoCollage': 'Fotocollage',
+    'nav.colorExtractor': 'Kodini Farbextraktor',
+    'nav.videoConverter': 'Videokonverter',
+    'aria.toggleTheme': 'Theme wechseln',
+    'aria.selectLanguage': 'Sprache wählen',
+    'aria.mainNav': 'Hauptnavigation',
+    'aria.menuOpen': 'Menü öffnen',
+    'aria.menuClose': 'Menü schliessen',
 
     // Landing Page Keys (Features, Benefits, FAQ)
     'features-title': 'Leistungsstarke Funktionen',
@@ -413,31 +414,32 @@ const translations = {
     'theme-dark': 'Dark',
     'nav.theme': 'Toggle theme',
 
-    // SSI Navigation (global nav.html)
-    'nav.aria': 'Main Navigation',
-    'nav.audiotools': 'Audio Tools',
-    'nav.mp3converter': 'MP3 Converter',
-    'nav.audioequalizer': 'Interactive Audio Equalizer',
-    'nav.modernplayer': 'Modern Music Player',
-    'nav.ultimateplayer': 'Ultimate Music Player',
-    'nav.playlistgen': 'Audio Playlist Generator',
-    'nav.playlistconv': 'Audio Playlist Converter',
-    'nav.alarmtool': 'Modern Alarm Tool',
-    'nav.normalizer': 'Audio Normalizer',
-    'nav.visualizer': 'Audio Visualizer',
-    'nav.eq19': '19 Band Equalizer',
-    'nav.audioconv': 'Audio Converter',
-    'nav.imagetools': 'Image Tools',
-    'nav.imageconv': 'Image Converter',
-    'nav.batchedit': 'Batch Image Editor',
-    'nav.collage': 'Photo Collage',
+    // SSI Navigation (global nav.html) - data-i18n keys (camelCase, matching nav.html attributes)
+    'nav.audioTools': 'Audio Tools',
+    'nav.imageTools': 'Image Tools',
     'nav.tools': 'Tools',
-    'nav.colorextractor': 'Kodini Color Extractor',
-    'nav.videoconv': 'Video Converter',
     'nav.contact': 'Contact',
-    'nav.themeAria': 'Toggle theme',
-    'nav.themeTitle': 'Switch Light/Dark',
-    'nav.langAria': 'Select language',
+    'nav.mp3Converter': 'MP3 Converter',
+    'nav.audioEqualizer': 'Interactive Audio Equalizer',
+    'nav.modernPlayer': 'Modern Music Player',
+    'nav.ultimatePlayer': 'Ultimate Music Player',
+    'nav.playlistGenerator': 'Audio Playlist Generator',
+    'nav.playlistConverter': 'Playlist to WebM Converter',
+    'nav.alarmTool': 'Alarm Tool',
+    'nav.audioNormalizer': 'Audio Normalizer',
+    'nav.visualizer': 'Visualizer',
+    'nav.equalizer19': '19-Band Equalizer',
+    'nav.audioConverter': 'Audio Converter',
+    'nav.imageConverter': 'Image Converter',
+    'nav.batchImageEditor': 'Batch Image Editor',
+    'nav.photoCollage': 'Photo Collage',
+    'nav.colorExtractor': 'Kodini Color Extractor',
+    'nav.videoConverter': 'Video Converter',
+    'aria.toggleTheme': 'Toggle theme',
+    'aria.selectLanguage': 'Select language',
+    'aria.mainNav': 'Main navigation',
+    'aria.menuOpen': 'Open menu',
+    'aria.menuClose': 'Close menu',
 
     // Landing Page Keys (Features, Benefits, FAQ)
     'features-title': 'Powerful Features',
@@ -553,37 +555,38 @@ export function useI18n() {
    * Translates ALL SSI-included elements (Nav, Footer, Cookie Banner).
    *
    * Supported patterns:
-   *   data-nav-i18n      → textContent (nav.html, Key-basiert via Vue t())
-   *   data-nav-i18n-aria → aria-label
-   *   data-nav-i18n-title→ title
+   *   data-i18n          → textContent  (nav.html SSI attributes)
+   *   data-i18n-aria     → aria-label   (nav.html SSI attributes)
    *   data-lang-de / data-lang-en → textContent (cookie-banner.html, footer.html)
    *
-   * Dispatcht außerdem 'language-changed' damit SSI-Includes mit eigenem
-   * JS (z. B. CookieConsent.translate) ebenfalls reagieren können.
+   * Dispatches 'locale-changed' and 'language-changed' so SSI-Includes
+   * with their own JS (e.g. CookieConsent, Footer) can also react.
    */
   const translateSsiIncludes = () => {
     const lang = currentLocale.value
 
-    // ── Nav: data-nav-i18n (Key → Vue t()) ──
-    document.querySelectorAll('[data-nav-i18n]').forEach(el => {
-      const key = el.getAttribute('data-nav-i18n')
+    // ── Nav: data-i18n → textContent (matches nav.html SSI attributes) ──
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n')
       const translated = t(key)
       if (translated !== key) el.textContent = translated
     })
 
-    // ── Nav: data-nav-i18n-aria → aria-label ──
-    document.querySelectorAll('[data-nav-i18n-aria]').forEach(el => {
-      const key = el.getAttribute('data-nav-i18n-aria')
+    // ── Nav: data-i18n-aria → aria-label (matches nav.html SSI attributes) ──
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+      const key = el.getAttribute('data-i18n-aria')
       const translated = t(key)
       if (translated !== key) el.setAttribute('aria-label', translated)
     })
 
-    // ── Nav: data-nav-i18n-title → title ──
-    document.querySelectorAll('[data-nav-i18n-title]').forEach(el => {
-      const key = el.getAttribute('data-nav-i18n-title')
-      const translated = t(key)
-      if (translated !== key) el.setAttribute('title', translated)
-    })
+    // ── Nav aria-label ──
+    const nav = document.querySelector('.global-nav')
+    if (nav) {
+      const mainNavLabel = t('aria.mainNav')
+      if (mainNavLabel !== 'aria.mainNav') {
+        nav.setAttribute('aria-label', mainNavLabel)
+      }
+    }
 
     // ── Footer / Cookie Banner: data-lang-de / data-lang-en ──
     const langAttr = 'data-lang-' + lang
@@ -592,14 +595,14 @@ export function useI18n() {
     })
 
     // ── Sync aktiven Sprach-Button in SSI-Nav ──
-    const nav = document.querySelector('.global-nav')
     if (nav) {
       nav.querySelectorAll('.global-nav-lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-lang') === lang)
       })
     }
 
-    // ── Event dispatchen für SSI-Includes mit eigenem JS ──
+    // ── Events dispatchen für SSI-Includes (Footer, Cookie-Banner) ──
+    window.dispatchEvent(new CustomEvent('locale-changed', { detail: { locale: lang } }))
     window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang } }))
   }
 
@@ -647,6 +650,15 @@ export function useI18n() {
       // Translate all SSI includes using Vue i18n translations
       translateSsiIncludes()
     }, true) // ← capturing phase
+
+    // Listen for locale-changed from nav's own JS (fallback sync)
+    window.addEventListener('locale-changed', (e) => {
+      const newLocale = e.detail && e.detail.locale
+      if (newLocale && newLocale !== currentLocale.value) {
+        currentLocale.value = newLocale
+        translateSsiIncludes()
+      }
+    })
 
     // Initial translation to sync all SSI includes with Vue locale on mount
     translateSsiIncludes()

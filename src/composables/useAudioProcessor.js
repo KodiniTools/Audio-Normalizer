@@ -190,6 +190,26 @@ export function useAudioProcessor() {
   const statusType = ref('info') // 'success', 'error', 'warning', 'info'
   const isProcessing = ref(false)
 
+  // Runs `fn(item, index)` over all items with at most `concurrency` tasks in flight.
+  // Updates progress bar after each completed item.
+  const runBatch = async (items, label, fn, concurrency = 4) => {
+    const total = items.length
+    let done = 0
+    let index = 0
+    setProgress(label, 0)
+
+    const lane = async () => {
+      while (index < total) {
+        const i = index++
+        await fn(items[i], i)
+        done++
+        setProgress(label, (done / total) * 100)
+      }
+    }
+
+    await Promise.all(Array.from({ length: Math.min(concurrency, total) }, lane))
+  }
+
   // Helper Functions
   const generateId = () => '_' + Math.random().toString(36).substr(2, 9)
 
@@ -560,28 +580,31 @@ export function useAudioProcessor() {
 
   const handleFilesInput = async (files) => {
     isProcessing.value = true
-    setProgress('Upload', 0)
-    const total = files.length
+    const audioOnly = files.filter(f => {
+      const ok = f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name)
+      if (!ok) setStatus(`${f.name} ist keine gültige Audiodatei`, 'warning')
+      return ok
+    })
+
+    if (audioOnly.length === 0) {
+      setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
+      isProcessing.value = false
+      return
+    }
+
     let processed = 0
     let errors = 0
 
-    for (const file of files) {
-      if (!file.type.startsWith('audio/')) {
-        setStatus(`${file.name} ist keine gültige Audiodatei`, 'warning')
-        errors++
-        continue
-      }
-
+    await runBatch(audioOnly, 'Upload', async (file) => {
       try {
         const fileData = await analyzeFile(file)
         audioFiles.value.push(fileData)
         processed++
-        setProgress('Upload', (processed / total) * 100)
-      } catch (error) {
+      } catch {
         setStatus(`Fehler bei ${file.name}`, 'error')
         errors++
       }
-    }
+    })
 
     isProcessing.value = false
     if (processed > 0) {
@@ -597,12 +620,10 @@ export function useAudioProcessor() {
    */
   const handleSharedFiles = async (sharedRecords) => {
     isProcessing.value = true
-    setProgress('Import', 0)
-    const total = sharedRecords.length
     let processed = 0
     let errors = 0
 
-    for (const record of sharedRecords) {
+    await runBatch(sharedRecords, 'Import', async (record) => {
       try {
         const blob = record.blob instanceof Blob
           ? record.blob
@@ -611,18 +632,17 @@ export function useAudioProcessor() {
         if (blob.size === 0) {
           console.warn(`[AudioNormalizer] Shared file "${record.name}" has empty blob, skipping`)
           errors++
-          continue
+          return
         }
 
         const fileData = await analyzeBlob(blob, record.name)
         audioFiles.value.push(fileData)
         processed++
-        setProgress('Import', (processed / total) * 100)
       } catch (error) {
         console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
         errors++
       }
-    }
+    })
 
     isProcessing.value = false
     if (processed > 0) {
@@ -631,67 +651,40 @@ export function useAudioProcessor() {
     return { processed, errors }
   }
 
-  // Global Operations - ORIGINAL LOGIC
+  // Global Operations
   const applyGlobalRms = async () => {
     if (audioFiles.value.length === 0) return
-
     isProcessing.value = true
-    setProgress('RMS Skalierung', 0)
-    const total = audioFiles.value.length
-
-    for (let i = 0; i < total; i++) {
-      try {
-        await scaleAudioBuffer(audioFiles.value[i], globalRmsValue.value)
-      } catch (error) {
-        console.error(`Error scaling ${audioFiles.value[i].name}:`, error)
-      }
-      setProgress('RMS Skalierung', ((i + 1) / total) * 100)
-    }
-
+    const files = audioFiles.value.slice()
+    await runBatch(files, 'RMS Skalierung', async (file) => {
+      try { await scaleAudioBuffer(file, globalRmsValue.value) }
+      catch (e) { console.error(`Error scaling ${file.name}:`, e) }
+    })
     isProcessing.value = false
     setStatus('RMS Skalierung abgeschlossen', 'success')
   }
 
   const applyGlobalDb = async () => {
     if (audioFiles.value.length === 0) return
-
     isProcessing.value = true
     const targetRms = dbToRms(globalDbValue.value)
-    setProgress('dB Skalierung', 0)
-    const total = audioFiles.value.length
-
-    for (let i = 0; i < total; i++) {
-      try {
-        await scaleAudioBuffer(audioFiles.value[i], targetRms)
-      } catch (error) {
-        console.error(`Error scaling ${audioFiles.value[i].name}:`, error)
-      }
-      setProgress('dB Skalierung', ((i + 1) / total) * 100)
-    }
-
+    const files = audioFiles.value.slice()
+    await runBatch(files, 'dB Skalierung', async (file) => {
+      try { await scaleAudioBuffer(file, targetRms) }
+      catch (e) { console.error(`Error scaling ${file.name}:`, e) }
+    })
     isProcessing.value = false
     setStatus('dB Skalierung abgeschlossen', 'success')
   }
 
   const applyEBUR128 = async () => {
     if (audioFiles.value.length === 0) return
-
     isProcessing.value = true
-    setProgress('EBU R128', 0)
-    const total = audioFiles.value.length
-
-    for (let i = 0; i < total; i++) {
-      try {
-        await normalizeToLoudnessR128(
-          audioFiles.value[i],
-          CONSTANTS.EBU_R128_TARGET_LUFS
-        )
-      } catch (error) {
-        console.error(`Error normalizing ${audioFiles.value[i].name}:`, error)
-      }
-      setProgress('EBU R128', ((i + 1) / total) * 100)
-    }
-
+    const files = audioFiles.value.slice()
+    await runBatch(files, 'EBU R128', async (file) => {
+      try { await normalizeToLoudnessR128(file, CONSTANTS.EBU_R128_TARGET_LUFS) }
+      catch (e) { console.error(`Error normalizing ${file.name}:`, e) }
+    })
     isProcessing.value = false
     setStatus('EBU R128 Normalisierung abgeschlossen', 'success')
   }
@@ -702,60 +695,36 @@ export function useAudioProcessor() {
 
   const applyNoiseReductionAll = async () => {
     if (audioFiles.value.length === 0) return
-
     isProcessing.value = true
-    setProgress('Rauschunterdrückung', 0)
-    const total = audioFiles.value.length
-
-    for (let i = 0; i < total; i++) {
-      try {
-        await applyNoiseReduction(audioFiles.value[i])
-      } catch (error) {
-        console.error(`Error reducing noise ${audioFiles.value[i].name}:`, error)
-      }
-      setProgress('Rauschunterdrückung', ((i + 1) / total) * 100)
-    }
-
+    const files = audioFiles.value.slice()
+    await runBatch(files, 'Rauschunterdrückung', async (file) => {
+      try { await applyNoiseReduction(file) }
+      catch (e) { console.error(`Error reducing noise ${file.name}:`, e) }
+    })
     isProcessing.value = false
     setStatus('Rauschunterdrückung abgeschlossen', 'success')
   }
 
   const reduceClippingAll = async () => {
     if (audioFiles.value.length === 0) return
-
     isProcessing.value = true
-    setProgress('Clipping Reduktion', 0)
-    const total = audioFiles.value.length
-
-    for (let i = 0; i < total; i++) {
-      try {
-        await reduceClipping(audioFiles.value[i])
-      } catch (error) {
-        console.error(`Error reducing clipping ${audioFiles.value[i].name}:`, error)
-      }
-      setProgress('Clipping Reduktion', ((i + 1) / total) * 100)
-    }
-
+    const files = audioFiles.value.slice()
+    await runBatch(files, 'Clipping Reduktion', async (file) => {
+      try { await reduceClipping(file) }
+      catch (e) { console.error(`Error reducing clipping ${file.name}:`, e) }
+    })
     isProcessing.value = false
     setStatus('Clipping Reduktion abgeschlossen', 'success')
   }
 
   const applyDynamicCompressionAll = async () => {
     if (audioFiles.value.length === 0) return
-
     isProcessing.value = true
-    setProgress('Dynamikkompression', 0)
-    const total = audioFiles.value.length
-
-    for (let i = 0; i < total; i++) {
-      try {
-        await applyDynamicCompression(audioFiles.value[i])
-      } catch (error) {
-        console.error(`Error compressing ${audioFiles.value[i].name}:`, error)
-      }
-      setProgress('Dynamikkompression', ((i + 1) / total) * 100)
-    }
-
+    const files = audioFiles.value.slice()
+    await runBatch(files, 'Dynamikkompression', async (file) => {
+      try { await applyDynamicCompression(file) }
+      catch (e) { console.error(`Error compressing ${file.name}:`, e) }
+    })
     isProcessing.value = false
     setStatus('Dynamikkompression abgeschlossen', 'success')
   }
@@ -816,14 +785,17 @@ export function useAudioProcessor() {
           }
         }
         worker.onerror = err => reject(err)
+        // Transfer ownership of the ArrayBuffers to avoid a full memory copy
+        const leftBuf = new Float32Array(left)
+        const rightBuf = new Float32Array(right)
         worker.postMessage({
           baseUrl: import.meta.env.BASE_URL,
-          left: new Float32Array(left),
-          right: new Float32Array(right),
+          left: leftBuf,
+          right: rightBuf,
           sampleRate: exportBuffer.sampleRate,
           kbps: CONSTANTS.MP3_KBPS,
           numChannels: exportBuffer.numberOfChannels
-        })
+        }, [leftBuf.buffer, rightBuf.buffer])
       })
 
       return { blob: mp3Blob, filename: `${baseName}.mp3` }

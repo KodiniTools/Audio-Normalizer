@@ -245,6 +245,7 @@ const {
 } = useAudioProcessor()
 
 const fileInputRef = ref(null)
+const folderInputRef = ref(null)
 const isDragging = ref(false)
 const sharedBanner = ref(null)
 let sharedFilesHandled = false

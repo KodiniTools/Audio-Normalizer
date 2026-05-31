@@ -192,7 +192,10 @@ export function useAudioProcessor() {
 
   // Runs `fn(item, index)` over all items with at most `concurrency` tasks in flight.
   // Updates progress bar after each completed item.
-  const runBatch = async (items, label, fn, concurrency = 4) => {
+  // NOTE: Keep concurrency=1 for OfflineAudioContext operations — each context
+  // holds a full PCM copy of the file in RAM. Running several in parallel
+  // multiplies peak memory usage and can exhaust system RAM on large batches.
+  const runBatch = async (items, label, fn, concurrency = 1) => {
     const total = items.length
     let done = 0
     let index = 0
@@ -604,7 +607,7 @@ export function useAudioProcessor() {
         setStatus(`Fehler bei ${file.name}`, 'error')
         errors++
       }
-    })
+    }, 2)
 
     isProcessing.value = false
     if (processed > 0) {
@@ -642,7 +645,7 @@ export function useAudioProcessor() {
         console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
         errors++
       }
-    })
+    }, 2)
 
     isProcessing.value = false
     if (processed > 0) {

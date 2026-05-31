@@ -23,24 +23,41 @@
           </div>
 
           <!-- File Input -->
-          <div 
+          <div
             class="file-input-wrapper"
             @drop.prevent="handleDrop"
             @dragover.prevent="isDragging = true"
             @dragleave.prevent="isDragging = false"
             :class="{ 'dragging': isDragging }"
           >
-            <input 
-              type="file" 
+            <input
+              type="file"
               ref="fileInputRef"
-              @change="handleFiles" 
-              accept="audio/*" 
-              multiple 
+              @change="handleFiles"
+              accept="audio/*"
+              multiple
               style="display: none"
             />
-            <div class="file-input-content" @click="$refs.fileInputRef.click()">
+            <input
+              type="file"
+              ref="folderInputRef"
+              @change="handleFiles"
+              accept="audio/*"
+              multiple
+              webkitdirectory
+              style="display: none"
+            />
+            <div class="file-input-content">
               <Upload class="file-input-icon" :size="48" :stroke-width="1.5" />
               <p class="file-input-text">{{ t('app.selectFiles') }}</p>
+              <div class="file-input-buttons">
+                <button type="button" class="btn btn-secondary btn-sm" @click="fileInputRef.click()">
+                  {{ t('app.selectFilesBtn') }}
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" @click="folderInputRef.click()">
+                  {{ t('app.selectFolderBtn') }}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -305,11 +322,41 @@ const handleFiles = (event) => {
   event.target.value = ''
 }
 
-const handleDrop = (event) => {
+const handleDrop = async (event) => {
   isDragging.value = false
-  const files = event.dataTransfer.files
-  if (files && files.length > 0) {
-    handleFilesInput(Array.from(files))
+  const items = event.dataTransfer.items
+  if (!items || items.length === 0) return
+
+  const files = []
+
+  const readEntry = (entry) =>
+    new Promise((resolve) => {
+      if (entry.isFile) {
+        entry.file((f) => { files.push(f); resolve() }, resolve)
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader()
+        const readAll = () => {
+          reader.readEntries(async (entries) => {
+            if (entries.length === 0) { resolve(); return }
+            await Promise.all(entries.map(readEntry))
+            readAll()
+          }, resolve)
+        }
+        readAll()
+      } else {
+        resolve()
+      }
+    })
+
+  const entries = Array.from(items)
+    .map((item) => item.webkitGetAsEntry?.())
+    .filter(Boolean)
+
+  await Promise.all(entries.map(readEntry))
+
+  const audioFiles = files.filter((f) => f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name))
+  if (audioFiles.length > 0) {
+    handleFilesInput(audioFiles)
   }
 }
 
@@ -495,6 +542,13 @@ const statusIcons = {
   color: var(--text-secondary);
   margin: 0;
   font-weight: 500;
+}
+
+.file-input-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* Progress */

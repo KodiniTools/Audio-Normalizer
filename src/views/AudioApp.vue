@@ -462,7 +462,7 @@ const statusIcons = {
 }
 
 .controls-row--bottom {
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr 1fr;
   align-items: end;
 }
 
@@ -519,9 +519,8 @@ const statusIcons = {
 .ctrl-select:focus { outline: none; border-color: var(--accent); }
 
 .btn--ebu {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
+  width: 100%;
+  justify-content: center;
   white-space: nowrap;
 }
 

@@ -766,7 +766,7 @@ export function useAudioProcessor() {
     const exportBuffer = file.processedBuffer || file.originalBuffer
     if (!exportBuffer) throw new Error("No audio data to export")
 
-    const baseName = "processed_" + file.name.replace(/\.[^/.]+$/, "")
+    const baseName = file.name.replace(/\.[^/.]+$/, "")
 
     if (downloadFormat.value === 'mp3') {
       const left = exportBuffer.getChannelData(0)

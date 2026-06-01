@@ -1,9 +1,7 @@
 <template>
   <div class="audio-app">
     <div class="app-header">
-      <router-link to="/" class="back-link">
-        ← {{ t('nav.backToHome') }}
-      </router-link>
+      <router-link to="/" class="back-link">← {{ t('nav.backToHome') }}</router-link>
       <div class="header-titles">
         <h1 class="app-title">{{ t('app.title') }}</h1>
         <p class="app-subtitle">{{ t('app.subtitle') }}</p>
@@ -16,162 +14,101 @@
     <section class="app-section">
       <div class="container">
         <div class="app-container">
-          <!-- Shared files banner (from Audio Konverter) -->
-          <div v-if="sharedBanner" class="shared-banner" :class="'shared-banner-' + sharedBanner.type">
-            <component :is="statusIcons[sharedBanner.type]" :size="18" class="shared-banner-icon" />
+
+          <!-- Shared files banner -->
+          <div v-if="sharedBanner" class="banner" :class="'banner--' + sharedBanner.type">
+            <component :is="statusIcons[sharedBanner.type]" :size="15" />
             <span>{{ sharedBanner.message }}</span>
           </div>
 
-          <!-- File Input -->
+          <!-- Drop zone -->
           <div
-            class="file-input-wrapper"
+            class="drop-zone"
+            :class="{ 'drop-zone--active': isDragging }"
             @drop.prevent="handleDrop"
             @dragover.prevent="isDragging = true"
             @dragleave.prevent="isDragging = false"
-            :class="{ 'dragging': isDragging }"
           >
-            <input
-              type="file"
-              ref="fileInputRef"
-              @change="handleFiles"
-              accept="audio/*"
-              multiple
-              style="display: none"
-            />
-            <input
-              type="file"
-              ref="folderInputRef"
-              @change="handleFiles"
-              accept="audio/*"
-              multiple
-              webkitdirectory
-              style="display: none"
-            />
-            <div class="file-input-content">
-              <Upload class="file-input-icon" :size="48" :stroke-width="1.5" />
-              <p class="file-input-text">{{ t('app.selectFiles') }}</p>
-              <div class="file-input-buttons">
-                <button type="button" class="btn btn-secondary btn-sm" @click="fileInputRef.click()">
-                  {{ t('app.selectFilesBtn') }}
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm" @click="folderInputRef.click()">
-                  {{ t('app.selectFolderBtn') }}
-                </button>
-              </div>
+            <input type="file" ref="fileInputRef" @change="handleFiles" accept="audio/*" multiple style="display:none" />
+            <input type="file" ref="folderInputRef" @change="handleFiles" accept="audio/*" multiple webkitdirectory style="display:none" />
+            <Upload :size="20" class="drop-icon" />
+            <span class="drop-label">{{ t('app.selectFiles') }}</span>
+            <div class="drop-actions">
+              <button type="button" class="btn btn--ghost" @click="fileInputRef.click()">{{ t('app.selectFilesBtn') }}</button>
+              <button type="button" class="btn btn--ghost" @click="folderInputRef.click()">{{ t('app.selectFolderBtn') }}</button>
             </div>
           </div>
 
-          <!-- Progress Bar -->
-          <div v-if="showProgress" class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">{{ progressLabel }}</span>
-              <span class="progress-percentage">{{ Math.round(progress) }}%</span>
+          <!-- Progress bar -->
+          <div v-if="showProgress" class="progress-strip">
+            <span class="progress-label">{{ progressLabel }}</span>
+            <div class="progress-track">
+              <div class="progress-fill" :style="{ width: progress + '%' }" />
             </div>
-            <div class="progress-bar">
-              <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
-            </div>
+            <span class="progress-pct">{{ Math.round(progress) }}%</span>
           </div>
 
-          <!-- Main Actions -->
-          <div class="action-group">
-            <button @click="exportAll" class="btn btn-primary" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.exportAll') }}
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <button class="btn btn--primary btn--sm" @click="exportAll" :disabled="isProcessing || audioFiles.length === 0">
+              <Download :size="14" />{{ t('app.exportAll') }}
             </button>
-            <button @click="confirmDeleteAll" class="btn btn-danger" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.deleteAll') }}
+            <button class="btn btn--danger btn--sm" @click="confirmDeleteAll" :disabled="isProcessing || audioFiles.length === 0">
+              <Trash2 :size="14" />{{ t('app.deleteAll') }}
             </button>
-            <button @click="confirmResetAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.resetAll') }}
+            <button class="btn btn--ghost btn--sm" @click="confirmResetAll" :disabled="isProcessing || audioFiles.length === 0">
+              <RotateCcw :size="14" />{{ t('app.resetAll') }}
             </button>
           </div>
 
-          <!-- Global Controls -->
-          <div class="control-section">
-            <div class="control-grid">
-              <div class="control-item">
-                <label>{{ t('app.globalRms') }}</label>
-                <div class="control-input-group">
-                  <input
-                    type="number"
-                    v-model.number="globalRmsValue"
-                    step="0.01"
-                    min="0"
-                    max="1"
-                    class="control-input"
-                    :disabled="isProcessing"
-                  />
-                  <button @click="applyGlobalRms" class="btn btn-sm btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-                    {{ t('app.applyRms') }}
-                  </button>
+          <!-- Controls panel -->
+          <div class="controls-panel">
+            <div class="controls-row">
+              <div class="ctrl-field">
+                <label class="ctrl-label">{{ t('app.globalRms') }}</label>
+                <div class="ctrl-row">
+                  <input type="number" v-model.number="globalRmsValue" step="0.01" min="0" max="1" class="ctrl-input" :disabled="isProcessing" />
+                  <button class="btn btn--accent btn--sm" @click="applyGlobalRms" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.applyRms') }}</button>
                 </div>
               </div>
-
-              <div class="control-item">
-                <label>{{ t('app.globalDb') }}</label>
-                <div class="control-input-group">
-                  <input
-                    type="number"
-                    v-model.number="globalDbValue"
-                    step="1"
-                    min="-60"
-                    max="0"
-                    class="control-input"
-                    :disabled="isProcessing"
-                  />
-                  <button @click="applyGlobalDb" class="btn btn-sm btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-                    {{ t('app.applyDb') }}
-                  </button>
+              <div class="ctrl-field">
+                <label class="ctrl-label">{{ t('app.globalDb') }}</label>
+                <div class="ctrl-row">
+                  <input type="number" v-model.number="globalDbValue" step="1" min="-60" max="0" class="ctrl-input" :disabled="isProcessing" />
+                  <button class="btn btn--accent btn--sm" @click="applyGlobalDb" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.applyDb') }}</button>
                 </div>
               </div>
             </div>
-
-            <div class="control-item">
-              <label>{{ t('app.applyEBU') }}</label>
-              <button @click="applyEBUR128" class="btn btn-primary btn-block" :disabled="isProcessing || audioFiles.length === 0">
-                {{ t('app.applyEBU') }}
+            <div class="controls-row controls-row--bottom">
+              <div class="ctrl-field ctrl-field--format">
+                <label class="ctrl-label">{{ t('app.downloadFormat') }}</label>
+                <select v-model="downloadFormat" class="ctrl-select">
+                  <option value="wav">WAV</option>
+                  <option value="mp3">MP3 320 kbps</option>
+                  <option value="webm">WebM / Opus</option>
+                </select>
+              </div>
+              <button class="btn btn--primary btn--ebu" @click="applyEBUR128" :disabled="isProcessing || audioFiles.length === 0">
+                <Zap :size="14" />{{ t('app.applyEBU') }}
               </button>
             </div>
           </div>
 
-          <!-- Effect Controls -->
-          <div class="action-group">
-            <button @click="analyzeAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.analyzeAll') }}
-            </button>
-            <button @click="applyNoiseReductionAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.noiseReduction') }}
-            </button>
-            <button @click="reduceClippingAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.reduceClipping') }}
-            </button>
-            <button @click="applyDynamicCompressionAll" class="btn btn-secondary" :disabled="isProcessing || audioFiles.length === 0">
-              {{ t('app.dynamicCompression') }}
-            </button>
+          <!-- Effects strip -->
+          <div class="effects-strip">
+            <button class="chip" @click="analyzeAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.analyzeAll') }}</button>
+            <button class="chip" @click="applyNoiseReductionAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.noiseReduction') }}</button>
+            <button class="chip" @click="reduceClippingAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.reduceClipping') }}</button>
+            <button class="chip" @click="applyDynamicCompressionAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.dynamicCompression') }}</button>
           </div>
 
-          <!-- Download Format -->
-          <div class="control-section">
-            <div class="control-item">
-              <label>{{ t('app.downloadFormat') }}</label>
-              <select v-model="downloadFormat" class="select-input">
-                <option value="wav">WAV (unkomprimiert)</option>
-                <option value="mp3">MP3 (320 kbps)</option>
-                <option value="webm">WebM/Opus (128 kbps)</option>
-              </select>
-            </div>
+          <!-- File meta / empty state -->
+          <div class="file-meta" :class="{ 'file-meta--empty': audioFiles.length === 0 }">
+            <template v-if="audioFiles.length === 0">{{ t('app.noFiles') }}</template>
+            <template v-else>{{ t('app.fileCount', { count: audioFiles.length }) }}</template>
           </div>
 
-          <!-- File Count / Empty State -->
-          <div class="file-count" :class="{ 'empty-state': audioFiles.length === 0 }">
-            <template v-if="audioFiles.length === 0">
-              <p class="empty-state-title">{{ t('app.noFiles') }}</p>
-            </template>
-            <template v-else>
-              {{ t('app.fileCount', { count: audioFiles.length }) }}
-            </template>
-          </div>
-
-          <!-- File List -->
+          <!-- File list -->
           <div v-if="audioFiles.length > 0" class="file-list">
             <AudioFileItem
               v-for="file in audioFiles"
@@ -183,18 +120,19 @@
             />
           </div>
 
-          <!-- Status Message -->
-          <div v-if="statusMessage" class="status-message" :class="'status-' + statusType">
-            <component :is="statusIcons[statusType]" :size="18" class="status-icon" />
+          <!-- Status toast -->
+          <div v-if="statusMessage" class="status-toast" :class="'toast--' + statusType">
+            <component :is="statusIcons[statusType]" :size="15" />
             <span>{{ statusMessage }}</span>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- Loading Spinner -->
-    <div v-if="isLoading" class="loading-spinner">
-      <div class="spinner"></div>
+    <!-- Loading overlay -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="spinner" />
       <p>{{ loadingMessage }}</p>
     </div>
   </div>
@@ -203,7 +141,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-vue-next'
+import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info, Download, Trash2, RotateCcw, Zap } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n'
 import { useAudioProcessor } from '../composables/useAudioProcessor'
 import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository'
@@ -250,9 +188,6 @@ const isDragging = ref(false)
 const sharedBanner = ref(null)
 let sharedFilesHandled = false
 
-// Auto-import shared files from Audio Konverter when ?source=audiokonverter
-// Uses watch + immediate instead of onMounted to reliably catch the query
-// after a router redirect from the landing page.
 async function loadSharedFiles() {
   if (sharedFilesHandled) return
   sharedFilesHandled = true
@@ -261,65 +196,41 @@ async function loadSharedFiles() {
     const records = await getSharedFiles()
 
     if (!records || records.length === 0) {
-      sharedBanner.value = {
-        type: 'warning',
-        message: t('app.sharedFilesEmpty')
-      }
+      sharedBanner.value = { type: 'warning', message: t('app.sharedFilesEmpty') }
       return
     }
 
-    sharedBanner.value = {
-      type: 'info',
-      message: t('app.sharedFilesLoading', { count: records.length })
-    }
+    sharedBanner.value = { type: 'info', message: t('app.sharedFilesLoading', { count: records.length }) }
 
-    const { processed, errors } = await handleSharedFiles(records)
+    const { processed } = await handleSharedFiles(records)
 
     if (processed > 0) {
-      sharedBanner.value = {
-        type: 'success',
-        message: t('app.sharedFilesLoaded', { count: processed })
-      }
+      sharedBanner.value = { type: 'success', message: t('app.sharedFilesLoaded', { count: processed }) }
       await clearSharedFiles()
     } else {
-      sharedBanner.value = {
-        type: 'error',
-        message: t('app.sharedFilesError')
-      }
+      sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
     }
 
-    // Auto-hide success banner after 6 seconds
     if (sharedBanner.value?.type === 'success') {
       setTimeout(() => { sharedBanner.value = null }, 6000)
     }
   } catch (error) {
     console.error('[AudioNormalizer] Error loading shared files:', error)
-    sharedBanner.value = {
-      type: 'error',
-      message: t('app.sharedFilesError')
-    }
+    sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
   }
 }
 
-// Wait for router to be fully ready, then check the query param
 router.isReady().then(() => {
-  if (route.query.source === 'audiokonverter') {
-    loadSharedFiles()
-  }
+  if (route.query.source === 'audiokonverter') loadSharedFiles()
 })
 
-// Fallback watcher in case the query arrives after initial resolution
 watch(() => route.query.source, (source) => {
-  if (source === 'audiokonverter') {
-    loadSharedFiles()
-  }
+  if (source === 'audiokonverter') loadSharedFiles()
 })
 
 const handleFiles = (event) => {
   const files = event.target.files
-  if (files && files.length > 0) {
-    handleFilesInput(Array.from(files))
-  }
+  if (files && files.length > 0) handleFilesInput(Array.from(files))
   event.target.value = ''
 }
 
@@ -349,34 +260,23 @@ const handleDrop = async (event) => {
       }
     })
 
-  const entries = Array.from(items)
-    .map((item) => item.webkitGetAsEntry?.())
-    .filter(Boolean)
-
+  const entries = Array.from(items).map((item) => item.webkitGetAsEntry?.()).filter(Boolean)
   await Promise.all(entries.map(readEntry))
 
-  const audioFiles = files.filter((f) => f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name))
-  if (audioFiles.length > 0) {
-    handleFilesInput(audioFiles)
-  }
+  const audioOnly = files.filter((f) => f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name))
+  if (audioOnly.length > 0) handleFilesInput(audioOnly)
 }
 
-// Confirmation dialogs for destructive actions
 const confirmDeleteAll = () => {
   if (audioFiles.value.length === 0) return
-  if (confirm(t('app.confirmDeleteAll'))) {
-    deleteAll()
-  }
+  if (confirm(t('app.confirmDeleteAll'))) deleteAll()
 }
 
 const confirmResetAll = () => {
   if (audioFiles.value.length === 0) return
-  if (confirm(t('app.confirmResetAll'))) {
-    resetAll()
-  }
+  if (confirm(t('app.confirmResetAll'))) resetAll()
 }
 
-// Status icon component mapping
 const statusIcons = {
   success: CheckCircle,
   error: AlertCircle,
@@ -386,507 +286,390 @@ const statusIcons = {
 </script>
 
 <style scoped>
-/* Container */
+/* ── Layout ─────────────────────────────────────────── */
 .container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
-/* Header */
+/* ── Header ──────────────────────────────────────────── */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   position: relative;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.header-controls-slot {
-  position: absolute;
-  right: 1.5rem;
-}
+.header-controls-slot { position: absolute; right: 1.25rem; }
 
 .back-link {
   position: absolute;
-  left: 1.5rem;
+  left: 1.25rem;
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.75rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  padding: 0.3rem 0.65rem;
+  background: var(--btn);
+  border: 1px solid var(--border-color);
   border-radius: 0.375rem;
-  color: var(--text-primary);
-  text-decoration: none;
-  font-size: 0.75rem;
+  color: var(--text);
+  font-size: 0.73rem;
   font-weight: 500;
-  transition: all 0.2s ease;
-  text-transform: none;
+  text-decoration: none;
+  transition: all 0.15s ease;
 }
 
 .back-link:hover {
-  background: var(--primary);
-  color: var(--bg-primary);
-  border-color: var(--primary);
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
 }
 
-.header-titles {
-  text-align: center;
-}
+.header-titles { text-align: center; }
 
 .app-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0;
-  text-transform: none;
-  letter-spacing: -0.02em;
 }
 
 .app-subtitle {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin: 0.15rem 0 0 0;
-  text-transform: none;
-  letter-spacing: 0.01em;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin: 0.1rem 0 0;
 }
 
-/* Shared Files Banner */
-.shared-banner {
+/* ── Banner ──────────────────────────────────────────── */
+.banner {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  animation: slideIn 0.3s ease;
 }
 
-.shared-banner-icon {
+.banner--success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: #22c55e; }
+.banner--error   { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #ef4444; }
+.banner--warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #f59e0b; }
+.banner--info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: #3b82f6; }
+
+/* ── Drop zone ───────────────────────────────────────── */
+.drop-zone {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--gradient-color);
+  border: 1.5px dashed var(--border-color);
+  border-radius: 0.625rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.drop-zone--active {
+  border-color: var(--accent);
+  background: var(--panel-highlight);
+}
+
+.drop-icon { color: var(--accent); flex-shrink: 0; }
+
+.drop-label {
+  flex: 1;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.drop-actions {
+  display: flex;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
-.shared-banner-success {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #22c55e;
-}
-
-.shared-banner-error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-}
-
-.shared-banner-warning {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
-}
-
-.shared-banner-info {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-0.5rem); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* File Input */
-.file-input-wrapper {
-  background: var(--bg-card);
-  border: 2px dashed var(--border);
-  border-radius: 0.75rem;
-  padding: 2rem;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.file-input-wrapper:hover {
-  border-color: var(--primary);
-  background: var(--bg-secondary);
-}
-
-.file-input-wrapper.dragging {
-  border-color: var(--primary);
-  background: var(--bg-secondary);
-  transform: scale(1.01);
-}
-
-.file-input-content {
-  display: flex;
-  flex-direction: column;
+/* ── Progress strip ──────────────────────────────────── */
+.progress-strip {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 0.75rem;
-}
-
-.file-input-icon {
-  color: var(--primary);
-  opacity: 0.9;
-}
-
-.file-input-text {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin: 0;
-  font-weight: 500;
-}
-
-.file-input-buttons {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-/* Progress */
-.progress-container {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1rem;
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--panel);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
 }
 
 .progress-label {
-  font-size: 0.8rem;
+  font-size: 0.73rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--muted);
+  white-space: nowrap;
 }
 
-.progress-percentage {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.progress-bar {
-  height: 8px;
-  background: var(--bg-secondary);
-  border-radius: 4px;
+.progress-track {
+  height: 4px;
+  background: var(--btn);
+  border-radius: 2px;
   overflow: hidden;
 }
 
-.progress-bar-fill {
+.progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #014f99));
-  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-/* Buttons */
-.btn {
-  padding: 0.6rem 1.25rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  text-transform: none;
+.progress-pct {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
+/* ── Toolbar ─────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.btn:active {
-  transform: translateY(0);
+/* ── Controls panel ──────────────────────────────────── */
+.controls-panel {
+  background: var(--panel);
+  border: 1px solid var(--border-color);
+  border-radius: 0.625rem;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: var(--bg-primary);
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-}
-
-.btn-secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-card);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.btn-danger {
-  background: #ef4444;
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #dc2626;
-}
-
-/* Disabled state for all buttons */
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.btn:disabled:hover {
-  transform: none;
-}
-
-.btn-primary:disabled:hover {
-  background: var(--primary);
-}
-
-.btn-secondary:disabled:hover {
-  background: var(--bg-secondary);
-  border-color: var(--border);
-  color: var(--text-primary);
-}
-
-.btn-danger:disabled:hover {
-  background: #ef4444;
-}
-
-.btn-sm {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8rem;
-}
-
-.btn-block {
-  width: 100%;
-}
-
-/* Action Group */
-.action-group {
+.controls-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
 
-/* Control Section */
-.control-section {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1rem;
+.controls-row--bottom {
+  grid-template-columns: auto 1fr;
+  align-items: end;
+}
+
+.ctrl-field {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.3rem;
 }
 
-.control-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.control-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.control-item label {
-  font-size: 0.75rem;
+.ctrl-label {
+  font-size: 0.68rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
-.control-input-group {
+.ctrl-row {
   display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
+  gap: 0.375rem;
 }
 
-.control-input {
+.ctrl-input {
   flex: 1;
   min-width: 0;
-  padding: 0.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  padding: 0.375rem 0.5rem;
+  background: var(--btn);
+  border: 1px solid var(--border-color);
   border-radius: 0.375rem;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
+  color: var(--text);
+  font-size: 0.82rem;
+  transition: border-color 0.15s;
 }
 
-.control-input:focus {
+.ctrl-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+  border-color: var(--accent);
 }
 
-.control-input-group .btn {
-  flex-shrink: 0;
+.ctrl-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ctrl-select {
+  padding: 0.375rem 0.5rem;
+  background: var(--btn);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  min-width: 130px;
+}
+
+.ctrl-select:focus { outline: none; border-color: var(--accent); }
+
+.btn--ebu {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
   white-space: nowrap;
 }
 
-.select-input {
-  padding: 0.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  color: var(--text-primary);
-  font-size: 0.875rem;
+/* ── Effects strip ───────────────────────────────────── */
+.effects-strip {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 0.3rem 0.75rem;
+  background: var(--btn);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.select-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+.chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--panel-highlight);
 }
 
-/* File Count */
-.file-count {
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── File meta ───────────────────────────────────────── */
+.file-meta {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 0.25rem;
+}
+
+.file-meta--empty {
   text-align: center;
-  padding: 0.75rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+  padding: 1.25rem;
+  background: var(--panel);
+  border: 1px dashed var(--border-color);
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
 }
 
-/* Empty State */
-.file-count.empty-state {
-  padding: 1rem;
-}
-
-.empty-state-title {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-/* File List */
+/* ── File list ───────────────────────────────────────── */
 .file-list {
-  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  max-height: 580px;
   overflow-y: auto;
-  padding: 0.5rem;
-  background: var(--bg-secondary);
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
+  padding-right: 0.25rem;
 }
 
-/* Scrollbar Styling */
-.file-list::-webkit-scrollbar {
-  width: 8px;
-}
+.file-list::-webkit-scrollbar { width: 5px; }
+.file-list::-webkit-scrollbar-track { background: transparent; }
+.file-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+.file-list::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+.file-list { scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; }
 
-.file-list::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 4px;
-}
-
-.file-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-.file-list::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-}
-
-/* Firefox Scrollbar */
-.file-list {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-
-/* Status Message */
-.status-message {
+/* ── Status toast ────────────────────────────────────── */
+.status-toast {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  text-align: center;
-  animation: slideIn 0.3s ease;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: slideUp 0.2s ease;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.toast--success { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.3);  color: #22c55e; }
+.toast--error   { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #ef4444; }
+.toast--warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #f59e0b; }
+.toast--info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: #3b82f6; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.status-icon {
-  flex-shrink: 0;
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.875rem;
+  border: none;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  text-decoration: none;
 }
 
-.status-success {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.3);
-  color: #22c55e;
+.btn--sm { padding: 0.35rem 0.7rem; font-size: 0.75rem; }
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+
+.btn--accent {
+  background: var(--btn);
+  color: var(--text);
+  border: 1px solid var(--border-color);
+}
+.btn--accent:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
-.status-error {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+.btn--ghost {
+  background: var(--btn);
+  color: var(--text);
+  border: 1px solid var(--border-color);
+}
+.btn--ghost:hover:not(:disabled) {
+  background: var(--btn-hover);
+  transform: translateY(-1px);
+}
+
+.btn--danger {
+  background: rgba(239,68,68,.15);
   color: #ef4444;
+  border: 1px solid rgba(239,68,68,.3);
+}
+.btn--danger:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
 }
 
-.status-warning {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
-}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
 
-.status-info {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
-}
-
-/* Loading Spinner */
-.loading-spinner {
+/* ── Loading overlay ─────────────────────────────────── */
+.loading-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
+  background: rgba(0,0,0,.65);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -896,196 +679,48 @@ const statusIcons = {
 }
 
 .spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-top-color: var(--primary);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,.15);
+  border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.loading-spinner p {
+.loading-overlay p {
   color: white;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 600;
   margin: 0;
 }
 
-/* Responsive - Tablet */
-@media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .container { padding: 0.75rem; }
 
   .app-header {
-    padding: 0.6rem 1rem;
-  }
-
-  .back-link {
-    position: static;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.7rem;
-  }
-
-  .header-controls-slot {
-    position: static;
-  }
-
-  .header-titles {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .app-title {
-    font-size: 0.95rem;
-  }
-
-  .app-subtitle {
-    font-size: 0.65rem;
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-  }
-
-  .action-group {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-
-  .control-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .file-input-wrapper {
-    padding: 1.5rem;
-  }
-
-  .file-input-icon {
-    font-size: 2rem;
-  }
-
-  .btn {
-    padding: 0.7rem 1rem;
-    font-size: 0.8rem;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .btn-sm {
-    padding: 0.55rem 0.85rem;
-    font-size: 0.75rem;
-    min-height: 40px;
-  }
-
-  .file-list {
-    max-height: 50vh;
-  }
-
-  .file-list::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .control-section {
-    padding: 0.85rem;
-  }
-
-  .status-message {
-    font-size: 0.8rem;
-    padding: 0.65rem 0.75rem;
-  }
-}
-
-/* Responsive - Phone */
-@media (max-width: 480px) {
-  .container {
-    padding: 0.75rem;
-  }
-
-  .app-header {
-    padding: 0.5rem 0.75rem;
     flex-wrap: wrap;
     gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
   }
 
-  .back-link {
-    font-size: 0.65rem;
-    padding: 0.45rem 0.65rem;
-  }
+  .back-link, .header-controls-slot { position: static; }
+  .header-titles { flex: 1; min-width: 0; }
 
-  .app-title {
-    font-size: 0.85rem;
-  }
+  .drop-zone { flex-wrap: wrap; }
+  .drop-label { flex: 1 0 100%; }
 
-  .app-subtitle {
-    display: none;
-  }
+  .controls-row,
+  .controls-row--bottom { grid-template-columns: 1fr; }
 
-  .action-group {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
+  .toolbar { gap: 0.375rem; }
+  .toolbar .btn { flex: 1; justify-content: center; }
+}
 
-  .file-input-wrapper {
-    padding: 1.25rem;
-  }
-
-  .file-input-text {
-    font-size: 0.8rem;
-  }
-
-  .control-input-group {
-    flex-direction: column;
-  }
-
-  .control-item label {
-    font-size: 0.7rem;
-  }
-
-  .control-input {
-    font-size: 0.8rem;
-    padding: 0.55rem;
-  }
-
-  .select-input {
-    font-size: 0.8rem;
-    padding: 0.55rem;
-    min-height: 44px;
-  }
-
-  .file-list {
-    max-height: 40vh;
-    padding: 0.35rem;
-  }
-
-  .file-count {
-    font-size: 0.8rem;
-    padding: 0.6rem;
-  }
-
-  .empty-state-title {
-    font-size: 0.8rem;
-  }
-
-  .progress-label,
-  .progress-percentage {
-    font-size: 0.75rem;
-  }
-
-  .loading-spinner p {
-    font-size: 0.85rem;
-  }
-
-  .status-message {
-    font-size: 0.75rem;
-    padding: 0.6rem 0.5rem;
-    gap: 0.35rem;
-  }
+@media (max-width: 400px) {
+  .app-subtitle { display: none; }
+  .chip { font-size: 0.7rem; padding: 0.25rem 0.6rem; }
 }
 </style>

@@ -1,95 +1,66 @@
 <template>
   <div class="file-item">
-    <div class="file-header">
-      <h3 class="file-name">{{ file.name }}</h3>
-      <button @click="$emit('remove', file)" class="remove-btn" title="Entfernen">
-        ✕
-      </button>
-    </div>
-    
-    <!-- Manual Inputs -->
-    <div class="manual-inputs">
-      <div class="input-group">
-        <label>{{ t('app.rms') }}</label>
-        <input 
-          type="number" 
-          v-model.number="localRms" 
-          step="0.01" 
-          min="0" 
-          max="1" 
-        />
+    <!-- Row 1: name + meters + remove -->
+    <div class="item-header">
+      <span class="file-name" :title="file.name">{{ file.name }}</span>
+      <div class="meters">
+        <div class="meter-group">
+          <span class="meter-tag">Peak</span>
+          <div class="meter-bar">
+            <div class="meter-fill meter-fill--peak" :style="{ width: Math.min((file.peak || 0) * 100, 100) + '%' }" />
+          </div>
+          <span class="meter-val">{{ (file.peak || 0).toFixed(2) }}</span>
+        </div>
+        <div class="meter-group">
+          <span class="meter-tag">RMS</span>
+          <div class="meter-bar">
+            <div class="meter-fill meter-fill--rms" :style="{ width: Math.min((file.rms || 0) * 100, 100) + '%' }" />
+          </div>
+          <span class="meter-val">{{ (file.rms || 0).toFixed(2) }}</span>
+        </div>
       </div>
-      
-      <div class="input-group">
-        <label>{{ t('app.peak') }}</label>
-        <input 
-          type="number" 
-          :value="file.peak?.toFixed(3)" 
-          readonly 
-        />
-      </div>
-      
-      <button @click="applyValues" class="apply-btn">
-        {{ t('app.apply') }}
+      <button class="remove-btn" @click="$emit('remove', file)" title="Entfernen">
+        <X :size="12" />
       </button>
     </div>
 
-    <!-- Meters -->
-    <div class="meters">
-      <!-- Peak Bar -->
-      <div class="meter">
-        <div class="meter-label">{{ t('app.peak') }}</div>
-        <div class="meter-bar">
-          <div 
-            class="meter-fill" 
-            :style="{ width: Math.min((file.peak || 0) * 100, 100) + '%' }"
-          ></div>
-        </div>
-        <div class="meter-value">{{ (file.peak || 0).toFixed(2) }}</div>
+    <!-- Row 2: controls -->
+    <div class="item-controls">
+      <div class="input-pair">
+        <label class="input-label">{{ t('app.rms') }}</label>
+        <input type="number" v-model.number="localRms" step="0.01" min="0" max="1" class="item-input" />
       </div>
-
-      <!-- RMS Bar -->
-      <div class="meter">
-        <div class="meter-label">{{ t('app.rms') }}</div>
-        <div class="meter-bar">
-          <div 
-            class="meter-fill rms" 
-            :style="{ width: Math.min((file.rms || 0) * 100, 100) + '%' }"
-          ></div>
-        </div>
-        <div class="meter-value">{{ (file.rms || 0).toFixed(2) }}</div>
+      <div class="input-pair">
+        <label class="input-label">{{ t('app.peak') }}</label>
+        <input type="number" :value="file.peak?.toFixed(3)" readonly class="item-input item-input--readonly" />
       </div>
-    </div>
-
-    <!-- Audio Preview -->
-    <audio 
-      :ref="el => audioRef = el"
-      controls 
-      :src="currentAudioSrc"
-      class="audio-player"
-    ></audio>
-
-    <!-- File Controls -->
-    <div class="file-controls">
-      <button @click="togglePlayback" class="control-btn secondary">
+      <button class="item-btn item-btn--accent" @click="applyValues">{{ t('app.apply') }}</button>
+      <button class="item-btn item-btn--toggle" @click="togglePlayback" :title="isNormalizedPlaying ? t('app.playOriginal') : t('app.playNormalized')">
+        <component :is="isNormalizedPlaying ? Music : Music2" :size="13" />
         {{ isNormalizedPlaying ? t('app.playOriginal') : t('app.playNormalized') }}
       </button>
-      <button @click="$emit('export', file)" class="control-btn primary">
-        {{ t('app.export') }}
+      <button class="item-btn item-btn--export" @click="$emit('export', file)">
+        <Download :size="13" />{{ t('app.export') }}
       </button>
     </div>
+
+    <!-- Row 3: audio player -->
+    <audio
+      :ref="el => audioRef = el"
+      controls
+      :src="currentAudioSrc"
+      class="audio-player"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { X, Download, Music, Music2 } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n'
 
 const props = defineProps({
-  file: {
-    type: Object,
-    required: true
-  }
+  file: { type: Object, required: true }
 })
 
 const emit = defineEmits(['update', 'remove', 'export'])
@@ -100,9 +71,7 @@ const localRms = ref(props.file.rms || 0)
 const isNormalizedPlaying = ref(false)
 const audioRef = ref(null)
 
-watch(() => props.file.rms, (newRms) => {
-  localRms.value = newRms
-})
+watch(() => props.file.rms, (v) => { localRms.value = v })
 
 const currentAudioSrc = computed(() => {
   if (isNormalizedPlaying.value && props.file.processedBlobUrl) {
@@ -112,23 +81,16 @@ const currentAudioSrc = computed(() => {
 })
 
 const applyValues = () => {
-  emit('update', {
-    ...props.file,
-    targetRms: localRms.value
-  })
+  emit('update', { ...props.file, targetRms: localRms.value })
 }
 
 const togglePlayback = () => {
   isNormalizedPlaying.value = !isNormalizedPlaying.value
-  
-  // Stop and replay
   if (audioRef.value) {
     audioRef.value.pause()
     audioRef.value.currentTime = 0
     audioRef.value.play().catch(err => {
-      if (err.name !== 'AbortError') {
-        console.error('Playback error:', err)
-      }
+      if (err.name !== 'AbortError') console.error('Playback error:', err)
     })
   }
 }
@@ -136,337 +98,208 @@ const togglePlayback = () => {
 
 <style scoped>
 .file-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  transition: all 0.2s ease;
-}
-
-.file-item:hover {
-  border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(201, 152, 77, 0.15);
-}
-
-/* Header */
-.file-header {
+  background: var(--panel);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
+  flex-direction: column;
   gap: 0.5rem;
+  transition: border-color 0.15s;
+}
+
+.file-item:hover { border-color: var(--accent); }
+
+/* ── Row 1 ─────────────────────────────────────────── */
+.item-header {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.625rem;
 }
 
 .file-name {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
+  min-width: 0;
 }
 
-.remove-btn {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.remove-btn:hover {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
-  transform: scale(1.05);
-}
-
-/* Manual Inputs */
-.manual-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.input-group label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.input-group input {
-  padding: 0.4rem 0.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  color: var(--text-primary);
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
-}
-
-.input-group input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(201, 152, 77, 0.15);
-}
-
-.input-group input:read-only {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.apply-btn {
-  padding: 0 1rem;
-  background: var(--primary);
-  color: var(--bg-primary);
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  align-self: end;
-  white-space: nowrap;
-  text-transform: none;
-}
-
-.apply-btn:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-/* Meters */
 .meters {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.2rem;
+  min-width: 160px;
 }
 
-.meter {
+.meter-group {
   display: grid;
-  grid-template-columns: 3rem 1fr 3rem;
+  grid-template-columns: 2.5rem 1fr 2.5rem;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
-.meter-label {
-  font-size: 0.7rem;
+.meter-tag {
+  font-size: 0.62rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .meter-bar {
-  height: 6px;
-  background: var(--bg-secondary);
-  border-radius: 3px;
+  height: 4px;
+  background: var(--btn);
+  border-radius: 2px;
   overflow: hidden;
-  position: relative;
 }
 
 .meter-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-secondary, #014f99));
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-.meter-fill.rms {
-  background: linear-gradient(90deg, var(--primary-secondary, #014f99), var(--success));
-}
+.meter-fill--peak { background: linear-gradient(90deg, var(--accent), #e8b06a); }
+.meter-fill--rms  { background: linear-gradient(90deg, var(--accent-secondary), #4a90d9); }
 
-.meter-value {
-  font-size: 0.75rem;
+.meter-val {
+  font-size: 0.65rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* Audio Player */
+.remove-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.remove-btn:hover {
+  background: rgba(239,68,68,.15);
+  border-color: rgba(239,68,68,.4);
+  color: #ef4444;
+}
+
+/* ── Row 2 ─────────────────────────────────────────── */
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.input-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.input-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.item-input {
+  width: 72px;
+  padding: 0.3rem 0.4rem;
+  background: var(--btn);
+  border: 1px solid var(--border-color);
+  border-radius: 0.3rem;
+  color: var(--text);
+  font-size: 0.78rem;
+  transition: border-color 0.15s;
+}
+
+.item-input:focus { outline: none; border-color: var(--accent); }
+
+.item-input--readonly {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.item-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.3rem;
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.item-btn--accent {
+  background: var(--btn);
+  color: var(--text);
+}
+.item-btn--accent:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.item-btn--toggle {
+  background: var(--btn);
+  color: var(--muted);
+}
+.item-btn--toggle:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.item-btn--export {
+  background: rgba(34,197,94,.1);
+  color: #22c55e;
+  border-color: rgba(34,197,94,.3);
+}
+.item-btn--export:hover {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+/* ── Row 3 ─────────────────────────────────────────── */
 .audio-player {
   width: 100%;
-  height: 36px;
-  margin-bottom: 0.75rem;
-  border-radius: 0.375rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--border);
+  height: 32px;
+  border-radius: 0.3rem;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border-color);
   color-scheme: dark;
 }
 
-.audio-player::-webkit-media-controls-panel {
-  background: rgba(255, 255, 255, 0.08);
-}
-
 [data-theme="light"] .audio-player {
-  background: var(--bg-secondary);
+  background: var(--btn);
   color-scheme: light;
 }
 
-[data-theme="light"] .audio-player::-webkit-media-controls-panel {
-  background: var(--bg-secondary);
-}
-
-/* File Controls */
-.file-controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.control-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  text-transform: none;
-}
-
-.control-btn.primary {
-  background: var(--success);
-  color: white;
-}
-
-.control-btn.primary:hover {
-  background: #16a34a;
-  transform: translateY(-1px);
-}
-
-.control-btn.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-}
-
-.control-btn.secondary:hover {
-  background: var(--primary);
-  color: var(--bg-primary);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-}
-
-/* Responsive - Tablet */
-@media (max-width: 768px) {
-  .remove-btn {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    font-size: 1rem;
-  }
-
-  .apply-btn {
-    padding: 0.5rem 1rem;
-    min-height: 40px;
-  }
-
-  .control-btn {
-    padding: 0.65rem 1rem;
-    min-height: 44px;
-  }
-
-  .input-group input {
-    padding: 0.5rem 0.6rem;
-    min-height: 40px;
-  }
-
-  .audio-player {
-    height: 40px;
-  }
-}
-
-/* Responsive - Phone */
+/* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 640px) {
-  .manual-inputs {
-    grid-template-columns: 1fr;
-  }
+  .item-header { grid-template-columns: 1fr auto; }
+  .meters { display: none; }
 
-  .file-controls {
-    grid-template-columns: 1fr;
-  }
-
-  .meter {
-    grid-template-columns: 2.5rem 1fr 2.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .file-item {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .file-name {
-    font-size: 0.8rem;
-  }
-
-  .remove-btn {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    font-size: 1.1rem;
-  }
-
-  .input-group label {
-    font-size: 0.65rem;
-    letter-spacing: 0.03em;
-  }
-
-  .input-group input {
-    padding: 0.55rem 0.65rem;
-    font-size: 0.8rem;
-    min-height: 44px;
-  }
-
-  .apply-btn {
-    padding: 0.6rem 1.25rem;
-    font-size: 0.75rem;
-    min-height: 44px;
-  }
-
-  .meter-label {
-    font-size: 0.65rem;
-  }
-
-  .meter-value {
-    font-size: 0.7rem;
-  }
-
-  .control-btn {
-    padding: 0.7rem 1rem;
-    font-size: 0.75rem;
-    min-height: 44px;
-  }
-
-  .audio-player {
-    height: 44px;
-    margin-bottom: 0.5rem;
-  }
+  .item-controls { gap: 0.3rem; }
+  .item-input { width: 60px; }
 }
 </style>

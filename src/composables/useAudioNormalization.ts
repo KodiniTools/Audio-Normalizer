@@ -35,10 +35,11 @@ const updateFileData = (fileData: AudioFileData, renderedBuffer: AudioBuffer): v
   )
 }
 
-// ITU-R BS.1770 K-weighting: Stage 1 = high-shelf pre-filter (+4 dB @ 1.5 kHz),
-// Stage 2 = 2nd-order Butterworth high-pass @ 80 Hz (Q = 1/√2 ≈ 0.7071).
-export const measureLoudnessR128 = async (buffer: AudioBuffer): Promise<number> => {
-  const renderedBuffer = await applyOfflineEffect(buffer, (ctx, source) => {
+// ITU-R BS.1770-4 K-weighting:
+//   Stage 1: high-shelf pre-filter  (+4 dB @ 1.5 kHz)
+//   Stage 2: 2nd-order Butterworth high-pass @ 80 Hz  (Q = 1/√2)
+const applyKWeighting = (buffer: AudioBuffer): Promise<AudioBuffer> =>
+  applyOfflineEffect(buffer, (ctx, source) => {
     const highshelf = ctx.createBiquadFilter()
     highshelf.type = 'highshelf'
     highshelf.frequency.value = 1500
@@ -47,14 +48,63 @@ export const measureLoudnessR128 = async (buffer: AudioBuffer): Promise<number> 
     const highpass = ctx.createBiquadFilter()
     highpass.type = 'highpass'
     highpass.frequency.value = 80
-    highpass.Q.value = Math.SQRT1_2 // 1/√2 — Butterworth (maximally flat)
+    highpass.Q.value = Math.SQRT1_2
 
     source.connect(highshelf).connect(highpass).connect(ctx.destination)
   })
-  // Mean square of K-weighted signal → LUFS = −0.691 + 10·log₁₀(mean_square)
-  // Equivalent: 20·log₁₀(rms) − 0.691
-  const rms = calculateRMS(renderedBuffer)
-  const lufs = 20 * Math.log10(rms) - 0.691
+
+// ITU-R BS.1770-4 §2.2 gated loudness measurement.
+//
+// Algorithm:
+//   1. K-weight the signal (two biquad filters above).
+//   2. Partition into 400 ms blocks, 75 % overlap (100 ms hop).
+//   3. Compute mean square per block, summed across channels
+//      (equal weights G=1 for L/R per BS.1770 Table 1).
+//   4. Absolute gate: discard blocks below −70 LUFS.
+//   5. Ungated loudness from passing blocks.
+//   6. Relative gate: discard blocks below (ungated − 10 LU).
+//   7. Integrated loudness = −0.691 + 10·log₁₀(mean of gated block MSs).
+export const measureLoudnessR128 = async (buffer: AudioBuffer): Promise<number> => {
+  const filtered = await applyKWeighting(buffer)
+
+  const { sampleRate, numberOfChannels, length: totalSamples } = filtered
+  const blockSize = Math.round(0.4 * sampleRate)
+  const hopSize = Math.round(0.1 * sampleRate)
+
+  const channels: Float32Array[] = Array.from({ length: numberOfChannels }, (_, c) =>
+    filtered.getChannelData(c),
+  )
+
+  // Mean square per block summed across channels (BS.1770 equal-weight stereo/mono)
+  const blockMs: number[] = []
+  for (let start = 0; start + blockSize <= totalSamples; start += hopSize) {
+    let sum = 0
+    for (const ch of channels) {
+      let chSum = 0
+      for (let i = start; i < start + blockSize; i++) chSum += ch[i] * ch[i]
+      sum += chSum / blockSize
+    }
+    blockMs.push(sum)
+  }
+
+  if (blockMs.length === 0) return -70.0
+
+  // Absolute gate threshold: −70 LUFS → ms = 10^((−70 + 0.691) / 10)
+  const absThreshold = Math.pow(10, (-70 + 0.691) / 10)
+  const afterAbs = blockMs.filter((ms) => ms > absThreshold)
+  if (afterAbs.length === 0) return -70.0
+
+  // Ungated loudness from absolute-gated blocks
+  const ungatedMs = afterAbs.reduce((a, b) => a + b, 0) / afterAbs.length
+  const ungatedLufs = -0.691 + 10 * Math.log10(ungatedMs)
+
+  // Relative gate threshold: (ungated − 10 LU) → ms
+  const relThreshold = Math.pow(10, (ungatedLufs - 10 + 0.691) / 10)
+  const afterRel = afterAbs.filter((ms) => ms > relThreshold)
+  if (afterRel.length === 0) return -70.0
+
+  const integratedMs = afterRel.reduce((a, b) => a + b, 0) / afterRel.length
+  const lufs = -0.691 + 10 * Math.log10(integratedMs)
   return isFinite(lufs) ? lufs : -70.0
 }
 

@@ -1,11 +1,22 @@
 import { ref, watch } from 'vue'
-import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository.js'
+import type { Ref } from 'vue'
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
+import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository'
+import type { BatchResult, StatusBanner, SharedFileRecord } from '../types'
 
-export function useSharedFiles(handleSharedFiles, t, route, router) {
-  const sharedBanner = ref(null)
+type HandleSharedFiles = (records: SharedFileRecord[]) => Promise<BatchResult>
+type TranslateFn = (key: string, values?: Record<string, unknown>) => string
+
+export function useSharedFiles(
+  handleSharedFiles: HandleSharedFiles,
+  t: TranslateFn,
+  route: RouteLocationNormalizedLoaded,
+  router: Router,
+) {
+  const sharedBanner: Ref<StatusBanner | null> = ref(null)
   let handled = false
 
-  const load = async () => {
+  const load = async (): Promise<void> => {
     if (handled) return
     handled = true
 

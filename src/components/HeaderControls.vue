@@ -11,7 +11,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { computed } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
   import { useI18n } from '../composables/useI18n'

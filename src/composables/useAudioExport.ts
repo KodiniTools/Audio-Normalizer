@@ -1,8 +1,7 @@
-import { ref } from 'vue'
 import JSZip from 'jszip'
 import { Muxer, ArrayBufferTarget } from 'webm-muxer'
 import { CONSTANTS, bufferToWave, triggerDownload } from '../utils/audioUtils'
-import type { AudioFileData, ExportResult, Mp3WorkerOutput } from '../types'
+import type { AudioFileData, ExportResult, Mp3WorkerOutput, StatusType } from '../types'
 
 type ProgressCallback = ((pct: number) => void) | null
 
@@ -192,77 +191,66 @@ const getFileBlob = async (
   return { blob: bufferToWave(exportBuffer, 0, exportBuffer.length), filename: `${baseName}.wav` }
 }
 
-export function useAudioExport(
-  downloadFormat: { value: string },
+type SetStatus = (message: string, type?: StatusType) => void
+
+export const exportFile = async (
+  file: AudioFileData,
+  format: string,
+  setLoadingMessage: (msg: string) => void,
+  setStatus: SetStatus,
+): Promise<void> => {
+  try {
+    const { blob, filename } = await getFileBlob(file, format, (pct) => {
+      if (format === 'mp3') setLoadingMessage(`MP3-Konvertierung: ${pct}%`)
+      else if (format === 'webm') setLoadingMessage(`WebM-Konvertierung: ${pct}%`)
+    })
+    triggerDownload(blob, filename)
+    setStatus(`${file.name} heruntergeladen`, 'success')
+  } catch (error) {
+    console.error(`Error exporting ${file.name}:`, error)
+    setStatus(`Fehler beim Exportieren von ${file.name}`, 'error')
+  }
+}
+
+export const exportAll = async (
+  audioFiles: AudioFileData[],
+  format: string,
   setProgress: (label: string, value: number) => void,
-  setStatus: (message: string, type?: import('../types').StatusType) => void,
-) {
-  const isLoading = ref(false)
-  const loadingMessage = ref('Verarbeite...')
+  setLoadingMessage: (msg: string) => void,
+  setStatus: SetStatus,
+): Promise<void> => {
+  const zip = new JSZip()
+  const total = audioFiles.length
 
-  const exportFile = async (file: AudioFileData): Promise<void> => {
-    isLoading.value = true
-    const format = downloadFormat.value
-    loadingMessage.value = `Exportiere ${file.name}...`
-    try {
+  setProgress('Export', 0)
+
+  try {
+    for (let i = 0; i < total; i++) {
+      const file = audioFiles[i]
+      setLoadingMessage(`Verarbeite ${file.name} (${i + 1}/${total})...`)
+
       const { blob, filename } = await getFileBlob(file, format, (pct) => {
-        if (format === 'mp3') loadingMessage.value = `MP3-Konvertierung: ${pct}%`
-        else if (format === 'webm') loadingMessage.value = `WebM-Konvertierung: ${pct}%`
+        setProgress('Export', (i / total) * 100 + (pct / 100) * (100 / total))
+        if (format === 'mp3') setLoadingMessage(`MP3-Konvertierung ${file.name}: ${pct}%`)
+        else if (format === 'webm') setLoadingMessage(`WebM-Konvertierung ${file.name}: ${pct}%`)
       })
-      triggerDownload(blob, filename)
-      setStatus(`${file.name} heruntergeladen`, 'success')
-    } catch (error) {
-      console.error(`Error exporting ${file.name}:`, error)
-      setStatus(`Fehler beim Exportieren von ${file.name}`, 'error')
-    } finally {
-      isLoading.value = false
+
+      zip.file(filename, blob)
+      setProgress('Export', ((i + 1) / total) * 100)
     }
+
+    setLoadingMessage('ZIP wird finalisiert...')
+    const zipBlob = await zip.generateAsync(
+      { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+      (meta) => {
+        setLoadingMessage(`ZIP wird erstellt: ${Math.round(meta.percent)}%`)
+      },
+    )
+
+    triggerDownload(zipBlob, `audio-normalized-${new Date().toISOString().slice(0, 10)}.zip`)
+    setStatus(`${total} Datei(en) als ZIP heruntergeladen`, 'success')
+  } catch (error) {
+    console.error('Error creating ZIP:', error)
+    setStatus('Fehler beim Erstellen der ZIP-Datei', 'error')
   }
-
-  const exportAll = async (audioFiles: AudioFileData[]): Promise<void> => {
-    if (audioFiles.length === 0) return
-
-    isLoading.value = true
-    loadingMessage.value = 'ZIP wird erstellt...'
-    setProgress('Export', 0)
-
-    const zip = new JSZip()
-    const total = audioFiles.length
-    const format = downloadFormat.value
-
-    try {
-      for (let i = 0; i < total; i++) {
-        const file = audioFiles[i]
-        loadingMessage.value = `Verarbeite ${file.name} (${i + 1}/${total})...`
-
-        const { blob, filename } = await getFileBlob(file, format, (pct) => {
-          setProgress('Export', (i / total) * 100 + (pct / 100) * (100 / total))
-          if (format === 'mp3') loadingMessage.value = `MP3-Konvertierung ${file.name}: ${pct}%`
-          else if (format === 'webm')
-            loadingMessage.value = `WebM-Konvertierung ${file.name}: ${pct}%`
-        })
-
-        zip.file(filename, blob)
-        setProgress('Export', ((i + 1) / total) * 100)
-      }
-
-      loadingMessage.value = 'ZIP wird finalisiert...'
-      const zipBlob = await zip.generateAsync(
-        { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
-        (meta) => {
-          loadingMessage.value = `ZIP wird erstellt: ${Math.round(meta.percent)}%`
-        },
-      )
-
-      triggerDownload(zipBlob, `audio-normalized-${new Date().toISOString().slice(0, 10)}.zip`)
-      setStatus(`${total} Datei(en) als ZIP heruntergeladen`, 'success')
-    } catch (error) {
-      console.error('Error creating ZIP:', error)
-      setStatus('Fehler beim Erstellen der ZIP-Datei', 'error')
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  return { isLoading, loadingMessage, exportFile, exportAll }
 }

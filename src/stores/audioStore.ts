@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { defineStore } from 'pinia'
 import { generateId, calculateRMS, calculatePeak, dbToRms, isAudioFile } from '../utils/audioUtils'
 import {
   scaleAudioBuffer,
@@ -6,11 +7,15 @@ import {
   applyNoiseReduction,
   reduceClipping,
   applyDynamicCompression,
-} from './useAudioNormalization'
-import { useAudioExport } from './useAudioExport'
+} from '../composables/useAudioNormalization'
+import {
+  exportFile as doExportFile,
+  exportAll as doExportAll,
+} from '../composables/useAudioExport'
 import type { AudioFileData, BatchResult, StatusType } from '../types'
 
-export function useAudioProcessor() {
+export const useAudioStore = defineStore('audio', () => {
+  // ── State ──────────────────────────────────────────────────────────────────
   const audioFiles = ref<AudioFileData[]>([])
   const globalRmsValue = ref(0.5)
   const globalDbValue = ref(-20)
@@ -21,8 +26,10 @@ export function useAudioProcessor() {
   const statusMessage = ref('')
   const statusType = ref<StatusType>('info')
   const isProcessing = ref(false)
+  const isLoading = ref(false)
+  const loadingMessage = ref('Verarbeite...')
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   const setProgress = (label: string, value: number): void => {
     showProgress.value = true
@@ -43,8 +50,8 @@ export function useAudioProcessor() {
     }, duration)
   }
 
-  // NOTE: Keep concurrency=1 for OfflineAudioContext operations — each context
-  // holds a full PCM copy of the file in RAM, so parallelism multiplies peak usage.
+  // NOTE: Keep concurrency=1 for OfflineAudioContext — each context holds a full
+  // PCM copy in RAM, so parallelism multiplies peak memory usage.
   const runBatch = async (
     items: AudioFileData[],
     label: string,
@@ -68,18 +75,7 @@ export function useAudioProcessor() {
     await Promise.all(Array.from({ length: Math.min(concurrency, total) }, lane))
   }
 
-  // ── Export (delegated) ───────────────────────────────────────────────────
-
-  const {
-    isLoading,
-    loadingMessage,
-    exportFile,
-    exportAll: _exportAll,
-  } = useAudioExport(downloadFormat, setProgress, setStatus)
-
-  const exportAll = (): Promise<void> => _exportAll(audioFiles.value.slice())
-
-  // ── File Analysis ────────────────────────────────────────────────────────
+  // ── File Analysis ──────────────────────────────────────────────────────────
 
   const buildFileData = (buffer: AudioBuffer, name: string, originalRef: File): AudioFileData => ({
     id: generateId(),
@@ -113,7 +109,7 @@ export function useAudioProcessor() {
     return buildFileData(buffer, name, fileRef)
   }
 
-  // ── File Handling ────────────────────────────────────────────────────────
+  // ── File Handling ──────────────────────────────────────────────────────────
 
   const handleFilesInput = async (files: File[]): Promise<void> => {
     isProcessing.value = true
@@ -186,7 +182,7 @@ export function useAudioProcessor() {
     return { processed, errors }
   }
 
-  // ── Global Normalization Operations ──────────────────────────────────────
+  // ── Global Operations ──────────────────────────────────────────────────────
 
   const runGlobalOp = async (
     label: string,
@@ -227,11 +223,15 @@ export function useAudioProcessor() {
     runGlobalOp('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', reduceClipping)
 
   const applyDynamicCompressionAll = (): Promise<void> =>
-    runGlobalOp('Dynamikkompression', 'Dynamikkompression abgeschlossen', applyDynamicCompression)
+    runGlobalOp(
+      'Dynamikkompression',
+      'Dynamikkompression abgeschlossen',
+      applyDynamicCompression,
+    )
 
   const analyzeAll = (): void => setStatus('Alle Dateien bereits analysiert', 'info')
 
-  // ── Individual File Operations ───────────────────────────────────────────
+  // ── Individual File Operations ─────────────────────────────────────────────
 
   const updateFile = async (updatedFile: AudioFileData): Promise<void> => {
     const index = audioFiles.value.findIndex((f) => f.id === updatedFile.id)
@@ -277,6 +277,44 @@ export function useAudioProcessor() {
     setStatus('Alle Änderungen zurückgesetzt', 'success')
   }
 
+  // ── Export ─────────────────────────────────────────────────────────────────
+
+  const exportFile = async (file: AudioFileData): Promise<void> => {
+    isLoading.value = true
+    loadingMessage.value = `Exportiere ${file.name}...`
+    try {
+      await doExportFile(
+        file,
+        downloadFormat.value,
+        (msg) => {
+          loadingMessage.value = msg
+        },
+        setStatus,
+      )
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const exportAll = async (): Promise<void> => {
+    if (audioFiles.value.length === 0) return
+    isLoading.value = true
+    loadingMessage.value = 'ZIP wird erstellt...'
+    try {
+      await doExportAll(
+        audioFiles.value.slice(),
+        downloadFormat.value,
+        setProgress,
+        (msg) => {
+          loadingMessage.value = msg
+        },
+        setStatus,
+      )
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     audioFiles,
     globalRmsValue,
@@ -285,11 +323,13 @@ export function useAudioProcessor() {
     showProgress,
     progress,
     progressLabel,
-    isLoading,
-    loadingMessage,
     statusMessage,
     statusType,
     isProcessing,
+    isLoading,
+    loadingMessage,
+    setProgress,
+    setStatus,
     handleFilesInput,
     handleSharedFiles,
     applyGlobalRms,
@@ -306,4 +346,4 @@ export function useAudioProcessor() {
     deleteAll,
     resetAll,
   }
-}
+})

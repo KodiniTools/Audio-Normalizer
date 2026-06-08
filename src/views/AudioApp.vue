@@ -224,6 +224,7 @@
 </template>
 
 <script setup lang="ts">
+  import { storeToRefs } from 'pinia'
   import { useRoute, useRouter } from 'vue-router'
   import {
     Upload,
@@ -237,7 +238,7 @@
     Zap,
   } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
-  import { useAudioProcessor } from '../composables/useAudioProcessor'
+  import { useAudioStore } from '../stores/audioStore'
   import { useFileDrop } from '../composables/useFileDrop'
   import { useSharedFiles } from '../composables/useSharedFiles'
   import AudioFileItem from '../components/AudioFileItem.vue'
@@ -247,6 +248,7 @@
   const route = useRoute()
   const router = useRouter()
 
+  const store = useAudioStore()
   const {
     audioFiles,
     globalRmsValue,
@@ -260,6 +262,9 @@
     statusMessage,
     statusType,
     isProcessing,
+  } = storeToRefs(store)
+
+  const {
     handleFilesInput,
     handleSharedFiles,
     exportAll,
@@ -275,7 +280,7 @@
     updateFile,
     removeFile,
     exportFile,
-  } = useAudioProcessor()
+  } = store
 
   const { fileInputRef, folderInputRef, isDragging, handleFiles, handleDrop } =
     useFileDrop(handleFilesInput)

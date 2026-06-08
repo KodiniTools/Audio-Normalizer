@@ -1,33 +1,32 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import LandingPage from '../views/LandingPage.vue'
-import AudioApp from '../views/AudioApp.vue'
-import GuidePage from '../views/GuidePage.vue'
 
 const routes = [
   {
     path: '/',
     name: 'landing',
-    component: LandingPage,
+    component: () => import('../views/LandingPage.vue'),
   },
   {
     path: '/app',
     name: 'app',
-    component: AudioApp,
+    component: () => import('../views/AudioApp.vue'),
   },
   {
     path: '/anleitung',
     name: 'guide',
-    component: GuidePage,
+    component: () => import('../views/GuidePage.vue'),
     meta: {
       title: 'Anleitung - Audio Normalisierung Pro',
     },
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/',
+  },
 ]
 
 const router = createRouter({
-  // WICHTIG: base-Pfad muss mit vite.config.js übereinstimmen!
-  history: createWebHistory('/audionormalisierer/'),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

@@ -35,22 +35,26 @@ const updateFileData = (fileData: AudioFileData, renderedBuffer: AudioBuffer): v
   )
 }
 
+// ITU-R BS.1770 K-weighting: Stage 1 = high-shelf pre-filter (+4 dB @ 1.5 kHz),
+// Stage 2 = 2nd-order Butterworth high-pass @ 80 Hz (Q = 1/√2 ≈ 0.7071).
 export const measureLoudnessR128 = async (buffer: AudioBuffer): Promise<number> => {
   const renderedBuffer = await applyOfflineEffect(buffer, (ctx, source) => {
-    const highpass = ctx.createBiquadFilter()
-    highpass.type = 'highpass'
-    highpass.frequency.value = 38
-    highpass.Q.value = 0.5
-
     const highshelf = ctx.createBiquadFilter()
     highshelf.type = 'highshelf'
     highshelf.frequency.value = 1500
     highshelf.gain.value = 4
 
-    source.connect(highpass).connect(highshelf).connect(ctx.destination)
+    const highpass = ctx.createBiquadFilter()
+    highpass.type = 'highpass'
+    highpass.frequency.value = 80
+    highpass.Q.value = Math.SQRT1_2 // 1/√2 — Butterworth (maximally flat)
+
+    source.connect(highshelf).connect(highpass).connect(ctx.destination)
   })
-  const integratedRms = calculateRMS(renderedBuffer)
-  const lufs = 20 * Math.log10(integratedRms) + 16.8
+  // Mean square of K-weighted signal → LUFS = −0.691 + 10·log₁₀(mean_square)
+  // Equivalent: 20·log₁₀(rms) − 0.691
+  const rms = calculateRMS(renderedBuffer)
+  const lufs = 20 * Math.log10(rms) - 0.691
   return isFinite(lufs) ? lufs : -70.0
 }
 

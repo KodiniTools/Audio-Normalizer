@@ -15,7 +15,7 @@
       <div class="container">
         <div class="app-container">
           <!-- Shared files banner -->
-          <div v-if="sharedBanner" class="banner" :class="'banner--' + sharedBanner.type">
+          <div v-if="sharedBanner" class="alert" :class="'alert--' + sharedBanner.type">
             <component :is="statusIcons[sharedBanner.type]" :size="15" />
             <span>{{ sharedBanner.message }}</span>
           </div>
@@ -207,7 +207,7 @@
           </div>
 
           <!-- Status toast -->
-          <div v-if="statusMessage" class="status-toast" :class="'toast--' + statusType">
+          <div v-if="statusMessage" class="alert alert--toast" :class="'alert--' + statusType">
             <component :is="statusIcons[statusType]" :size="15" />
             <span>{{ statusMessage }}</span>
           </div>
@@ -224,7 +224,6 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import {
     Upload,
@@ -239,7 +238,8 @@
   } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
   import { useAudioProcessor } from '../composables/useAudioProcessor'
-  import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository'
+  import { useFileDrop } from '../composables/useFileDrop'
+  import { useSharedFiles } from '../composables/useSharedFiles'
   import AudioFileItem from '../components/AudioFileItem.vue'
   import HeaderControls from '../components/HeaderControls.vue'
 
@@ -277,120 +277,17 @@
     exportFile,
   } = useAudioProcessor()
 
-  const fileInputRef = ref(null)
-  const folderInputRef = ref(null)
-  const isDragging = ref(false)
-  const sharedBanner = ref(null)
-  let sharedFilesHandled = false
+  const { fileInputRef, folderInputRef, isDragging, handleFiles, handleDrop } =
+    useFileDrop(handleFilesInput)
 
-  async function loadSharedFiles() {
-    if (sharedFilesHandled) return
-    sharedFilesHandled = true
-
-    try {
-      const records = await getSharedFiles()
-
-      if (!records || records.length === 0) {
-        sharedBanner.value = { type: 'warning', message: t('app.sharedFilesEmpty') }
-        return
-      }
-
-      sharedBanner.value = {
-        type: 'info',
-        message: t('app.sharedFilesLoading', { count: records.length }),
-      }
-
-      const { processed } = await handleSharedFiles(records)
-
-      if (processed > 0) {
-        sharedBanner.value = {
-          type: 'success',
-          message: t('app.sharedFilesLoaded', { count: processed }),
-        }
-        await clearSharedFiles()
-      } else {
-        sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
-      }
-
-      if (sharedBanner.value?.type === 'success') {
-        setTimeout(() => {
-          sharedBanner.value = null
-        }, 6000)
-      }
-    } catch (error) {
-      console.error('[AudioNormalizer] Error loading shared files:', error)
-      sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
-    }
-  }
-
-  router.isReady().then(() => {
-    if (route.query.source === 'audiokonverter') loadSharedFiles()
-  })
-
-  watch(
-    () => route.query.source,
-    (source) => {
-      if (source === 'audiokonverter') loadSharedFiles()
-    },
-  )
-
-  const handleFiles = (event) => {
-    const files = event.target.files
-    if (files && files.length > 0) handleFilesInput(Array.from(files))
-    event.target.value = ''
-  }
-
-  const handleDrop = async (event) => {
-    isDragging.value = false
-    const items = event.dataTransfer.items
-    if (!items || items.length === 0) return
-
-    const files = []
-
-    const readEntry = (entry) =>
-      new Promise((resolve) => {
-        if (entry.isFile) {
-          entry.file((f) => {
-            files.push(f)
-            resolve()
-          }, resolve)
-        } else if (entry.isDirectory) {
-          const reader = entry.createReader()
-          const readAll = () => {
-            reader.readEntries(async (entries) => {
-              if (entries.length === 0) {
-                resolve()
-                return
-              }
-              await Promise.all(entries.map(readEntry))
-              readAll()
-            }, resolve)
-          }
-          readAll()
-        } else {
-          resolve()
-        }
-      })
-
-    const entries = Array.from(items)
-      .map((item) => item.webkitGetAsEntry?.())
-      .filter(Boolean)
-    await Promise.all(entries.map(readEntry))
-
-    const audioOnly = files.filter(
-      (f) => f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name),
-    )
-    if (audioOnly.length > 0) handleFilesInput(audioOnly)
-  }
+  const { sharedBanner } = useSharedFiles(handleSharedFiles, t, route, router)
 
   const confirmDeleteAll = () => {
-    if (audioFiles.value.length === 0) return
-    if (confirm(t('app.confirmDeleteAll'))) deleteAll()
+    if (audioFiles.value.length > 0 && confirm(t('app.confirmDeleteAll'))) deleteAll()
   }
 
   const confirmResetAll = () => {
-    if (audioFiles.value.length === 0) return
-    if (confirm(t('app.confirmResetAll'))) resetAll()
+    if (audioFiles.value.length > 0 && confirm(t('app.confirmResetAll'))) resetAll()
   }
 
   const statusIcons = {
@@ -470,8 +367,8 @@
     margin: 0.1rem 0 0;
   }
 
-  /* ── Banner ──────────────────────────────────────────── */
-  .banner {
+  /* ── Alert (banner + toast shared base) ──────────────── */
+  .alert {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -481,22 +378,26 @@
     font-weight: 500;
   }
 
-  .banner--success {
+  .alert--toast {
+    animation: slideUp 0.2s ease;
+  }
+
+  .alert--success {
     background: rgba(34, 197, 94, 0.1);
     border: 1px solid rgba(34, 197, 94, 0.3);
     color: #22c55e;
   }
-  .banner--error {
+  .alert--error {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     color: #ef4444;
   }
-  .banner--warning {
+  .alert--warning {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.3);
     color: #f59e0b;
   }
-  .banner--info {
+  .alert--info {
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.3);
     color: #3b82f6;
@@ -728,6 +629,8 @@
     max-height: 580px;
     overflow-y: auto;
     padding-right: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
   }
 
   .file-list::-webkit-scrollbar {
@@ -742,54 +645,6 @@
   }
   .file-list::-webkit-scrollbar-thumb:hover {
     background: var(--accent);
-  }
-  .file-list {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
-  }
-
-  /* ── Status toast ────────────────────────────────────── */
-  .status-toast {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.875rem;
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    animation: slideUp 0.2s ease;
-  }
-
-  .toast--success {
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-  }
-  .toast--error {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-  }
-  .toast--warning {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #f59e0b;
-  }
-  .toast--info {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    color: #3b82f6;
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   /* ── Buttons ─────────────────────────────────────────── */
@@ -882,17 +737,28 @@
     animation: spin 0.7s linear infinite;
   }
 
+  .loading-overlay p {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
   @keyframes spin {
     to {
       transform: rotate(360deg);
     }
   }
 
-  .loading-overlay p {
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin: 0;
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* ── Responsive ──────────────────────────────────────── */

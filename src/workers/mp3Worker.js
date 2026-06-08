@@ -6,7 +6,7 @@ function convertFloat32ToInt16(buffer) {
   const buf = new Int16Array(l)
   for (let i = 0; i < l; i++) {
     let s = Math.max(-1, Math.min(1, buffer[i]))
-    buf[i] = s < 0 ? s * 0x8000 : s * 0x7FFF
+    buf[i] = s < 0 ? s * 0x8000 : s * 0x7fff
   }
   return buf
 }

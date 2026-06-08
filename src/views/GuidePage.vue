@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="guide-header">
       <div class="header-content">
-        <button @click="router.push('/')" class="back-btn">
+        <button class="back-btn" @click="router.push('/')">
           <ArrowLeft :size="16" />
           <span>{{ t('guide-back') }}</span>
         </button>
@@ -204,15 +204,24 @@
           <ul class="check-list">
             <li>
               <CheckCircle :size="14" class="check-icon" />
-              <span><strong>{{ t('guide-export-single-label') }}</strong> {{ t('guide-export-single') }}</span>
+              <span
+                ><strong>{{ t('guide-export-single-label') }}</strong>
+                {{ t('guide-export-single') }}</span
+              >
             </li>
             <li>
               <CheckCircle :size="14" class="check-icon" />
-              <span><strong>{{ t('guide-export-batch-label') }}</strong> {{ t('guide-export-batch') }}</span>
+              <span
+                ><strong>{{ t('guide-export-batch-label') }}</strong>
+                {{ t('guide-export-batch') }}</span
+              >
             </li>
             <li>
               <CheckCircle :size="14" class="check-icon" />
-              <span><strong>{{ t('guide-export-format-label') }}</strong> {{ t('guide-export-format') }}</span>
+              <span
+                ><strong>{{ t('guide-export-format-label') }}</strong>
+                {{ t('guide-export-format') }}</span
+              >
             </li>
           </ul>
         </section>
@@ -263,598 +272,603 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from '../composables/useI18n'
-import {
-  ArrowLeft,
-  HelpCircle,
-  List,
-  FileAudio,
-  Upload,
-  Activity,
-  Sliders,
-  Sparkles,
-  Layers,
-  Download,
-  CheckCircle,
-  Lightbulb
-} from 'lucide-vue-next'
-import HeaderControls from '../components/HeaderControls.vue'
+  import { computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useI18n } from '../composables/useI18n'
+  import {
+    ArrowLeft,
+    HelpCircle,
+    List,
+    FileAudio,
+    Upload,
+    Activity,
+    Sliders,
+    Sparkles,
+    Layers,
+    Download,
+    CheckCircle,
+    Lightbulb,
+  } from 'lucide-vue-next'
+  import HeaderControls from '../components/HeaderControls.vue'
 
-const router = useRouter()
-const { t, locale } = useI18n()
+  const router = useRouter()
+  const { t, locale } = useI18n()
 
-const sections = computed(() => [
-  { id: 'hauptfunktionen', titleKey: 'guide-section-main' },
-  { id: 'normalisierung', titleKey: 'guide-section-normalization' },
-  { id: 'verbesserung', titleKey: 'guide-section-enhancement' },
-  { id: 'batch', titleKey: 'guide-section-batch' },
-  { id: 'export', titleKey: 'guide-section-export' },
-  { id: 'tipps', titleKey: 'guide-section-tips' }
-])
+  const sections = computed(() => [
+    { id: 'hauptfunktionen', titleKey: 'guide-section-main' },
+    { id: 'normalisierung', titleKey: 'guide-section-normalization' },
+    { id: 'verbesserung', titleKey: 'guide-section-enhancement' },
+    { id: 'batch', titleKey: 'guide-section-batch' },
+    { id: 'export', titleKey: 'guide-section-export' },
+    { id: 'tipps', titleKey: 'guide-section-tips' },
+  ])
 </script>
 
 <style scoped>
-/* Base */
-.guide-page {
-  min-height: 100vh;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Supreme', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
-}
-
-/* Header */
-.guide-header {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  padding: 0.75rem 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(12px);
-}
-
-.header-content {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  color: var(--text-primary);
-  font-size: 0.7rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: none;
-}
-
-.back-btn:hover {
-  background: var(--primary);
-  color: var(--bg-primary);
-  border-color: var(--primary);
-}
-
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-primary);
-}
-
-.header-title h1 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0;
-  text-transform: none;
-  letter-spacing: -0.02em;
-}
-
-/* Main */
-.guide-main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 2rem;
-}
-
-/* Table of Contents */
-.toc {
-  position: sticky;
-  top: 4rem;
-  height: fit-content;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 1rem;
-}
-
-.toc-title {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: none;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.75rem 0;
-}
-
-.toc-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.toc-link {
-  display: block;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  text-decoration: none;
-  border-radius: 0.25rem;
-  transition: all 0.2s ease;
-  text-transform: none;
-}
-
-.toc-link:hover {
-  background: var(--bg-secondary);
-  color: var(--primary);
-}
-
-/* Content */
-.guide-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Section */
-.section {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-}
-
-.section-highlight {
-  background: linear-gradient(135deg, var(--bg-card), rgba(201, 152, 77, 0.03));
-  border-color: rgba(201, 152, 77, 0.2);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.section-icon {
-  color: var(--primary);
-}
-
-.section-icon.highlight {
-  color: var(--primary);
-}
-
-.section-header h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0;
-  text-transform: none;
-  letter-spacing: -0.02em;
-}
-
-.section-intro {
-  color: var(--text-secondary);
-  margin: 0 0 1rem 0;
-  font-size: 0.8rem;
-}
-
-/* Subsection */
-.subsection {
-  margin-bottom: 1.25rem;
-}
-
-.subsection:last-child {
-  margin-bottom: 0;
-}
-
-.subsection h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-  text-transform: none;
-}
-
-.subsection-icon {
-  color: var(--primary-secondary, #014f99);
-}
-
-.subsection p {
-  color: var(--text-secondary);
-  margin: 0 0 0.75rem 0;
-  font-size: 0.8rem;
-}
-
-/* Lists */
-.feature-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.feature-list li {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  padding-left: 0.75rem;
-  position: relative;
-}
-
-.feature-list li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: var(--primary);
-}
-
-.feature-list li strong {
-  color: var(--text-primary);
-}
-
-/* Info Boxes */
-.info-box,
-.tip-box,
-.warning-box {
-  padding: 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.info-box {
-  background: var(--bg-secondary);
-  border-left: 2px solid var(--text-secondary);
-}
-
-.tip-box {
-  background: rgba(201, 152, 77, 0.08);
-  border-left: 2px solid var(--primary);
-}
-
-.warning-box {
-  background: rgba(162, 134, 128, 0.1);
-  border-left: 2px solid var(--primary-secondary, #014f99);
-}
-
-.info-box strong,
-.tip-box strong,
-.warning-box strong {
-  display: block;
-  font-size: 0.7rem;
-  text-transform: none;
-  margin-bottom: 0.35rem;
-  color: var(--text-primary);
-}
-
-.info-box ul,
-.tip-box ul,
-.warning-box ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.info-box li {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  padding: 0.15rem 0;
-}
-
-/* Grid */
-.grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-.grid-item {
-  background: var(--bg-secondary);
-  padding: 0.75rem;
-  border-radius: 0.375rem;
-}
-
-.grid-item h4 {
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem 0;
-  color: var(--text-primary);
-  text-transform: none;
-}
-
-.grid-item p {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* Check List */
-.check-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.check-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.check-icon {
-  color: var(--success);
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-
-.check-list li strong {
-  color: var(--text-primary);
-}
-
-/* Tips Grid */
-.tips-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.tip-card {
-  display: grid;
-  grid-template-columns: 1.5rem 1fr;
-  grid-template-rows: auto auto;
-  gap: 0.25rem 0.5rem;
-  background: var(--bg-secondary);
-  padding: 0.75rem;
-  border-radius: 0.375rem;
-}
-
-.tip-number {
-  grid-row: 1 / 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  background: var(--primary);
-  color: var(--bg-primary);
-  border-radius: 50%;
-  font-size: 0.65rem;
-  font-weight: 600;
-}
-
-.tip-card h4 {
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-  text-transform: none;
-}
-
-.tip-card p {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* Footer */
-.guide-footer {
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
-  padding: 1.5rem;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-.guide-footer p {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin: 0;
-  text-transform: none;
-}
-
-/* Responsive - Tablet */
-@media (max-width: 768px) {
-  .guide-main {
-    grid-template-columns: 1fr;
-    padding: 1rem;
-    gap: 1rem;
+  /* Base */
+  .guide-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family:
+      'Supreme',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
   }
 
-  .toc {
-    position: relative;
-    top: 0;
-  }
-
-  .toc-list {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-  }
-
-  .toc-link {
-    font-size: 0.65rem;
-    padding: 0.35rem 0.6rem;
+  /* Header */
+  .guide-header {
     background: var(--bg-secondary);
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-  }
-
-  .grid-2 {
-    grid-template-columns: 1fr;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(12px);
   }
 
   .header-content {
-    padding: 0 1rem;
-  }
-
-  .section {
-    padding: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .back-btn {
-    padding: 0.45rem 0.85rem;
-    font-size: 0.65rem;
-    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
   }
 
-  .section-header h2 {
-    font-size: 0.9rem;
+  .back-btn:hover {
+    background: var(--primary);
+    color: var(--bg-primary);
+    border-color: var(--primary);
   }
 
-  .guide-footer {
-    padding: 1.25rem;
-    margin-top: 1.5rem;
-  }
-}
-
-/* Responsive - Phone */
-@media (max-width: 480px) {
-  .guide-main {
-    padding: 0.75rem;
-    gap: 0.75rem;
-  }
-
-  .header-content {
-    padding: 0 0.75rem;
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
   }
 
   .header-title h1 {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: -0.02em;
   }
 
-  .back-btn {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.65rem;
-    min-height: 40px;
+  /* Main */
+  .guide-main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 2rem;
   }
 
+  /* Table of Contents */
   .toc {
-    padding: 0.75rem;
+    position: sticky;
+    top: 4rem;
+    height: fit-content;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  .toc-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: none;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   .toc-link {
-    font-size: 0.6rem;
-    padding: 0.35rem 0.5rem;
-    min-height: 30px;
+    display: block;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    text-transform: none;
   }
 
+  .toc-link:hover {
+    background: var(--bg-secondary);
+    color: var(--primary);
+  }
+
+  /* Content */
+  .guide-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Section */
   .section {
-    padding: 0.85rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+  }
+
+  .section-highlight {
+    background: linear-gradient(135deg, var(--bg-card), rgba(201, 152, 77, 0.03));
+    border-color: rgba(201, 152, 77, 0.2);
   }
 
   .section-header {
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    color: var(--primary);
+  }
+
+  .section-icon.highlight {
+    color: var(--primary);
   }
 
   .section-header h2 {
-    font-size: 0.85rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: -0.02em;
   }
 
   .section-intro {
-    font-size: 0.75rem;
-  }
-
-  .subsection h3 {
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
     font-size: 0.8rem;
   }
 
+  /* Subsection */
+  .subsection {
+    margin-bottom: 1.25rem;
+  }
+
+  .subsection:last-child {
+    margin-bottom: 0;
+  }
+
+  .subsection h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    text-transform: none;
+  }
+
+  .subsection-icon {
+    color: var(--primary-secondary, #014f99);
+  }
+
   .subsection p {
-    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8rem;
+  }
+
+  /* Lists */
+  .feature-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   .feature-list li {
-    font-size: 0.7rem;
-    padding-left: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding-left: 0.75rem;
+    position: relative;
   }
 
+  .feature-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+  }
+
+  .feature-list li strong {
+    color: var(--text-primary);
+  }
+
+  /* Info Boxes */
   .info-box,
   .tip-box,
   .warning-box {
-    padding: 0.6rem;
-    font-size: 0.7rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .info-box {
+    background: var(--bg-secondary);
+    border-left: 2px solid var(--text-secondary);
+  }
+
+  .tip-box {
+    background: rgba(201, 152, 77, 0.08);
+    border-left: 2px solid var(--primary);
+  }
+
+  .warning-box {
+    background: rgba(162, 134, 128, 0.1);
+    border-left: 2px solid var(--primary-secondary, #014f99);
   }
 
   .info-box strong,
   .tip-box strong,
   .warning-box strong {
-    font-size: 0.65rem;
+    display: block;
+    font-size: 0.7rem;
+    text-transform: none;
+    margin-bottom: 0.35rem;
+    color: var(--text-primary);
   }
 
-  .tip-card {
-    padding: 0.6rem;
-    gap: 0.2rem 0.4rem;
+  .info-box ul,
+  .tip-box ul,
+  .warning-box ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
-  .check-list li {
-    font-size: 0.75rem;
-    gap: 0.35rem;
+  .info-box li {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    padding: 0.15rem 0;
+  }
+
+  /* Grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
 
   .grid-item {
-    padding: 0.6rem;
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
   }
 
   .grid-item h4 {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+    text-transform: none;
   }
 
   .grid-item p {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin: 0;
   }
 
+  /* Check List */
+  .check-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .check-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .check-icon {
+    color: var(--success);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .check-list li strong {
+    color: var(--text-primary);
+  }
+
+  /* Tips Grid */
+  .tips-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .tip-card {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.25rem 0.5rem;
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+  }
+
+  .tip-number {
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: var(--primary);
+    color: var(--bg-primary);
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+
+  .tip-card h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+    text-transform: none;
+  }
+
+  .tip-card p {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Footer */
   .guide-footer {
-    padding: 1rem;
-    margin-top: 1rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 2rem;
   }
 
   .guide-footer p {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin: 0;
+    text-transform: none;
   }
-}
+
+  /* Responsive - Tablet */
+  @media (max-width: 768px) {
+    .guide-main {
+      grid-template-columns: 1fr;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .toc {
+      position: relative;
+      top: 0;
+    }
+
+    .toc-list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .toc-link {
+      font-size: 0.65rem;
+      padding: 0.35rem 0.6rem;
+      background: var(--bg-secondary);
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .header-content {
+      padding: 0 1rem;
+    }
+
+    .section {
+      padding: 1rem;
+    }
+
+    .back-btn {
+      padding: 0.45rem 0.85rem;
+      font-size: 0.65rem;
+      min-height: 36px;
+    }
+
+    .section-header h2 {
+      font-size: 0.9rem;
+    }
+
+    .guide-footer {
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+  }
+
+  /* Responsive - Phone */
+  @media (max-width: 480px) {
+    .guide-main {
+      padding: 0.75rem;
+      gap: 0.75rem;
+    }
+
+    .header-content {
+      padding: 0 0.75rem;
+    }
+
+    .header-title h1 {
+      font-size: 0.85rem;
+    }
+
+    .back-btn {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.65rem;
+      min-height: 40px;
+    }
+
+    .toc {
+      padding: 0.75rem;
+    }
+
+    .toc-link {
+      font-size: 0.6rem;
+      padding: 0.35rem 0.5rem;
+      min-height: 30px;
+    }
+
+    .section {
+      padding: 0.85rem;
+    }
+
+    .section-header {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .section-header h2 {
+      font-size: 0.85rem;
+    }
+
+    .section-intro {
+      font-size: 0.75rem;
+    }
+
+    .subsection h3 {
+      font-size: 0.8rem;
+    }
+
+    .subsection p {
+      font-size: 0.75rem;
+    }
+
+    .feature-list li {
+      font-size: 0.7rem;
+      padding-left: 0.6rem;
+    }
+
+    .info-box,
+    .tip-box,
+    .warning-box {
+      padding: 0.6rem;
+      font-size: 0.7rem;
+    }
+
+    .info-box strong,
+    .tip-box strong,
+    .warning-box strong {
+      font-size: 0.65rem;
+    }
+
+    .tip-card {
+      padding: 0.6rem;
+      gap: 0.2rem 0.4rem;
+    }
+
+    .check-list li {
+      font-size: 0.75rem;
+      gap: 0.35rem;
+    }
+
+    .grid-item {
+      padding: 0.6rem;
+    }
+
+    .grid-item h4 {
+      font-size: 0.7rem;
+    }
+
+    .grid-item p {
+      font-size: 0.65rem;
+    }
+
+    .guide-footer {
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .guide-footer p {
+      font-size: 0.65rem;
+    }
+  }
 </style>

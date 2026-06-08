@@ -40,7 +40,7 @@ const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
       codec: 'A_OPUS',
       numberOfChannels,
       sampleRate,
-    }
+    },
   })
 
   // Collect encoded chunks
@@ -50,7 +50,7 @@ const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
     },
     error: (e) => {
       throw e
-    }
+    },
   })
 
   encoder.configure({
@@ -72,10 +72,7 @@ const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
     const planarData = new Float32Array(framesInChunk * numberOfChannels)
     for (let ch = 0; ch < numberOfChannels; ch++) {
       const channelData = audioBuffer.getChannelData(ch)
-      planarData.set(
-        channelData.subarray(offset, offset + framesInChunk),
-        ch * framesInChunk
-      )
+      planarData.set(channelData.subarray(offset, offset + framesInChunk), ch * framesInChunk)
     }
 
     const audioData = new AudioData({
@@ -126,7 +123,7 @@ const audioBufferToWebMFallback = async (audioBuffer, onProgress = null) => {
 
       const mediaRecorder = new MediaRecorder(dest.stream, {
         mimeType,
-        audioBitsPerSecond: CONSTANTS.WEBM_KBPS * 1000
+        audioBitsPerSecond: CONSTANTS.WEBM_KBPS * 1000,
       })
 
       const chunks = []
@@ -261,17 +258,17 @@ export function useAudioProcessor() {
     const buffer = new ArrayBuffer(length)
     const view = new DataView(buffer)
     const sampleRate = abuffer.sampleRate
-    
+
     const writeString = (view, offset, string) => {
       for (let i = 0; i < string.length; i++) {
         view.setUint8(offset + i, string.charCodeAt(i))
       }
     }
-    
-    writeString(view, 0, "RIFF")
+
+    writeString(view, 0, 'RIFF')
     view.setUint32(4, 36 + len * numOfChan * 2, true)
-    writeString(view, 8, "WAVE")
-    writeString(view, 12, "fmt ")
+    writeString(view, 8, 'WAVE')
+    writeString(view, 12, 'fmt ')
     view.setUint32(16, 16, true)
     view.setUint16(20, 1, true)
     view.setUint16(22, numOfChan, true)
@@ -279,26 +276,26 @@ export function useAudioProcessor() {
     view.setUint32(28, sampleRate * numOfChan * 2, true)
     view.setUint16(32, numOfChan * 2, true)
     view.setUint16(34, 16, true)
-    writeString(view, 36, "data")
+    writeString(view, 36, 'data')
     view.setUint32(40, len * numOfChan * 2, true)
-    
+
     let pos = 44
     for (let i = 0; i < len; i++) {
       for (let channel = 0; channel < numOfChan; channel++) {
         let sample = abuffer.getChannelData(channel)[offset + i]
         sample = Math.max(-1, Math.min(1, sample))
-        sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF
+        sample = sample < 0 ? sample * 0x8000 : sample * 0x7fff
         view.setInt16(pos, sample, true)
         pos += 2
       }
     }
-    return new Blob([buffer], { type: "audio/wav" })
+    return new Blob([buffer], { type: 'audio/wav' })
   }
 
   const triggerDownload = (blob, filename) => {
     const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.style.display = "none"
+    const a = document.createElement('a')
+    a.style.display = 'none'
     a.download = filename
     a.href = url
     document.body.appendChild(a)
@@ -333,24 +330,24 @@ export function useAudioProcessor() {
     const offlineCtx = new OfflineAudioContext(
       buffer.numberOfChannels,
       buffer.length,
-      buffer.sampleRate
+      buffer.sampleRate,
     )
     const source = offlineCtx.createBufferSource()
     source.buffer = buffer
-    
+
     const highpass = offlineCtx.createBiquadFilter()
     highpass.type = 'highpass'
     highpass.frequency.value = 38
     highpass.Q.value = 0.5
-    
+
     const highshelf = offlineCtx.createBiquadFilter()
     highshelf.type = 'highshelf'
     highshelf.frequency.value = 1500
     highshelf.gain.value = 4
-    
+
     source.connect(highpass).connect(highshelf).connect(offlineCtx.destination)
     source.start()
-    
+
     const filtered = await offlineCtx.startRendering()
     const integratedRms = calculateRMS(filtered)
     const lufs = 20 * Math.log10(integratedRms) + 16.8
@@ -359,72 +356,72 @@ export function useAudioProcessor() {
 
   const scaleAudioBuffer = async (fileData, targetRms) => {
     const originalBuffer = fileData.originalBuffer
-    if (!originalBuffer) throw new Error("Original buffer not found")
-    
+    if (!originalBuffer) throw new Error('Original buffer not found')
+
     const currentRms = calculateRMS(originalBuffer)
     const gain = targetRms / (currentRms || 1)
-    
+
     const offlineContext = new OfflineAudioContext(
       originalBuffer.numberOfChannels,
       originalBuffer.length,
-      originalBuffer.sampleRate
+      originalBuffer.sampleRate,
     )
     const source = offlineContext.createBufferSource()
     source.buffer = originalBuffer
-    
+
     const gainNode = offlineContext.createGain()
     gainNode.gain.value = gain
-    
+
     source.connect(gainNode).connect(offlineContext.destination)
     source.start()
-    
+
     const renderedBuffer = await offlineContext.startRendering()
     normalizePeak(renderedBuffer)
-    
+
     fileData.processedBuffer = renderedBuffer
     fileData.peak = calculatePeak(renderedBuffer)
     fileData.rms = calculateRMS(renderedBuffer)
-    
+
     if (fileData.processedBlobUrl) {
       URL.revokeObjectURL(fileData.processedBlobUrl)
     }
-    
+
     const wavBlob = bufferToWave(renderedBuffer, 0, renderedBuffer.length)
     fileData.processedBlobUrl = URL.createObjectURL(wavBlob)
   }
 
   const normalizeToLoudnessR128 = async (fileData, targetLufs) => {
     const originalBuffer = fileData.originalBuffer
-    if (!originalBuffer) throw new Error("Original buffer not found")
-    
+    if (!originalBuffer) throw new Error('Original buffer not found')
+
     const currentLufs = await measureLoudnessR128(originalBuffer)
     const gainValue = Math.pow(10, (targetLufs - currentLufs) / 20)
-    
+
     const offlineContext = new OfflineAudioContext(
       originalBuffer.numberOfChannels,
       originalBuffer.length,
-      originalBuffer.sampleRate
+      originalBuffer.sampleRate,
     )
     const source = offlineContext.createBufferSource()
     source.buffer = originalBuffer
-    
+
     const gainNode = offlineContext.createGain()
     gainNode.gain.value = gainValue
-    
+
     source.connect(gainNode).connect(offlineContext.destination)
     source.start()
-    
+
     const renderedBuffer = await offlineContext.startRendering()
     normalizePeak(renderedBuffer)
-    
+
     fileData.processedBuffer = renderedBuffer
     fileData.peak = calculatePeak(renderedBuffer)
     fileData.rms = calculateRMS(renderedBuffer)
-    
+
     if (fileData.processedBlobUrl) {
       URL.revokeObjectURL(fileData.processedBlobUrl)
     }
-    
+
     const wavBlob = bufferToWave(renderedBuffer, 0, renderedBuffer.length)
     fileData.processedBlobUrl = URL.createObjectURL(wavBlob)
   }
@@ -434,28 +431,28 @@ export function useAudioProcessor() {
     const offlineContext = new OfflineAudioContext(
       originalBuffer.numberOfChannels,
       originalBuffer.length,
-      originalBuffer.sampleRate
+      originalBuffer.sampleRate,
     )
     const source = offlineContext.createBufferSource()
     source.buffer = originalBuffer
-    
+
     const lowpass = offlineContext.createBiquadFilter()
-    lowpass.type = "lowpass"
+    lowpass.type = 'lowpass'
     lowpass.frequency.value = CONSTANTS.LOWPASS_FREQ
     lowpass.Q.value = CONSTANTS.LOWPASS_Q
-    
+
     source.connect(lowpass).connect(offlineContext.destination)
     source.start()
-    
+
     const renderedBuffer = await offlineContext.startRendering()
     fileData.processedBuffer = renderedBuffer
     fileData.peak = calculatePeak(renderedBuffer)
     fileData.rms = calculateRMS(renderedBuffer)
-    
+
     if (fileData.processedBlobUrl) {
       URL.revokeObjectURL(fileData.processedBlobUrl)
     }
-    
+
     const wavBlob = bufferToWave(renderedBuffer, 0, renderedBuffer.length)
     fileData.processedBlobUrl = URL.createObjectURL(wavBlob)
   }
@@ -465,11 +462,11 @@ export function useAudioProcessor() {
     const offlineContext = new OfflineAudioContext(
       buffer.numberOfChannels,
       buffer.length,
-      buffer.sampleRate
+      buffer.sampleRate,
     )
     const source = offlineContext.createBufferSource()
     source.buffer = buffer
-    
+
     const waveshaper = offlineContext.createWaveShaper()
     const curve = new Float32Array(256)
     for (let i = 0; i < 256; i++) {
@@ -477,19 +474,19 @@ export function useAudioProcessor() {
       curve[i] = Math.tanh(x * 2)
     }
     waveshaper.curve = curve
-    
+
     source.connect(waveshaper).connect(offlineContext.destination)
     source.start()
-    
+
     const renderedBuffer = await offlineContext.startRendering()
     fileData.processedBuffer = renderedBuffer
     fileData.peak = calculatePeak(renderedBuffer)
     fileData.rms = calculateRMS(renderedBuffer)
-    
+
     if (fileData.processedBlobUrl) {
       URL.revokeObjectURL(fileData.processedBlobUrl)
     }
-    
+
     const wavBlob = bufferToWave(renderedBuffer, 0, renderedBuffer.length)
     fileData.processedBlobUrl = URL.createObjectURL(wavBlob)
   }
@@ -499,30 +496,30 @@ export function useAudioProcessor() {
     const offlineContext = new OfflineAudioContext(
       originalBuffer.numberOfChannels,
       originalBuffer.length,
-      originalBuffer.sampleRate
+      originalBuffer.sampleRate,
     )
     const source = offlineContext.createBufferSource()
     source.buffer = originalBuffer
-    
+
     const compressor = offlineContext.createDynamicsCompressor()
     compressor.threshold.value = CONSTANTS.COMPRESSOR_THRESHOLD
     compressor.knee.value = CONSTANTS.COMPRESSOR_KNEE
     compressor.ratio.value = CONSTANTS.COMPRESSOR_RATIO
     compressor.attack.value = CONSTANTS.COMPRESSOR_ATTACK
     compressor.release.value = CONSTANTS.COMPRESSOR_RELEASE
-    
+
     source.connect(compressor).connect(offlineContext.destination)
     source.start()
-    
+
     const renderedBuffer = await offlineContext.startRendering()
     fileData.processedBuffer = renderedBuffer
     fileData.peak = calculatePeak(renderedBuffer)
     fileData.rms = calculateRMS(renderedBuffer)
-    
+
     if (fileData.processedBlobUrl) {
       URL.revokeObjectURL(fileData.processedBlobUrl)
     }
-    
+
     const wavBlob = bufferToWave(renderedBuffer, 0, renderedBuffer.length)
     fileData.processedBlobUrl = URL.createObjectURL(wavBlob)
   }
@@ -546,7 +543,7 @@ export function useAudioProcessor() {
         originalPeak: calculatePeak(audioBuffer),
         originalRms: calculateRMS(audioBuffer),
         processedBlobUrl: null,
-        originalBlobUrl: URL.createObjectURL(blob)
+        originalBlobUrl: URL.createObjectURL(blob),
       }
     } catch (error) {
       console.error(`Error analyzing shared file ${name}:`, error)
@@ -561,7 +558,7 @@ export function useAudioProcessor() {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
       audioContext.close() // Sofort schließen
-      
+
       return {
         id: generateId(),
         name: file.name,
@@ -573,7 +570,7 @@ export function useAudioProcessor() {
         originalPeak: calculatePeak(audioBuffer),
         originalRms: calculateRMS(audioBuffer),
         processedBlobUrl: null,
-        originalBlobUrl: URL.createObjectURL(file)
+        originalBlobUrl: URL.createObjectURL(file),
       }
     } catch (error) {
       console.error(`Error analyzing ${file.name}:`, error)
@@ -583,8 +580,9 @@ export function useAudioProcessor() {
 
   const handleFilesInput = async (files) => {
     isProcessing.value = true
-    const audioOnly = files.filter(f => {
-      const ok = f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name)
+    const audioOnly = files.filter((f) => {
+      const ok =
+        f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name)
       if (!ok) setStatus(`${f.name} ist keine gültige Audiodatei`, 'warning')
       return ok
     })
@@ -598,16 +596,21 @@ export function useAudioProcessor() {
     let processed = 0
     let errors = 0
 
-    await runBatch(audioOnly, 'Upload', async (file) => {
-      try {
-        const fileData = await analyzeFile(file)
-        audioFiles.value.push(fileData)
-        processed++
-      } catch {
-        setStatus(`Fehler bei ${file.name}`, 'error')
-        errors++
-      }
-    }, 2)
+    await runBatch(
+      audioOnly,
+      'Upload',
+      async (file) => {
+        try {
+          const fileData = await analyzeFile(file)
+          audioFiles.value.push(fileData)
+          processed++
+        } catch {
+          setStatus(`Fehler bei ${file.name}`, 'error')
+          errors++
+        }
+      },
+      2,
+    )
 
     isProcessing.value = false
     if (processed > 0) {
@@ -626,26 +629,32 @@ export function useAudioProcessor() {
     let processed = 0
     let errors = 0
 
-    await runBatch(sharedRecords, 'Import', async (record) => {
-      try {
-        const blob = record.blob instanceof Blob
-          ? record.blob
-          : new Blob([record.blob], { type: record.mimeType || 'audio/wav' })
+    await runBatch(
+      sharedRecords,
+      'Import',
+      async (record) => {
+        try {
+          const blob =
+            record.blob instanceof Blob
+              ? record.blob
+              : new Blob([record.blob], { type: record.mimeType || 'audio/wav' })
 
-        if (blob.size === 0) {
-          console.warn(`[AudioNormalizer] Shared file "${record.name}" has empty blob, skipping`)
+          if (blob.size === 0) {
+            console.warn(`[AudioNormalizer] Shared file "${record.name}" has empty blob, skipping`)
+            errors++
+            return
+          }
+
+          const fileData = await analyzeBlob(blob, record.name)
+          audioFiles.value.push(fileData)
+          processed++
+        } catch (error) {
+          console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
           errors++
-          return
         }
-
-        const fileData = await analyzeBlob(blob, record.name)
-        audioFiles.value.push(fileData)
-        processed++
-      } catch (error) {
-        console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
-        errors++
-      }
-    }, 2)
+      },
+      2,
+    )
 
     isProcessing.value = false
     if (processed > 0) {
@@ -660,8 +669,11 @@ export function useAudioProcessor() {
     isProcessing.value = true
     const files = audioFiles.value.slice()
     await runBatch(files, 'RMS Skalierung', async (file) => {
-      try { await scaleAudioBuffer(file, globalRmsValue.value) }
-      catch (e) { console.error(`Error scaling ${file.name}:`, e) }
+      try {
+        await scaleAudioBuffer(file, globalRmsValue.value)
+      } catch (e) {
+        console.error(`Error scaling ${file.name}:`, e)
+      }
     })
     isProcessing.value = false
     setStatus('RMS Skalierung abgeschlossen', 'success')
@@ -673,8 +685,11 @@ export function useAudioProcessor() {
     const targetRms = dbToRms(globalDbValue.value)
     const files = audioFiles.value.slice()
     await runBatch(files, 'dB Skalierung', async (file) => {
-      try { await scaleAudioBuffer(file, targetRms) }
-      catch (e) { console.error(`Error scaling ${file.name}:`, e) }
+      try {
+        await scaleAudioBuffer(file, targetRms)
+      } catch (e) {
+        console.error(`Error scaling ${file.name}:`, e)
+      }
     })
     isProcessing.value = false
     setStatus('dB Skalierung abgeschlossen', 'success')
@@ -685,8 +700,11 @@ export function useAudioProcessor() {
     isProcessing.value = true
     const files = audioFiles.value.slice()
     await runBatch(files, 'EBU R128', async (file) => {
-      try { await normalizeToLoudnessR128(file, CONSTANTS.EBU_R128_TARGET_LUFS) }
-      catch (e) { console.error(`Error normalizing ${file.name}:`, e) }
+      try {
+        await normalizeToLoudnessR128(file, CONSTANTS.EBU_R128_TARGET_LUFS)
+      } catch (e) {
+        console.error(`Error normalizing ${file.name}:`, e)
+      }
     })
     isProcessing.value = false
     setStatus('EBU R128 Normalisierung abgeschlossen', 'success')
@@ -701,8 +719,11 @@ export function useAudioProcessor() {
     isProcessing.value = true
     const files = audioFiles.value.slice()
     await runBatch(files, 'Rauschunterdrückung', async (file) => {
-      try { await applyNoiseReduction(file) }
-      catch (e) { console.error(`Error reducing noise ${file.name}:`, e) }
+      try {
+        await applyNoiseReduction(file)
+      } catch (e) {
+        console.error(`Error reducing noise ${file.name}:`, e)
+      }
     })
     isProcessing.value = false
     setStatus('Rauschunterdrückung abgeschlossen', 'success')
@@ -713,8 +734,11 @@ export function useAudioProcessor() {
     isProcessing.value = true
     const files = audioFiles.value.slice()
     await runBatch(files, 'Clipping Reduktion', async (file) => {
-      try { await reduceClipping(file) }
-      catch (e) { console.error(`Error reducing clipping ${file.name}:`, e) }
+      try {
+        await reduceClipping(file)
+      } catch (e) {
+        console.error(`Error reducing clipping ${file.name}:`, e)
+      }
     })
     isProcessing.value = false
     setStatus('Clipping Reduktion abgeschlossen', 'success')
@@ -725,15 +749,18 @@ export function useAudioProcessor() {
     isProcessing.value = true
     const files = audioFiles.value.slice()
     await runBatch(files, 'Dynamikkompression', async (file) => {
-      try { await applyDynamicCompression(file) }
-      catch (e) { console.error(`Error compressing ${file.name}:`, e) }
+      try {
+        await applyDynamicCompression(file)
+      } catch (e) {
+        console.error(`Error compressing ${file.name}:`, e)
+      }
     })
     isProcessing.value = false
     setStatus('Dynamikkompression abgeschlossen', 'success')
   }
 
   const updateFile = async (updatedFile) => {
-    const index = audioFiles.value.findIndex(f => f.id === updatedFile.id)
+    const index = audioFiles.value.findIndex((f) => f.id === updatedFile.id)
     if (index === -1) return
 
     isLoading.value = true
@@ -747,7 +774,7 @@ export function useAudioProcessor() {
   }
 
   const removeFile = (file) => {
-    const index = audioFiles.value.findIndex(f => f.id === file.id)
+    const index = audioFiles.value.findIndex((f) => f.id === file.id)
     if (index === -1) return
 
     if (file.processedBlobUrl) {
@@ -764,41 +791,43 @@ export function useAudioProcessor() {
   // Helper function to get file blob for export (without downloading)
   const getFileBlob = async (file, onProgress = null) => {
     const exportBuffer = file.processedBuffer || file.originalBuffer
-    if (!exportBuffer) throw new Error("No audio data to export")
+    if (!exportBuffer) throw new Error('No audio data to export')
 
-    const baseName = file.name.replace(/\.[^/.]+$/, "")
+    const baseName = file.name.replace(/\.[^/.]+$/, '')
 
     if (downloadFormat.value === 'mp3') {
       const left = exportBuffer.getChannelData(0)
-      const right = (exportBuffer.numberOfChannels > 1) ?
-        exportBuffer.getChannelData(1) : left
+      const right = exportBuffer.numberOfChannels > 1 ? exportBuffer.getChannelData(1) : left
 
       const mp3Blob = await new Promise((resolve, reject) => {
         const worker = new Worker(new URL('../workers/mp3Worker.js', import.meta.url))
-        worker.onmessage = e => {
+        worker.onmessage = (e) => {
           if (e.data.progress !== undefined && onProgress) {
             onProgress(e.data.progress)
           }
           if (e.data.done) {
             const blob = new Blob([new Uint8Array(e.data.result)], {
-              type: 'audio/mp3'
+              type: 'audio/mp3',
             })
             worker.terminate()
             resolve(blob)
           }
         }
-        worker.onerror = err => reject(err)
+        worker.onerror = (err) => reject(err)
         // Transfer ownership of the ArrayBuffers to avoid a full memory copy
         const leftBuf = new Float32Array(left)
         const rightBuf = new Float32Array(right)
-        worker.postMessage({
-          baseUrl: import.meta.env.BASE_URL,
-          left: leftBuf,
-          right: rightBuf,
-          sampleRate: exportBuffer.sampleRate,
-          kbps: CONSTANTS.MP3_KBPS,
-          numChannels: exportBuffer.numberOfChannels
-        }, [leftBuf.buffer, rightBuf.buffer])
+        worker.postMessage(
+          {
+            baseUrl: import.meta.env.BASE_URL,
+            left: leftBuf,
+            right: rightBuf,
+            sampleRate: exportBuffer.sampleRate,
+            kbps: CONSTANTS.MP3_KBPS,
+            numChannels: exportBuffer.numberOfChannels,
+          },
+          [leftBuf.buffer, rightBuf.buffer],
+        )
       })
 
       return { blob: mp3Blob, filename: `${baseName}.mp3` }
@@ -868,13 +897,16 @@ export function useAudioProcessor() {
       }
 
       loadingMessage.value = 'ZIP wird finalisiert...'
-      const zipBlob = await zip.generateAsync({
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 6 }
-      }, (metadata) => {
-        loadingMessage.value = `ZIP wird erstellt: ${Math.round(metadata.percent)}%`
-      })
+      const zipBlob = await zip.generateAsync(
+        {
+          type: 'blob',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 },
+        },
+        (metadata) => {
+          loadingMessage.value = `ZIP wird erstellt: ${Math.round(metadata.percent)}%`
+        },
+      )
 
       const timestamp = new Date().toISOString().slice(0, 10)
       triggerDownload(zipBlob, `audio-normalized-${timestamp}.zip`)
@@ -891,7 +923,7 @@ export function useAudioProcessor() {
   }
 
   const deleteAll = () => {
-    audioFiles.value.forEach(file => {
+    audioFiles.value.forEach((file) => {
       if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
       if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
     })
@@ -900,7 +932,7 @@ export function useAudioProcessor() {
   }
 
   const resetAll = () => {
-    audioFiles.value.forEach(file => {
+    audioFiles.value.forEach((file) => {
       file.processedBuffer = file.originalBuffer
       file.peak = file.originalPeak
       file.rms = file.originalRms
@@ -939,6 +971,6 @@ export function useAudioProcessor() {
     exportFile,
     exportAll,
     deleteAll,
-    resetAll
+    resetAll,
   }
 }

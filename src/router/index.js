@@ -8,21 +8,21 @@ const routes = [
   {
     path: '/',
     name: 'landing',
-    component: LandingPage
+    component: LandingPage,
   },
   {
     path: '/app',
     name: 'app',
-    component: AudioApp
+    component: AudioApp,
   },
   {
     path: '/anleitung',
     name: 'guide',
     component: GuidePage,
     meta: {
-      title: 'Anleitung - Audio Normalisierung Pro'
-    }
-  }
+      title: 'Anleitung - Audio Normalisierung Pro',
+    },
+  },
 ]
 
 const router = createRouter({
@@ -35,7 +35,7 @@ const router = createRouter({
     } else {
       return { top: 0 }
     }
-  }
+  },
 })
 
 // Redirect to /app when arriving with ?source=audiokonverter on the landing page

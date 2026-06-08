@@ -14,7 +14,6 @@
     <section class="app-section">
       <div class="container">
         <div class="app-container">
-
           <!-- Shared files banner -->
           <div v-if="sharedBanner" class="banner" :class="'banner--' + sharedBanner.type">
             <component :is="statusIcons[sharedBanner.type]" :size="15" />
@@ -29,13 +28,32 @@
             @dragover.prevent="isDragging = true"
             @dragleave.prevent="isDragging = false"
           >
-            <input type="file" ref="fileInputRef" @change="handleFiles" accept="audio/*" multiple style="display:none" />
-            <input type="file" ref="folderInputRef" @change="handleFiles" accept="audio/*" multiple webkitdirectory style="display:none" />
+            <input
+              ref="fileInputRef"
+              type="file"
+              accept="audio/*"
+              multiple
+              style="display: none"
+              @change="handleFiles"
+            />
+            <input
+              ref="folderInputRef"
+              type="file"
+              accept="audio/*"
+              multiple
+              webkitdirectory
+              style="display: none"
+              @change="handleFiles"
+            />
             <Upload :size="20" class="drop-icon" />
             <span class="drop-label">{{ t('app.selectFiles') }}</span>
             <div class="drop-actions">
-              <button type="button" class="btn btn--ghost" @click="fileInputRef.click()">{{ t('app.selectFilesBtn') }}</button>
-              <button type="button" class="btn btn--ghost" @click="folderInputRef.click()">{{ t('app.selectFolderBtn') }}</button>
+              <button type="button" class="btn btn--ghost" @click="fileInputRef.click()">
+                {{ t('app.selectFilesBtn') }}
+              </button>
+              <button type="button" class="btn btn--ghost" @click="folderInputRef.click()">
+                {{ t('app.selectFolderBtn') }}
+              </button>
             </div>
           </div>
 
@@ -50,13 +68,25 @@
 
           <!-- Toolbar -->
           <div class="toolbar">
-            <button class="btn btn--primary btn--sm" @click="exportAll" :disabled="isProcessing || audioFiles.length === 0">
+            <button
+              class="btn btn--primary btn--sm"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="exportAll"
+            >
               <Download :size="14" />{{ t('app.exportAll') }}
             </button>
-            <button class="btn btn--danger btn--sm" @click="confirmDeleteAll" :disabled="isProcessing || audioFiles.length === 0">
+            <button
+              class="btn btn--danger btn--sm"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="confirmDeleteAll"
+            >
               <Trash2 :size="14" />{{ t('app.deleteAll') }}
             </button>
-            <button class="btn btn--ghost btn--sm" @click="confirmResetAll" :disabled="isProcessing || audioFiles.length === 0">
+            <button
+              class="btn btn--ghost btn--sm"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="confirmResetAll"
+            >
               <RotateCcw :size="14" />{{ t('app.resetAll') }}
             </button>
           </div>
@@ -67,15 +97,43 @@
               <div class="ctrl-field">
                 <label class="ctrl-label">{{ t('app.globalRms') }}</label>
                 <div class="ctrl-row">
-                  <input type="number" v-model.number="globalRmsValue" step="0.01" min="0" max="1" class="ctrl-input" :disabled="isProcessing" />
-                  <button class="btn btn--accent btn--sm" @click="applyGlobalRms" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.applyRms') }}</button>
+                  <input
+                    v-model.number="globalRmsValue"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="1"
+                    class="ctrl-input"
+                    :disabled="isProcessing"
+                  />
+                  <button
+                    class="btn btn--accent btn--sm"
+                    :disabled="isProcessing || audioFiles.length === 0"
+                    @click="applyGlobalRms"
+                  >
+                    {{ t('app.applyRms') }}
+                  </button>
                 </div>
               </div>
               <div class="ctrl-field">
                 <label class="ctrl-label">{{ t('app.globalDb') }}</label>
                 <div class="ctrl-row">
-                  <input type="number" v-model.number="globalDbValue" step="1" min="-60" max="0" class="ctrl-input" :disabled="isProcessing" />
-                  <button class="btn btn--accent btn--sm" @click="applyGlobalDb" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.applyDb') }}</button>
+                  <input
+                    v-model.number="globalDbValue"
+                    type="number"
+                    step="1"
+                    min="-60"
+                    max="0"
+                    class="ctrl-input"
+                    :disabled="isProcessing"
+                  />
+                  <button
+                    class="btn btn--accent btn--sm"
+                    :disabled="isProcessing || audioFiles.length === 0"
+                    @click="applyGlobalDb"
+                  >
+                    {{ t('app.applyDb') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -88,7 +146,11 @@
                   <option value="webm">WebM / Opus</option>
                 </select>
               </div>
-              <button class="btn btn--primary btn--ebu" @click="applyEBUR128" :disabled="isProcessing || audioFiles.length === 0">
+              <button
+                class="btn btn--primary btn--ebu"
+                :disabled="isProcessing || audioFiles.length === 0"
+                @click="applyEBUR128"
+              >
                 <Zap :size="14" />{{ t('app.applyEBU') }}
               </button>
             </div>
@@ -96,10 +158,34 @@
 
           <!-- Effects strip -->
           <div class="effects-strip">
-            <button class="chip" @click="analyzeAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.analyzeAll') }}</button>
-            <button class="chip" @click="applyNoiseReductionAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.noiseReduction') }}</button>
-            <button class="chip" @click="reduceClippingAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.reduceClipping') }}</button>
-            <button class="chip" @click="applyDynamicCompressionAll" :disabled="isProcessing || audioFiles.length === 0">{{ t('app.dynamicCompression') }}</button>
+            <button
+              class="chip"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="analyzeAll"
+            >
+              {{ t('app.analyzeAll') }}
+            </button>
+            <button
+              class="chip"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="applyNoiseReductionAll"
+            >
+              {{ t('app.noiseReduction') }}
+            </button>
+            <button
+              class="chip"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="reduceClippingAll"
+            >
+              {{ t('app.reduceClipping') }}
+            </button>
+            <button
+              class="chip"
+              :disabled="isProcessing || audioFiles.length === 0"
+              @click="applyDynamicCompressionAll"
+            >
+              {{ t('app.dynamicCompression') }}
+            </button>
           </div>
 
           <!-- File meta / empty state -->
@@ -125,7 +211,6 @@
             <component :is="statusIcons[statusType]" :size="15" />
             <span>{{ statusMessage }}</span>
           </div>
-
         </div>
       </div>
     </section>
@@ -139,587 +224,726 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Upload, CheckCircle, AlertCircle, AlertTriangle, Info, Download, Trash2, RotateCcw, Zap } from 'lucide-vue-next'
-import { useI18n } from '../composables/useI18n'
-import { useAudioProcessor } from '../composables/useAudioProcessor'
-import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository'
-import AudioFileItem from '../components/AudioFileItem.vue'
-import HeaderControls from '../components/HeaderControls.vue'
+  import { ref, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import {
+    Upload,
+    CheckCircle,
+    AlertCircle,
+    AlertTriangle,
+    Info,
+    Download,
+    Trash2,
+    RotateCcw,
+    Zap,
+  } from 'lucide-vue-next'
+  import { useI18n } from '../composables/useI18n'
+  import { useAudioProcessor } from '../composables/useAudioProcessor'
+  import { getSharedFiles, clearSharedFiles } from '../utils/sharedFileRepository'
+  import AudioFileItem from '../components/AudioFileItem.vue'
+  import HeaderControls from '../components/HeaderControls.vue'
 
-const { t } = useI18n()
-const route = useRoute()
-const router = useRouter()
+  const { t } = useI18n()
+  const route = useRoute()
+  const router = useRouter()
 
-const {
-  audioFiles,
-  globalRmsValue,
-  globalDbValue,
-  downloadFormat,
-  showProgress,
-  progress,
-  progressLabel,
-  isLoading,
-  loadingMessage,
-  statusMessage,
-  statusType,
-  isProcessing,
-  handleFilesInput,
-  handleSharedFiles,
-  exportAll,
-  deleteAll,
-  resetAll,
-  applyGlobalRms,
-  applyGlobalDb,
-  applyEBUR128,
-  analyzeAll,
-  applyNoiseReductionAll,
-  reduceClippingAll,
-  applyDynamicCompressionAll,
-  updateFile,
-  removeFile,
-  exportFile
-} = useAudioProcessor()
+  const {
+    audioFiles,
+    globalRmsValue,
+    globalDbValue,
+    downloadFormat,
+    showProgress,
+    progress,
+    progressLabel,
+    isLoading,
+    loadingMessage,
+    statusMessage,
+    statusType,
+    isProcessing,
+    handleFilesInput,
+    handleSharedFiles,
+    exportAll,
+    deleteAll,
+    resetAll,
+    applyGlobalRms,
+    applyGlobalDb,
+    applyEBUR128,
+    analyzeAll,
+    applyNoiseReductionAll,
+    reduceClippingAll,
+    applyDynamicCompressionAll,
+    updateFile,
+    removeFile,
+    exportFile,
+  } = useAudioProcessor()
 
-const fileInputRef = ref(null)
-const folderInputRef = ref(null)
-const isDragging = ref(false)
-const sharedBanner = ref(null)
-let sharedFilesHandled = false
+  const fileInputRef = ref(null)
+  const folderInputRef = ref(null)
+  const isDragging = ref(false)
+  const sharedBanner = ref(null)
+  let sharedFilesHandled = false
 
-async function loadSharedFiles() {
-  if (sharedFilesHandled) return
-  sharedFilesHandled = true
+  async function loadSharedFiles() {
+    if (sharedFilesHandled) return
+    sharedFilesHandled = true
 
-  try {
-    const records = await getSharedFiles()
+    try {
+      const records = await getSharedFiles()
 
-    if (!records || records.length === 0) {
-      sharedBanner.value = { type: 'warning', message: t('app.sharedFilesEmpty') }
-      return
-    }
+      if (!records || records.length === 0) {
+        sharedBanner.value = { type: 'warning', message: t('app.sharedFilesEmpty') }
+        return
+      }
 
-    sharedBanner.value = { type: 'info', message: t('app.sharedFilesLoading', { count: records.length }) }
+      sharedBanner.value = {
+        type: 'info',
+        message: t('app.sharedFilesLoading', { count: records.length }),
+      }
 
-    const { processed } = await handleSharedFiles(records)
+      const { processed } = await handleSharedFiles(records)
 
-    if (processed > 0) {
-      sharedBanner.value = { type: 'success', message: t('app.sharedFilesLoaded', { count: processed }) }
-      await clearSharedFiles()
-    } else {
+      if (processed > 0) {
+        sharedBanner.value = {
+          type: 'success',
+          message: t('app.sharedFilesLoaded', { count: processed }),
+        }
+        await clearSharedFiles()
+      } else {
+        sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
+      }
+
+      if (sharedBanner.value?.type === 'success') {
+        setTimeout(() => {
+          sharedBanner.value = null
+        }, 6000)
+      }
+    } catch (error) {
+      console.error('[AudioNormalizer] Error loading shared files:', error)
       sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
     }
-
-    if (sharedBanner.value?.type === 'success') {
-      setTimeout(() => { sharedBanner.value = null }, 6000)
-    }
-  } catch (error) {
-    console.error('[AudioNormalizer] Error loading shared files:', error)
-    sharedBanner.value = { type: 'error', message: t('app.sharedFilesError') }
   }
-}
 
-router.isReady().then(() => {
-  if (route.query.source === 'audiokonverter') loadSharedFiles()
-})
+  router.isReady().then(() => {
+    if (route.query.source === 'audiokonverter') loadSharedFiles()
+  })
 
-watch(() => route.query.source, (source) => {
-  if (source === 'audiokonverter') loadSharedFiles()
-})
+  watch(
+    () => route.query.source,
+    (source) => {
+      if (source === 'audiokonverter') loadSharedFiles()
+    },
+  )
 
-const handleFiles = (event) => {
-  const files = event.target.files
-  if (files && files.length > 0) handleFilesInput(Array.from(files))
-  event.target.value = ''
-}
+  const handleFiles = (event) => {
+    const files = event.target.files
+    if (files && files.length > 0) handleFilesInput(Array.from(files))
+    event.target.value = ''
+  }
 
-const handleDrop = async (event) => {
-  isDragging.value = false
-  const items = event.dataTransfer.items
-  if (!items || items.length === 0) return
+  const handleDrop = async (event) => {
+    isDragging.value = false
+    const items = event.dataTransfer.items
+    if (!items || items.length === 0) return
 
-  const files = []
+    const files = []
 
-  const readEntry = (entry) =>
-    new Promise((resolve) => {
-      if (entry.isFile) {
-        entry.file((f) => { files.push(f); resolve() }, resolve)
-      } else if (entry.isDirectory) {
-        const reader = entry.createReader()
-        const readAll = () => {
-          reader.readEntries(async (entries) => {
-            if (entries.length === 0) { resolve(); return }
-            await Promise.all(entries.map(readEntry))
-            readAll()
+    const readEntry = (entry) =>
+      new Promise((resolve) => {
+        if (entry.isFile) {
+          entry.file((f) => {
+            files.push(f)
+            resolve()
           }, resolve)
+        } else if (entry.isDirectory) {
+          const reader = entry.createReader()
+          const readAll = () => {
+            reader.readEntries(async (entries) => {
+              if (entries.length === 0) {
+                resolve()
+                return
+              }
+              await Promise.all(entries.map(readEntry))
+              readAll()
+            }, resolve)
+          }
+          readAll()
+        } else {
+          resolve()
         }
-        readAll()
-      } else {
-        resolve()
-      }
-    })
+      })
 
-  const entries = Array.from(items).map((item) => item.webkitGetAsEntry?.()).filter(Boolean)
-  await Promise.all(entries.map(readEntry))
+    const entries = Array.from(items)
+      .map((item) => item.webkitGetAsEntry?.())
+      .filter(Boolean)
+    await Promise.all(entries.map(readEntry))
 
-  const audioOnly = files.filter((f) => f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name))
-  if (audioOnly.length > 0) handleFilesInput(audioOnly)
-}
+    const audioOnly = files.filter(
+      (f) => f.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(f.name),
+    )
+    if (audioOnly.length > 0) handleFilesInput(audioOnly)
+  }
 
-const confirmDeleteAll = () => {
-  if (audioFiles.value.length === 0) return
-  if (confirm(t('app.confirmDeleteAll'))) deleteAll()
-}
+  const confirmDeleteAll = () => {
+    if (audioFiles.value.length === 0) return
+    if (confirm(t('app.confirmDeleteAll'))) deleteAll()
+  }
 
-const confirmResetAll = () => {
-  if (audioFiles.value.length === 0) return
-  if (confirm(t('app.confirmResetAll'))) resetAll()
-}
+  const confirmResetAll = () => {
+    if (audioFiles.value.length === 0) return
+    if (confirm(t('app.confirmResetAll'))) resetAll()
+  }
 
-const statusIcons = {
-  success: CheckCircle,
-  error: AlertCircle,
-  warning: AlertTriangle,
-  info: Info
-}
+  const statusIcons = {
+    success: CheckCircle,
+    error: AlertCircle,
+    warning: AlertTriangle,
+    info: Info,
+  }
 </script>
 
 <style scoped>
-/* ── Layout ─────────────────────────────────────────── */
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 1.25rem 1.5rem;
-}
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-/* ── Header ──────────────────────────────────────────── */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.25rem;
-  position: relative;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.header-controls-slot { position: absolute; right: 1.25rem; }
-
-.back-link {
-  position: absolute;
-  left: 1.25rem;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.65rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  color: var(--text);
-  font-size: 0.73rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.back-link:hover {
-  background: var(--accent);
-  color: var(--accent-text);
-  border-color: var(--accent);
-}
-
-.header-titles { text-align: center; }
-
-.app-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0;
-}
-
-.app-subtitle {
-  font-size: 0.68rem;
-  color: var(--muted);
-  margin: 0.1rem 0 0;
-}
-
-/* ── Banner ──────────────────────────────────────────── */
-.banner {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.banner--success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: #22c55e; }
-.banner--error   { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #ef4444; }
-.banner--warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #f59e0b; }
-.banner--info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: #3b82f6; }
-
-/* ── Drop zone ───────────────────────────────────────── */
-.drop-zone {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1.25rem;
-  background: var(--gradient-color);
-  border: 1.5px dashed var(--border-color);
-  border-radius: 0.625rem;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.drop-zone--active {
-  border-color: var(--accent);
-  background: var(--panel-highlight);
-}
-
-.drop-icon { color: var(--accent); flex-shrink: 0; }
-
-.drop-label {
-  flex: 1;
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.drop-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-/* ── Progress strip ──────────────────────────────────── */
-.progress-strip {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem 0.875rem;
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-}
-
-.progress-label {
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.progress-track {
-  height: 4px;
-  background: var(--btn);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.progress-pct {
-  font-size: 0.73rem;
-  font-weight: 700;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── Toolbar ─────────────────────────────────────────── */
-.toolbar {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-/* ── Controls panel ──────────────────────────────────── */
-.controls-panel {
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: 0.625rem;
-  padding: 0.875rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-.controls-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.controls-row--bottom {
-  grid-template-columns: 1fr 1fr;
-  align-items: end;
-}
-
-.ctrl-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.ctrl-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.ctrl-row {
-  display: flex;
-  gap: 0.375rem;
-}
-
-.ctrl-input {
-  flex: 1;
-  min-width: 0;
-  padding: 0.375rem 0.5rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  color: var(--text);
-  font-size: 0.82rem;
-  transition: border-color 0.15s;
-}
-
-.ctrl-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.ctrl-input:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.ctrl-select {
-  padding: 0.375rem 0.5rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  color: var(--text);
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: border-color 0.15s;
-  min-width: 130px;
-}
-
-.ctrl-select:focus { outline: none; border-color: var(--accent); }
-
-.btn--ebu {
-  width: 100%;
-  justify-content: center;
-  white-space: nowrap;
-}
-
-/* ── Effects strip ───────────────────────────────────── */
-.effects-strip {
-  display: flex;
-  gap: 0.375rem;
-  flex-wrap: wrap;
-}
-
-.chip {
-  padding: 0.3rem 0.75rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 9999px;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.chip:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--panel-highlight);
-}
-
-.chip:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ── File meta ───────────────────────────────────────── */
-.file-meta {
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: var(--muted);
-  padding: 0 0.25rem;
-}
-
-.file-meta--empty {
-  text-align: center;
-  padding: 1.25rem;
-  background: var(--panel);
-  border: 1px dashed var(--border-color);
-  border-radius: 0.5rem;
-  font-size: 0.82rem;
-}
-
-/* ── File list ───────────────────────────────────────── */
-.file-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  max-height: 580px;
-  overflow-y: auto;
-  padding-right: 0.25rem;
-}
-
-.file-list::-webkit-scrollbar { width: 5px; }
-.file-list::-webkit-scrollbar-track { background: transparent; }
-.file-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-.file-list::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-.file-list { scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; }
-
-/* ── Status toast ────────────────────────────────────── */
-.status-toast {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  animation: slideUp 0.2s ease;
-}
-
-.toast--success { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.3);  color: #22c55e; }
-.toast--error   { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #ef4444; }
-.toast--warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #f59e0b; }
-.toast--info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: #3b82f6; }
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Buttons ─────────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.45rem 0.875rem;
-  border: none;
-  border-radius: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.btn--sm { padding: 0.35rem 0.7rem; font-size: 0.75rem; }
-
-.btn--primary {
-  background: var(--accent);
-  color: var(--accent-text);
-}
-.btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
-
-.btn--accent {
-  background: var(--btn);
-  color: var(--text);
-  border: 1px solid var(--border-color);
-}
-.btn--accent:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.btn--ghost {
-  background: var(--btn);
-  color: var(--text);
-  border: 1px solid var(--border-color);
-}
-.btn--ghost:hover:not(:disabled) {
-  background: var(--btn-hover);
-  transform: translateY(-1px);
-}
-
-.btn--danger {
-  background: rgba(239,68,68,.15);
-  color: #ef4444;
-  border: 1px solid rgba(239,68,68,.3);
-}
-.btn--danger:hover:not(:disabled) {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
-}
-
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
-
-/* ── Loading overlay ─────────────────────────────────── */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.65);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  z-index: 9999;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255,255,255,.15);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-overlay p {
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-/* ── Responsive ──────────────────────────────────────── */
-@media (max-width: 640px) {
-  .container { padding: 0.75rem; }
-
-  .app-header {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+  /* ── Layout ─────────────────────────────────────────── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
   }
 
-  .back-link, .header-controls-slot { position: static; }
-  .header-titles { flex: 1; min-width: 0; }
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
 
-  .drop-zone { flex-wrap: wrap; }
-  .drop-label { flex: 1 0 100%; }
+  /* ── Header ──────────────────────────────────────────── */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    position: relative;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border-color);
+  }
 
-  .controls-row,
-  .controls-row--bottom { grid-template-columns: 1fr; }
+  .header-controls-slot {
+    position: absolute;
+    right: 1.25rem;
+  }
 
-  .toolbar { gap: 0.375rem; }
-  .toolbar .btn { flex: 1; justify-content: center; }
-}
+  .back-link {
+    position: absolute;
+    left: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.65rem;
+    background: var(--btn);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text);
+    font-size: 0.73rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
 
-@media (max-width: 400px) {
-  .app-subtitle { display: none; }
-  .chip { font-size: 0.7rem; padding: 0.25rem 0.6rem; }
-}
+  .back-link:hover {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+
+  .header-titles {
+    text-align: center;
+  }
+
+  .app-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .app-subtitle {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin: 0.1rem 0 0;
+  }
+
+  /* ── Banner ──────────────────────────────────────────── */
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .banner--success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+  }
+  .banner--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+  .banner--warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+  }
+  .banner--info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+  }
+
+  /* ── Drop zone ───────────────────────────────────────── */
+  .drop-zone {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1.25rem;
+    background: var(--gradient-color);
+    border: 1.5px dashed var(--border-color);
+    border-radius: 0.625rem;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+
+  .drop-zone--active {
+    border-color: var(--accent);
+    background: var(--panel-highlight);
+  }
+
+  .drop-icon {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .drop-label {
+    flex: 1;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .drop-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Progress strip ──────────────────────────────────── */
+  .progress-strip {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+  }
+
+  .progress-label {
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--btn);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-pct {
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Toolbar ─────────────────────────────────────────── */
+  .toolbar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── Controls panel ──────────────────────────────────── */
+  .controls-panel {
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0.625rem;
+    padding: 0.875rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .controls-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .controls-row--bottom {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+  }
+
+  .ctrl-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .ctrl-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .ctrl-row {
+    display: flex;
+    gap: 0.375rem;
+  }
+
+  .ctrl-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.375rem 0.5rem;
+    background: var(--btn);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text);
+    font-size: 0.82rem;
+    transition: border-color 0.15s;
+  }
+
+  .ctrl-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .ctrl-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ctrl-select {
+    padding: 0.375rem 0.5rem;
+    background: var(--btn);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    min-width: 130px;
+  }
+
+  .ctrl-select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .btn--ebu {
+    width: 100%;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  /* ── Effects strip ───────────────────────────────────── */
+  .effects-strip {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 0.3rem 0.75rem;
+    background: var(--btn);
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .chip:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--panel-highlight);
+  }
+
+  .chip:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── File meta ───────────────────────────────────────── */
+  .file-meta {
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 0 0.25rem;
+  }
+
+  .file-meta--empty {
+    text-align: center;
+    padding: 1.25rem;
+    background: var(--panel);
+    border: 1px dashed var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.82rem;
+  }
+
+  /* ── File list ───────────────────────────────────────── */
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-height: 580px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  .file-list::-webkit-scrollbar {
+    width: 5px;
+  }
+  .file-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .file-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+  .file-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+  .file-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+  }
+
+  /* ── Status toast ────────────────────────────────────── */
+  .status-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    animation: slideUp 0.2s ease;
+  }
+
+  .toast--success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+  }
+  .toast--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+  .toast--warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+  }
+  .toast--info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.45rem 0.875rem;
+    border: none;
+    border-radius: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .btn--sm {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .btn--primary {
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+  .btn--primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .btn--accent {
+    background: var(--btn);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+  }
+  .btn--accent:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn--ghost {
+    background: var(--btn);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+  }
+  .btn--ghost:hover:not(:disabled) {
+    background: var(--btn-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  .btn--danger:hover:not(:disabled) {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* ── Loading overlay ─────────────────────────────────── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 9999;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loading-overlay p {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  /* ── Responsive ──────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .container {
+      padding: 0.75rem;
+    }
+
+    .app-header {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .back-link,
+    .header-controls-slot {
+      position: static;
+    }
+    .header-titles {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .drop-zone {
+      flex-wrap: wrap;
+    }
+    .drop-label {
+      flex: 1 0 100%;
+    }
+
+    .controls-row,
+    .controls-row--bottom {
+      grid-template-columns: 1fr;
+    }
+
+    .toolbar {
+      gap: 0.375rem;
+    }
+    .toolbar .btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .app-subtitle {
+      display: none;
+    }
+    .chip {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
+    }
+  }
 </style>

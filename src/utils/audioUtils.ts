@@ -9,11 +9,11 @@ export const CONSTANTS = {
   LOWPASS_Q: 1,
   MP3_KBPS: 320,
   WEBM_KBPS: 128,
-}
+} as const
 
-export const generateId = () => '_' + Math.random().toString(36).substr(2, 9)
+export const generateId = (): string => '_' + Math.random().toString(36).substr(2, 9)
 
-export const calculateRMS = (buffer) => {
+export const calculateRMS = (buffer: AudioBuffer): number => {
   let rmsSum = 0
   for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
     const channelData = buffer.getChannelData(channel)
@@ -24,7 +24,7 @@ export const calculateRMS = (buffer) => {
   return Math.sqrt(rmsSum / (buffer.length * buffer.numberOfChannels))
 }
 
-export const calculatePeak = (buffer) => {
+export const calculatePeak = (buffer: AudioBuffer): number => {
   let peak = 0
   for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
     const channelData = buffer.getChannelData(channel)
@@ -35,9 +35,9 @@ export const calculatePeak = (buffer) => {
   return peak
 }
 
-export const dbToRms = (db) => Math.pow(10, db / 20)
+export const dbToRms = (db: number): number => Math.pow(10, db / 20)
 
-export const normalizePeak = (buffer) => {
+export const normalizePeak = (buffer: AudioBuffer): AudioBuffer => {
   const currentPeak = calculatePeak(buffer)
   if (currentPeak > 1.0) {
     const scaleFactor = 1.0 / currentPeak
@@ -51,14 +51,14 @@ export const normalizePeak = (buffer) => {
   return buffer
 }
 
-export const bufferToWave = (abuffer, offset, len) => {
+export const bufferToWave = (abuffer: AudioBuffer, offset: number, len: number): Blob => {
   const numOfChan = abuffer.numberOfChannels
   const length = len * numOfChan * 2 + 44
   const buffer = new ArrayBuffer(length)
   const view = new DataView(buffer)
   const sampleRate = abuffer.sampleRate
 
-  const writeString = (v, off, string) => {
+  const writeString = (v: DataView, off: number, string: string) => {
     for (let i = 0; i < string.length; i++) v.setUint8(off + i, string.charCodeAt(i))
   }
 
@@ -89,7 +89,7 @@ export const bufferToWave = (abuffer, offset, len) => {
   return new Blob([buffer], { type: 'audio/wav' })
 }
 
-export const triggerDownload = (blob, filename) => {
+export const triggerDownload = (blob: Blob, filename: string): void => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.style.display = 'none'
@@ -101,5 +101,5 @@ export const triggerDownload = (blob, filename) => {
   window.URL.revokeObjectURL(url)
 }
 
-export const isAudioFile = (file) =>
+export const isAudioFile = (file: File): boolean =>
   file.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(file.name)

@@ -581,12 +581,13 @@ export function useI18n() {
   const locale = computed(() => currentLocale.value)
 
   // Verbesserte t-Funktion für dynamische Platzhalter wie {count}
-  const t = (key, replacements = {}) => {
-    let message = translations[currentLocale.value]?.[key] || key
+  const t = (key: string, replacements: Record<string, unknown> = {}): string => {
+    const lang = translations[currentLocale.value as keyof typeof translations]
+    let message: string = (lang as Record<string, string>)[key] ?? key
 
     for (const [placeholder, value] of Object.entries(replacements)) {
       const regex = new RegExp(`{\\s*${placeholder}\\s*}`, 'g')
-      message = message.replace(regex, value)
+      message = message.replace(regex, String(value))
     }
 
     return message
@@ -609,6 +610,7 @@ export function useI18n() {
     // ── Nav: data-i18n → textContent (matches nav.html SSI attributes) ──
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n')
+      if (!key) return
       const translated = t(key)
       if (translated !== key) el.textContent = translated
     })
@@ -616,6 +618,7 @@ export function useI18n() {
     // ── Nav: data-i18n-aria → aria-label (matches nav.html SSI attributes) ──
     document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
       const key = el.getAttribute('data-i18n-aria')
+      if (!key) return
       const translated = t(key)
       if (translated !== key) el.setAttribute('aria-label', translated)
     })
@@ -654,7 +657,7 @@ export function useI18n() {
     translateSsiIncludes()
   }
 
-  const setLocale = (newLocale) => {
+  const setLocale = (newLocale: string) => {
     currentLocale.value = newLocale
     localStorage.setItem('locale', newLocale)
     document.documentElement.setAttribute('lang', newLocale)
@@ -676,14 +679,14 @@ export function useI18n() {
     nav.addEventListener(
       'click',
       (e) => {
-        const langBtn = e.target.closest('.global-nav-lang-btn')
+        const langBtn = (e.target as Element | null)?.closest('.global-nav-lang-btn')
         if (!langBtn) return
 
         e.stopPropagation()
         e.preventDefault()
 
         const targetLang = langBtn.getAttribute('data-lang')
-        if (targetLang === currentLocale.value) return
+        if (!targetLang || targetLang === currentLocale.value) return
 
         // Update Vue reactive locale (no page reload)
         currentLocale.value = targetLang
@@ -698,7 +701,8 @@ export function useI18n() {
 
     // Listen for locale-changed from nav's own JS (fallback sync)
     window.addEventListener('locale-changed', (e) => {
-      const newLocale = e.detail && e.detail.locale
+      const detail = (e as CustomEvent<{ locale?: string }>).detail
+      const newLocale = detail?.locale
       if (newLocale && newLocale !== currentLocale.value) {
         currentLocale.value = newLocale
         translateSsiIncludes()

@@ -4,9 +4,15 @@ import {
   calculatePeak,
   normalizePeak,
   bufferToWave,
-} from '../utils/audioUtils.js'
+} from '../utils/audioUtils'
+import type { AudioFileData } from '../types'
 
-const applyOfflineEffect = async (inputBuffer, buildGraph) => {
+type GraphBuilder = (ctx: OfflineAudioContext, source: AudioBufferSourceNode) => void
+
+const applyOfflineEffect = (
+  inputBuffer: AudioBuffer,
+  buildGraph: GraphBuilder,
+): Promise<AudioBuffer> => {
   const offlineCtx = new OfflineAudioContext(
     inputBuffer.numberOfChannels,
     inputBuffer.length,
@@ -19,7 +25,7 @@ const applyOfflineEffect = async (inputBuffer, buildGraph) => {
   return offlineCtx.startRendering()
 }
 
-const updateFileData = (fileData, renderedBuffer) => {
+const updateFileData = (fileData: AudioFileData, renderedBuffer: AudioBuffer): void => {
   fileData.processedBuffer = renderedBuffer
   fileData.peak = calculatePeak(renderedBuffer)
   fileData.rms = calculateRMS(renderedBuffer)
@@ -29,7 +35,7 @@ const updateFileData = (fileData, renderedBuffer) => {
   )
 }
 
-export const measureLoudnessR128 = async (buffer) => {
+export const measureLoudnessR128 = async (buffer: AudioBuffer): Promise<number> => {
   const renderedBuffer = await applyOfflineEffect(buffer, (ctx, source) => {
     const highpass = ctx.createBiquadFilter()
     highpass.type = 'highpass'
@@ -48,7 +54,10 @@ export const measureLoudnessR128 = async (buffer) => {
   return isFinite(lufs) ? lufs : -70.0
 }
 
-export const scaleAudioBuffer = async (fileData, targetRms) => {
+export const scaleAudioBuffer = async (
+  fileData: AudioFileData,
+  targetRms: number,
+): Promise<void> => {
   const originalBuffer = fileData.originalBuffer
   if (!originalBuffer) throw new Error('Original buffer not found')
 
@@ -66,9 +75,9 @@ export const scaleAudioBuffer = async (fileData, targetRms) => {
 }
 
 export const normalizeToLoudnessR128 = async (
-  fileData,
+  fileData: AudioFileData,
   targetLufs = CONSTANTS.EBU_R128_TARGET_LUFS,
-) => {
+): Promise<void> => {
   const originalBuffer = fileData.originalBuffer
   if (!originalBuffer) throw new Error('Original buffer not found')
 
@@ -85,7 +94,7 @@ export const normalizeToLoudnessR128 = async (
   updateFileData(fileData, renderedBuffer)
 }
 
-export const applyNoiseReduction = async (fileData) => {
+export const applyNoiseReduction = async (fileData: AudioFileData): Promise<void> => {
   const inputBuffer = fileData.processedBuffer || fileData.originalBuffer
 
   const renderedBuffer = await applyOfflineEffect(inputBuffer, (ctx, source) => {
@@ -99,7 +108,7 @@ export const applyNoiseReduction = async (fileData) => {
   updateFileData(fileData, renderedBuffer)
 }
 
-export const reduceClipping = async (fileData) => {
+export const reduceClipping = async (fileData: AudioFileData): Promise<void> => {
   const inputBuffer = fileData.processedBuffer || fileData.originalBuffer
 
   const renderedBuffer = await applyOfflineEffect(inputBuffer, (ctx, source) => {
@@ -116,7 +125,7 @@ export const reduceClipping = async (fileData) => {
   updateFileData(fileData, renderedBuffer)
 }
 
-export const applyDynamicCompression = async (fileData) => {
+export const applyDynamicCompression = async (fileData: AudioFileData): Promise<void> => {
   const inputBuffer = fileData.processedBuffer || fileData.originalBuffer
 
   const renderedBuffer = await applyOfflineEffect(inputBuffer, (ctx, source) => {

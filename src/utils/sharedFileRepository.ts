@@ -6,15 +6,17 @@
  * when opened with ?source=audiokonverter.
  */
 
+import type { SharedFileRecord } from '../types'
+
 const DB_NAME = 'kodinitools-shared-files'
 const STORE_NAME = 'audio-files'
 const DB_VERSION = 1
 
-function openDB() {
+function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
     request.onupgradeneeded = (e) => {
-      const db = e.target.result
+      const db = (e.target as IDBOpenDBRequest).result
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
       }
@@ -24,13 +26,7 @@ function openDB() {
   })
 }
 
-/**
- * Store converted files for handoff to another tool.
- * Clears any previous entries first.
- *
- * @param {{ name: string, blob: Blob }[]} files
- */
-export async function shareFiles(files) {
+export async function shareFiles(files: { name: string; blob: Blob }[]): Promise<void> {
   const db = await openDB()
   const tx = db.transaction(STORE_NAME, 'readwrite')
   const store = tx.objectStore(STORE_NAME)
@@ -59,11 +55,7 @@ export async function shareFiles(files) {
   })
 }
 
-/**
- * Read shared files (used by the receiving tool).
- * @returns {Promise<Array>}
- */
-export async function getSharedFiles() {
+export async function getSharedFiles(): Promise<SharedFileRecord[]> {
   const db = await openDB()
   const tx = db.transaction(STORE_NAME, 'readonly')
   const request = tx.objectStore(STORE_NAME).getAll()
@@ -71,7 +63,7 @@ export async function getSharedFiles() {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => {
       db.close()
-      resolve(request.result)
+      resolve(request.result as SharedFileRecord[])
     }
     request.onerror = () => {
       db.close()
@@ -80,10 +72,7 @@ export async function getSharedFiles() {
   })
 }
 
-/**
- * Clear shared files after the receiving tool has consumed them.
- */
-export async function clearSharedFiles() {
+export async function clearSharedFiles(): Promise<void> {
   const db = await openDB()
   const tx = db.transaction(STORE_NAME, 'readwrite')
   tx.objectStore(STORE_NAME).clear()

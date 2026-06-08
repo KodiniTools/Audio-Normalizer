@@ -1,9 +1,15 @@
 import { ref } from 'vue'
 import JSZip from 'jszip'
 import { Muxer, ArrayBufferTarget } from 'webm-muxer'
-import { CONSTANTS, bufferToWave, triggerDownload } from '../utils/audioUtils.js'
+import { CONSTANTS, bufferToWave, triggerDownload } from '../utils/audioUtils'
+import type { AudioFileData, ExportResult, Mp3WorkerOutput } from '../types'
 
-const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
+type ProgressCallback = ((pct: number) => void) | null
+
+const audioBufferToWebMFast = async (
+  audioBuffer: AudioBuffer,
+  onProgress: ProgressCallback = null,
+): Promise<Blob> => {
   const { numberOfChannels, sampleRate, length: totalFrames } = audioBuffer
 
   const target = new ArrayBufferTarget()
@@ -62,10 +68,13 @@ const audioBufferToWebMFast = async (audioBuffer, onProgress = null) => {
   return new Blob([target.buffer], { type: 'audio/webm' })
 }
 
-const audioBufferToWebMFallback = (audioBuffer, onProgress = null) => {
+const audioBufferToWebMFallback = (
+  audioBuffer: AudioBuffer,
+  onProgress: ProgressCallback = null,
+): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const audioContext = new AudioContext()
       audioContext.suspend()
 
       const dest = audioContext.createMediaStreamDestination()
@@ -85,14 +94,14 @@ const audioBufferToWebMFallback = (audioBuffer, onProgress = null) => {
         audioBitsPerSecond: CONSTANTS.WEBM_KBPS * 1000,
       })
 
-      const chunks = []
+      const chunks: Blob[] = []
       const duration = audioBuffer.duration * 1000
       const startTime = Date.now()
 
-      let progressInterval = null
+      let progressInterval: ReturnType<typeof setInterval> | null = null
       if (onProgress) {
         progressInterval = setInterval(() => {
-          onProgress(Math.min(Math.round(((Date.now() - startTime) / duration) * 100), 99))
+          onProgress!(Math.min(Math.round(((Date.now() - startTime) / duration) * 100), 99))
         }, 100)
       }
 
@@ -108,7 +117,7 @@ const audioBufferToWebMFallback = (audioBuffer, onProgress = null) => {
       mediaRecorder.onerror = (e) => {
         if (progressInterval) clearInterval(progressInterval)
         audioContext.close()
-        reject(e.error || new Error('MediaRecorder error'))
+        reject((e as Event & { error?: Error }).error || new Error('MediaRecorder error'))
       }
 
       audioContext.resume().then(() => {
@@ -126,12 +135,19 @@ const audioBufferToWebMFallback = (audioBuffer, onProgress = null) => {
   })
 }
 
-const audioBufferToWebM = (audioBuffer, onProgress = null) => {
+const audioBufferToWebM = (
+  audioBuffer: AudioBuffer,
+  onProgress: ProgressCallback = null,
+): Promise<Blob> => {
   if (typeof AudioEncoder !== 'undefined') return audioBufferToWebMFast(audioBuffer, onProgress)
   return audioBufferToWebMFallback(audioBuffer, onProgress)
 }
 
-const getFileBlob = async (file, format, onProgress = null) => {
+const getFileBlob = async (
+  file: AudioFileData,
+  format: string,
+  onProgress: ProgressCallback = null,
+): Promise<ExportResult> => {
   const exportBuffer = file.processedBuffer || file.originalBuffer
   if (!exportBuffer) throw new Error('No audio data to export')
 
@@ -141,11 +157,11 @@ const getFileBlob = async (file, format, onProgress = null) => {
     const left = exportBuffer.getChannelData(0)
     const right = exportBuffer.numberOfChannels > 1 ? exportBuffer.getChannelData(1) : left
 
-    const mp3Blob = await new Promise((resolve, reject) => {
+    const mp3Blob = await new Promise<Blob>((resolve, reject) => {
       const worker = new Worker(new URL('../workers/mp3Worker.js', import.meta.url))
-      worker.onmessage = (e) => {
+      worker.onmessage = (e: MessageEvent<Mp3WorkerOutput>) => {
         if (e.data.progress !== undefined && onProgress) onProgress(e.data.progress)
-        if (e.data.done) {
+        if (e.data.done && e.data.result) {
           worker.terminate()
           resolve(new Blob([new Uint8Array(e.data.result)], { type: 'audio/mp3' }))
         }
@@ -176,11 +192,15 @@ const getFileBlob = async (file, format, onProgress = null) => {
   return { blob: bufferToWave(exportBuffer, 0, exportBuffer.length), filename: `${baseName}.wav` }
 }
 
-export function useAudioExport(downloadFormat, setProgress, setStatus) {
+export function useAudioExport(
+  downloadFormat: { value: string },
+  setProgress: (label: string, value: number) => void,
+  setStatus: (message: string, type?: import('../types').StatusType) => void,
+) {
   const isLoading = ref(false)
   const loadingMessage = ref('Verarbeite...')
 
-  const exportFile = async (file) => {
+  const exportFile = async (file: AudioFileData): Promise<void> => {
     isLoading.value = true
     const format = downloadFormat.value
     loadingMessage.value = `Exportiere ${file.name}...`
@@ -199,7 +219,7 @@ export function useAudioExport(downloadFormat, setProgress, setStatus) {
     }
   }
 
-  const exportAll = async (audioFiles) => {
+  const exportAll = async (audioFiles: AudioFileData[]): Promise<void> => {
     if (audioFiles.length === 0) return
 
     isLoading.value = true

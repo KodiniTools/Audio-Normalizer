@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'landing',
@@ -28,17 +29,13 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return { top: 0 }
-    }
+  scrollBehavior(_to, _from, savedPosition) {
+    return savedPosition ?? { top: 0 }
   },
 })
 
 // Redirect to /app when arriving with ?source=audiokonverter on the landing page
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   if (to.name === 'landing' && to.query.source === 'audiokonverter') {
     next({ name: 'app', query: { source: 'audiokonverter' } })
   } else {

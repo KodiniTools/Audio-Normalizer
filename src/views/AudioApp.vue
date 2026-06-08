@@ -48,10 +48,10 @@
             <Upload :size="20" class="drop-icon" />
             <span class="drop-label">{{ t('app.selectFiles') }}</span>
             <div class="drop-actions">
-              <button type="button" class="btn btn--ghost" @click="fileInputRef.click()">
+              <button type="button" class="btn btn--ghost" @click="fileInputRef?.click()">
                 {{ t('app.selectFilesBtn') }}
               </button>
-              <button type="button" class="btn btn--ghost" @click="folderInputRef.click()">
+              <button type="button" class="btn btn--ghost" @click="folderInputRef?.click()">
                 {{ t('app.selectFolderBtn') }}
               </button>
             </div>
@@ -223,7 +223,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { useRoute, useRouter } from 'vue-router'
   import {
     Upload,

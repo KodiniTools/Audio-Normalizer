@@ -1,22 +1,17 @@
 import { ref } from 'vue'
-import {
-  generateId,
-  calculateRMS,
-  calculatePeak,
-  dbToRms,
-  isAudioFile,
-} from '../utils/audioUtils.js'
+import { generateId, calculateRMS, calculatePeak, dbToRms, isAudioFile } from '../utils/audioUtils'
 import {
   scaleAudioBuffer,
   normalizeToLoudnessR128,
   applyNoiseReduction,
   reduceClipping,
   applyDynamicCompression,
-} from './useAudioNormalization.js'
-import { useAudioExport } from './useAudioExport.js'
+} from './useAudioNormalization'
+import { useAudioExport } from './useAudioExport'
+import type { AudioFileData, BatchResult, StatusType } from '../types'
 
 export function useAudioProcessor() {
-  const audioFiles = ref([])
+  const audioFiles = ref<AudioFileData[]>([])
   const globalRmsValue = ref(0.5)
   const globalDbValue = ref(-20)
   const downloadFormat = ref('wav')
@@ -24,12 +19,12 @@ export function useAudioProcessor() {
   const progress = ref(0)
   const progressLabel = ref('')
   const statusMessage = ref('')
-  const statusType = ref('info')
+  const statusType = ref<StatusType>('info')
   const isProcessing = ref(false)
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  const setProgress = (label, value) => {
+  const setProgress = (label: string, value: number): void => {
     showProgress.value = true
     progressLabel.value = label
     progress.value = value
@@ -39,7 +34,7 @@ export function useAudioProcessor() {
       }, 500)
   }
 
-  const setStatus = (message, type = 'info') => {
+  const setStatus = (message: string, type: StatusType = 'info'): void => {
     statusMessage.value = message
     statusType.value = type
     const duration = type === 'error' ? 5000 : type === 'warning' ? 4000 : 3000
@@ -50,7 +45,12 @@ export function useAudioProcessor() {
 
   // NOTE: Keep concurrency=1 for OfflineAudioContext operations — each context
   // holds a full PCM copy of the file in RAM, so parallelism multiplies peak usage.
-  const runBatch = async (items, label, fn, concurrency = 1) => {
+  const runBatch = async (
+    items: AudioFileData[],
+    label: string,
+    fn: (item: AudioFileData, index: number) => Promise<void>,
+    concurrency = 1,
+  ): Promise<void> => {
     const total = items.length
     let done = 0
     let index = 0
@@ -77,11 +77,11 @@ export function useAudioProcessor() {
     exportAll: _exportAll,
   } = useAudioExport(downloadFormat, setProgress, setStatus)
 
-  const exportAll = () => _exportAll(audioFiles.value.slice())
+  const exportAll = (): Promise<void> => _exportAll(audioFiles.value.slice())
 
   // ── File Analysis ────────────────────────────────────────────────────────
 
-  const buildFileData = async (buffer, name, originalRef) => ({
+  const buildFileData = (buffer: AudioBuffer, name: string, originalRef: File): AudioFileData => ({
     id: generateId(),
     name,
     file: originalRef,
@@ -95,26 +95,27 @@ export function useAudioProcessor() {
     originalBlobUrl: URL.createObjectURL(originalRef),
   })
 
-  const analyzeFile = async (file) => {
-    const arrayBuffer = await file.arrayBuffer()
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+  const decodeAudio = async (arrayBuffer: ArrayBuffer): Promise<AudioBuffer> => {
+    const audioContext = new AudioContext()
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
     audioContext.close()
-    return buildFileData(audioBuffer, file.name, file)
+    return audioBuffer
   }
 
-  const analyzeBlob = async (blob, name) => {
-    const arrayBuffer = await blob.arrayBuffer()
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
-    audioContext.close()
+  const analyzeFile = async (file: File): Promise<AudioFileData> => {
+    const buffer = await decodeAudio(await file.arrayBuffer())
+    return buildFileData(buffer, file.name, file)
+  }
+
+  const analyzeBlob = async (blob: Blob, name: string): Promise<AudioFileData> => {
+    const buffer = await decodeAudio(await blob.arrayBuffer())
     const fileRef = new File([blob], name, { type: blob.type })
-    return buildFileData(audioBuffer, name, fileRef)
+    return buildFileData(buffer, name, fileRef)
   }
 
   // ── File Handling ────────────────────────────────────────────────────────
 
-  const handleFilesInput = async (files) => {
+  const handleFilesInput = async (files: File[]): Promise<void> => {
     isProcessing.value = true
     const audioOnly = files.filter((f) => {
       const ok = isAudioFile(f)
@@ -132,14 +133,15 @@ export function useAudioProcessor() {
     let errors = 0
 
     await runBatch(
-      audioOnly,
+      audioOnly as unknown as AudioFileData[],
       'Upload',
-      async (file) => {
+      async (item) => {
+        const file = item as unknown as File
         try {
           audioFiles.value.push(await analyzeFile(file))
           processed++
         } catch {
-          setStatus(`Fehler bei ${file.name}`, 'error')
+          setStatus(`Fehler bei ${(file as File).name}`, 'error')
           errors++
         }
       },
@@ -151,36 +153,33 @@ export function useAudioProcessor() {
     else if (errors > 0) setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
   }
 
-  const handleSharedFiles = async (sharedRecords) => {
+  const handleSharedFiles = async (
+    sharedRecords: { name: string; blob: Blob | ArrayBuffer; mimeType?: string }[],
+  ): Promise<BatchResult> => {
     isProcessing.value = true
     let processed = 0
     let errors = 0
 
-    await runBatch(
-      sharedRecords,
-      'Import',
-      async (record) => {
-        try {
-          const blob =
-            record.blob instanceof Blob
-              ? record.blob
-              : new Blob([record.blob], { type: record.mimeType || 'audio/wav' })
+    for (const record of sharedRecords) {
+      try {
+        const blob =
+          record.blob instanceof Blob
+            ? record.blob
+            : new Blob([record.blob], { type: record.mimeType || 'audio/wav' })
 
-          if (blob.size === 0) {
-            console.warn(`[AudioNormalizer] Shared file "${record.name}" has empty blob, skipping`)
-            errors++
-            return
-          }
-
-          audioFiles.value.push(await analyzeBlob(blob, record.name))
-          processed++
-        } catch (error) {
-          console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
+        if (blob.size === 0) {
+          console.warn(`[AudioNormalizer] Shared file "${record.name}" has empty blob, skipping`)
           errors++
+          continue
         }
-      },
-      2,
-    )
+
+        audioFiles.value.push(await analyzeBlob(blob, record.name))
+        processed++
+      } catch (error) {
+        console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
+        errors++
+      }
+    }
 
     isProcessing.value = false
     if (processed > 0) setStatus(`${processed} Datei(en) importiert`, 'success')
@@ -189,7 +188,11 @@ export function useAudioProcessor() {
 
   // ── Global Normalization Operations ──────────────────────────────────────
 
-  const runGlobalOp = async (label, successMsg, fn) => {
+  const runGlobalOp = async (
+    label: string,
+    successMsg: string,
+    fn: (file: AudioFileData) => Promise<void>,
+  ): Promise<void> => {
     if (audioFiles.value.length === 0) return
     isProcessing.value = true
     const files = audioFiles.value.slice()
@@ -204,38 +207,38 @@ export function useAudioProcessor() {
     setStatus(successMsg, 'success')
   }
 
-  const applyGlobalRms = () =>
+  const applyGlobalRms = (): Promise<void> =>
     runGlobalOp('RMS Skalierung', 'RMS Skalierung abgeschlossen', (f) =>
       scaleAudioBuffer(f, globalRmsValue.value),
     )
 
-  const applyGlobalDb = () =>
+  const applyGlobalDb = (): Promise<void> =>
     runGlobalOp('dB Skalierung', 'dB Skalierung abgeschlossen', (f) =>
       scaleAudioBuffer(f, dbToRms(globalDbValue.value)),
     )
 
-  const applyEBUR128 = () =>
+  const applyEBUR128 = (): Promise<void> =>
     runGlobalOp('EBU R128', 'EBU R128 Normalisierung abgeschlossen', normalizeToLoudnessR128)
 
-  const applyNoiseReductionAll = () =>
+  const applyNoiseReductionAll = (): Promise<void> =>
     runGlobalOp('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', applyNoiseReduction)
 
-  const reduceClippingAll = () =>
+  const reduceClippingAll = (): Promise<void> =>
     runGlobalOp('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', reduceClipping)
 
-  const applyDynamicCompressionAll = () =>
+  const applyDynamicCompressionAll = (): Promise<void> =>
     runGlobalOp('Dynamikkompression', 'Dynamikkompression abgeschlossen', applyDynamicCompression)
 
-  const analyzeAll = () => setStatus('Alle Dateien bereits analysiert', 'info')
+  const analyzeAll = (): void => setStatus('Alle Dateien bereits analysiert', 'info')
 
   // ── Individual File Operations ───────────────────────────────────────────
 
-  const updateFile = async (updatedFile) => {
+  const updateFile = async (updatedFile: AudioFileData): Promise<void> => {
     const index = audioFiles.value.findIndex((f) => f.id === updatedFile.id)
     if (index === -1) return
     isLoading.value = true
     try {
-      await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms)
+      await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms ?? globalRmsValue.value)
       setStatus(`${updatedFile.name} aktualisiert`, 'success')
     } catch {
       setStatus(`Fehler bei ${updatedFile.name}`, 'error')
@@ -243,7 +246,7 @@ export function useAudioProcessor() {
     isLoading.value = false
   }
 
-  const removeFile = (file) => {
+  const removeFile = (file: AudioFileData): void => {
     const index = audioFiles.value.findIndex((f) => f.id === file.id)
     if (index === -1) return
     if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
@@ -252,7 +255,7 @@ export function useAudioProcessor() {
     setStatus(`${file.name} entfernt`, 'info')
   }
 
-  const deleteAll = () => {
+  const deleteAll = (): void => {
     audioFiles.value.forEach((file) => {
       if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
       if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
@@ -261,7 +264,7 @@ export function useAudioProcessor() {
     setStatus('Alle Dateien gelöscht', 'info')
   }
 
-  const resetAll = () => {
+  const resetAll = (): void => {
     audioFiles.value.forEach((file) => {
       file.processedBuffer = file.originalBuffer
       file.peak = file.originalPeak

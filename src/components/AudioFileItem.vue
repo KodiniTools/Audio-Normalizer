@@ -67,11 +67,16 @@
     </div>
 
     <!-- Row 3: audio player -->
-    <audio :ref="(el) => (audioRef = el)" controls :src="currentAudioSrc" class="audio-player" />
+    <audio
+      :ref="(el) => (audioRef = el as HTMLAudioElement | null)"
+      controls
+      :src="currentAudioSrc"
+      class="audio-player"
+    />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { ref, computed, watch } from 'vue'
   import { X, Download, Music, Music2 } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
@@ -86,7 +91,7 @@
 
   const localRms = ref(props.file.rms || 0)
   const isNormalizedPlaying = ref(false)
-  const audioRef = ref(null)
+  const audioRef = ref<HTMLAudioElement | null>(null)
 
   watch(
     () => props.file.rms,
@@ -111,7 +116,7 @@
     if (audioRef.value) {
       audioRef.value.pause()
       audioRef.value.currentTime = 0
-      audioRef.value.play().catch((err) => {
+      audioRef.value.play().catch((err: Error) => {
         if (err.name !== 'AbortError') console.error('Playback error:', err)
       })
     }

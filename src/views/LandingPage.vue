@@ -81,12 +81,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { ref } from 'vue'
   import { useI18n } from '../composables/useI18n'
   import HeaderControls from '../components/HeaderControls.vue'
 
-  const { t, locale, toggleLocale } = useI18n()
+  const { t } = useI18n()
 
   const features = [
     { icon: '📊', type: 'success', titleKey: 'feature1-title', descKey: 'feature1-desc' },
@@ -115,7 +115,7 @@
     { questionKey: 'faq6-q', answerKey: 'faq6-a', isOpen: false },
   ])
 
-  const toggleFaq = (faq) => {
+  const toggleFaq = (faq: { isOpen: boolean }) => {
     faq.isOpen = !faq.isOpen
   }
 </script>

@@ -13,6 +13,7 @@ import {
   exportAll as doExportAll,
 } from '../composables/useAudioExport'
 import type { AudioFileData, BatchResult, StatusType } from '../types'
+import type { Preset } from '../data/presets'
 
 export const useAudioStore = defineStore('audio', () => {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -223,6 +224,22 @@ export const useAudioStore = defineStore('audio', () => {
     r128Applied.value = true
   }
 
+  const applyPreset = async (preset: Preset): Promise<void> => {
+    if (audioFiles.value.length === 0) return
+    isProcessing.value = true
+    const files = audioFiles.value.slice()
+    await runBatch(files, preset.id, async (file) => {
+      try {
+        await normalizeToLoudnessR128(file, preset.lufs, preset.truePeakDbtp)
+      } catch (e) {
+        console.error(`[Preset ${preset.id}] ${file.name}:`, e)
+      }
+    })
+    isProcessing.value = false
+    r128Applied.value = true
+    setStatus(`Preset „${preset.id}" angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`, 'success')
+  }
+
   const applyNoiseReductionAll = (): Promise<void> =>
     runGlobalOp('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', applyNoiseReduction)
 
@@ -349,6 +366,7 @@ export const useAudioStore = defineStore('audio', () => {
     applyGlobalRms,
     applyGlobalDb,
     applyEBUR128,
+    applyPreset,
     analyzeAll,
     applyNoiseReductionAll,
     reduceClippingAll,

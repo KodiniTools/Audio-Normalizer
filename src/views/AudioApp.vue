@@ -162,6 +162,12 @@
             </div>
           </div>
 
+          <!-- Preset selector -->
+          <PresetSelector
+            :disabled="isProcessing || audioFiles.length === 0"
+            @apply="store.applyPreset"
+          />
+
           <!-- Effects strip -->
           <div class="effects-strip">
             <button
@@ -249,6 +255,7 @@
   import { useSharedFiles } from '../composables/useSharedFiles'
   import AudioFileItem from '../components/AudioFileItem.vue'
   import HeaderControls from '../components/HeaderControls.vue'
+  import PresetSelector from '../components/PresetSelector.vue'
 
   const { t } = useI18n()
   const route = useRoute()

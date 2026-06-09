@@ -72,7 +72,7 @@ const measureTruePeak = async (buffer: AudioBuffer): Promise<number> => {
 // Operates in-place on the Float32 channel data — no extra allocation needed.
 const applyTruePeakLimit = async (
   buffer: AudioBuffer,
-  targetDbtp = CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+  targetDbtp: number = CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
 ): Promise<void> => {
   const ceiling = Math.pow(10, targetDbtp / 20)
   const truePeak = await measureTruePeak(buffer)
@@ -176,7 +176,8 @@ export const scaleAudioBuffer = async (
 
 export const normalizeToLoudnessR128 = async (
   fileData: AudioFileData,
-  targetLufs = CONSTANTS.EBU_R128_TARGET_LUFS,
+  targetLufs: number = CONSTANTS.EBU_R128_TARGET_LUFS,
+  targetDbtp: number = CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
 ): Promise<void> => {
   const originalBuffer = fileData.originalBuffer
   if (!originalBuffer) throw new Error('Original buffer not found')
@@ -190,7 +191,7 @@ export const normalizeToLoudnessR128 = async (
     source.connect(gainNode).connect(ctx.destination)
   })
 
-  await applyTruePeakLimit(renderedBuffer)
+  await applyTruePeakLimit(renderedBuffer, targetDbtp)
   updateFileData(fileData, renderedBuffer)
 }
 

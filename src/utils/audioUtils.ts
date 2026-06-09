@@ -25,6 +25,39 @@ export const calculateRMS = (buffer: AudioBuffer): number => {
   return Math.sqrt(rmsSum / (buffer.length * buffer.numberOfChannels))
 }
 
+// Windowed RMS: splits the buffer into 400 ms blocks (75 % overlap), sorts them
+// by loudness, and averages the loudest 50 %. This makes the measurement resistant
+// to fade-ins, fade-outs, and silent gaps — the same problem that gating solves for
+// EBU R128 — so RMS scaling aims at the musically active level, not the whole file.
+export const calculateWindowedRMS = (buffer: AudioBuffer): number => {
+  const { sampleRate, numberOfChannels, length: totalSamples } = buffer
+  const blockSize = Math.round(0.4 * sampleRate)
+  const hopSize = Math.round(0.1 * sampleRate)
+
+  const channels: Float32Array[] = Array.from({ length: numberOfChannels }, (_, c) =>
+    buffer.getChannelData(c),
+  )
+
+  const blockMs: number[] = []
+  for (let start = 0; start + blockSize <= totalSamples; start += hopSize) {
+    let sum = 0
+    for (const ch of channels) {
+      let chSum = 0
+      for (let i = start; i < start + blockSize; i++) chSum += ch[i] * ch[i]
+      sum += chSum / blockSize
+    }
+    blockMs.push(sum / numberOfChannels)
+  }
+
+  if (blockMs.length === 0) return calculateRMS(buffer)
+
+  // Sort descending, keep loudest 50 % of blocks
+  blockMs.sort((a, b) => b - a)
+  const keep = Math.max(1, Math.ceil(blockMs.length / 2))
+  const meanMs = blockMs.slice(0, keep).reduce((a, b) => a + b, 0) / keep
+  return Math.sqrt(meanMs)
+}
+
 export const calculatePeak = (buffer: AudioBuffer): number => {
   let peak = 0
   for (let channel = 0; channel < buffer.numberOfChannels; channel++) {

@@ -1,6 +1,7 @@
 import {
   CONSTANTS,
   calculateRMS,
+  calculateWindowedRMS,
   calculatePeak,
   bufferToWave,
 } from '../utils/audioUtils'
@@ -152,13 +153,14 @@ export const scaleAudioBuffer = async (
   const inputBuffer = fileData.processedBuffer ?? fileData.originalBuffer
   if (!inputBuffer) throw new Error('No audio buffer found')
 
-  const currentRms = calculateRMS(inputBuffer)
+  // Windowed RMS: loudest 50 % of 400 ms blocks → ignores fade-ins/outs and silence.
+  const currentRms = calculateWindowedRMS(inputBuffer)
 
-  // Fix 2: silence guard — scaling a silent file produces loud digital noise.
+  // Silence guard — scaling a silent file produces loud digital noise.
   if (currentRms < 1e-6) throw new Error('silent')
 
-  // Fix 3: clamp gain to MAX_RMS_GAIN to avoid in-buffer distortion on very quiet
-  // files before the True Peak limiter has a chance to act.
+  // Clamp gain to MAX_RMS_GAIN to avoid in-buffer distortion on very quiet files
+  // before the True Peak limiter has a chance to act.
   const rawGain = targetRms / currentRms
   const gain = Math.min(rawGain, MAX_RMS_GAIN)
 

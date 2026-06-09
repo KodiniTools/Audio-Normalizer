@@ -138,17 +138,31 @@ export const measureLoudnessR128 = async (buffer: AudioBuffer): Promise<number> 
   return isFinite(lufs) ? lufs : -70.0
 }
 
+// Maximum gain applied by RMS scaling: +20 dB = factor 10.
+// Prevents extreme amplification of near-silent files which would cause
+// in-buffer clipping inside OfflineAudioContext before the True Peak limiter runs.
+const MAX_RMS_GAIN = 10
+
 export const scaleAudioBuffer = async (
   fileData: AudioFileData,
   targetRms: number,
 ): Promise<void> => {
-  const originalBuffer = fileData.originalBuffer
-  if (!originalBuffer) throw new Error('Original buffer not found')
+  // Fix 1: work on processedBuffer so prior effects (noise reduction, compression…)
+  // are not silently discarded.
+  const inputBuffer = fileData.processedBuffer ?? fileData.originalBuffer
+  if (!inputBuffer) throw new Error('No audio buffer found')
 
-  const currentRms = calculateRMS(originalBuffer)
-  const gain = targetRms / (currentRms || 1)
+  const currentRms = calculateRMS(inputBuffer)
 
-  const renderedBuffer = await applyOfflineEffect(originalBuffer, (ctx, source) => {
+  // Fix 2: silence guard — scaling a silent file produces loud digital noise.
+  if (currentRms < 1e-6) throw new Error('silent')
+
+  // Fix 3: clamp gain to MAX_RMS_GAIN to avoid in-buffer distortion on very quiet
+  // files before the True Peak limiter has a chance to act.
+  const rawGain = targetRms / currentRms
+  const gain = Math.min(rawGain, MAX_RMS_GAIN)
+
+  const renderedBuffer = await applyOfflineEffect(inputBuffer, (ctx, source) => {
     const gainNode = ctx.createGain()
     gainNode.gain.value = gain
     source.connect(gainNode).connect(ctx.destination)

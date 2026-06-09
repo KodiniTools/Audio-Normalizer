@@ -137,6 +137,12 @@
                 </div>
               </div>
             </div>
+            <!-- R128 warning: shown when RMS/dB scaling would override broadcast normalisation -->
+            <div v-if="r128Applied && audioFiles.length > 0" class="r128-warning">
+              <AlertTriangle :size="13" />
+              <span>{{ t('app.r128Warning') }}</span>
+            </div>
+
             <div class="controls-row controls-row--bottom">
               <div class="ctrl-field ctrl-field--format">
                 <label class="ctrl-label">{{ t('app.downloadFormat') }}</label>
@@ -262,6 +268,7 @@
     statusMessage,
     statusType,
     isProcessing,
+    r128Applied,
   } = storeToRefs(store)
 
   const {
@@ -501,6 +508,29 @@
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
+  }
+
+  .r128-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.35rem;
+    background: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    color: #ca8a04;
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  [data-theme='light'] .r128-warning {
+    background: rgba(234, 179, 8, 0.08);
+    color: #92400e;
+  }
+
+  .r128-warning svg {
+    flex-shrink: 0;
+    margin-top: 1px;
   }
 
   .controls-row {

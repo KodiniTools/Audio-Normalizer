@@ -2,7 +2,6 @@ import {
   CONSTANTS,
   calculateRMS,
   calculatePeak,
-  normalizePeak,
   bufferToWave,
 } from '../utils/audioUtils'
 import type { AudioFileData } from '../types'
@@ -52,6 +51,37 @@ const applyKWeighting = (buffer: AudioBuffer): Promise<AudioBuffer> =>
 
     source.connect(highshelf).connect(highpass).connect(ctx.destination)
   })
+
+// True Peak via 4× oversampling (Web Audio sampleRate cap: 96 kHz).
+// The resampler's anti-imaging filter reveals inter-sample peaks that lie
+// between digital samples and would clip after D/A conversion.
+const measureTruePeak = async (buffer: AudioBuffer): Promise<number> => {
+  const targetRate = Math.min(buffer.sampleRate * 4, 96000)
+  const scaledLength = Math.ceil(buffer.length * (targetRate / buffer.sampleRate))
+  const offlineCtx = new OfflineAudioContext(buffer.numberOfChannels, scaledLength, targetRate)
+  const source = offlineCtx.createBufferSource()
+  source.buffer = buffer
+  source.connect(offlineCtx.destination)
+  source.start()
+  const upsampled = await offlineCtx.startRendering()
+  return calculatePeak(upsampled)
+}
+
+// Attenuate buffer so its True Peak does not exceed targetDbtp (−1 dBTP per EBU R128).
+// Operates in-place on the Float32 channel data — no extra allocation needed.
+const applyTruePeakLimit = async (
+  buffer: AudioBuffer,
+  targetDbtp = CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+): Promise<void> => {
+  const ceiling = Math.pow(10, targetDbtp / 20)
+  const truePeak = await measureTruePeak(buffer)
+  if (truePeak <= ceiling) return
+  const gain = ceiling / truePeak
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const ch = buffer.getChannelData(c)
+    for (let i = 0; i < ch.length; i++) ch[i] *= gain
+  }
+}
 
 // ITU-R BS.1770-4 §2.2 gated loudness measurement.
 //
@@ -124,7 +154,7 @@ export const scaleAudioBuffer = async (
     source.connect(gainNode).connect(ctx.destination)
   })
 
-  normalizePeak(renderedBuffer)
+  await applyTruePeakLimit(renderedBuffer)
   updateFileData(fileData, renderedBuffer)
 }
 
@@ -144,7 +174,7 @@ export const normalizeToLoudnessR128 = async (
     source.connect(gainNode).connect(ctx.destination)
   })
 
-  normalizePeak(renderedBuffer)
+  await applyTruePeakLimit(renderedBuffer)
   updateFileData(fileData, renderedBuffer)
 }
 

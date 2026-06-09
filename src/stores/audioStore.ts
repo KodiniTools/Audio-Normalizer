@@ -197,7 +197,11 @@ export const useAudioStore = defineStore('audio', () => {
       try {
         await fn(file)
       } catch (e) {
-        console.error(`[${label}] ${file.name}:`, e)
+        if (e instanceof Error && e.message === 'silent') {
+          setStatus(`${file.name}: Datei ist zu leise zum Skalieren`, 'warning')
+        } else {
+          console.error(`[${label}] ${file.name}:`, e)
+        }
       }
     })
     isProcessing.value = false
@@ -243,8 +247,12 @@ export const useAudioStore = defineStore('audio', () => {
     try {
       await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms ?? globalRmsValue.value)
       setStatus(`${updatedFile.name} aktualisiert`, 'success')
-    } catch {
-      setStatus(`Fehler bei ${updatedFile.name}`, 'error')
+    } catch (e) {
+      if (e instanceof Error && e.message === 'silent') {
+        setStatus(`${updatedFile.name}: Datei ist zu leise zum Skalieren`, 'warning')
+      } else {
+        setStatus(`Fehler bei ${updatedFile.name}`, 'error')
+      }
     }
     isLoading.value = false
   }

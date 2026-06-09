@@ -291,6 +291,8 @@ const translations = {
     'app.confirmResetAll':
       'Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt.',
     'app.emptyStateHint': 'Ziehen Sie Audio-Dateien hierher oder klicken Sie oben zum Hochladen',
+    'app.r128Warning':
+      'EBU R128 wurde bereits angewendet. RMS-/dB-Skalierung überschreibt den Broadcast-Standard und kann den True-Peak-Schutz aufheben.',
     'app.sharedFilesLoading': '{count} Datei(en) vom Audio Konverter werden importiert…',
     'app.sharedFilesLoaded': '{count} Datei(en) vom Audio Konverter erfolgreich importiert',
     'app.sharedFilesEmpty': 'Keine Dateien vom Audio Konverter gefunden',
@@ -570,6 +572,8 @@ const translations = {
     'app.confirmResetAll':
       'Are you sure you want to reset all changes? Files will be restored to their original state.',
     'app.emptyStateHint': 'Drag audio files here or click above to upload',
+    'app.r128Warning':
+      'EBU R128 has already been applied. RMS/dB scaling will override the broadcast standard and may break the True Peak protection.',
     'app.sharedFilesLoading': 'Importing {count} file(s) from Audio Converter…',
     'app.sharedFilesLoaded': '{count} file(s) successfully imported from Audio Converter',
     'app.sharedFilesEmpty': 'No files found from Audio Converter',

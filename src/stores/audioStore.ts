@@ -28,6 +28,7 @@ export const useAudioStore = defineStore('audio', () => {
   const isProcessing = ref(false)
   const isLoading = ref(false)
   const loadingMessage = ref('Verarbeite...')
+  const r128Applied = ref(false)
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -213,8 +214,10 @@ export const useAudioStore = defineStore('audio', () => {
       scaleAudioBuffer(f, dbToRms(globalDbValue.value)),
     )
 
-  const applyEBUR128 = (): Promise<void> =>
-    runGlobalOp('EBU R128', 'EBU R128 Normalisierung abgeschlossen', normalizeToLoudnessR128)
+  const applyEBUR128 = async (): Promise<void> => {
+    await runGlobalOp('EBU R128', 'EBU R128 Normalisierung abgeschlossen', normalizeToLoudnessR128)
+    r128Applied.value = true
+  }
 
   const applyNoiseReductionAll = (): Promise<void> =>
     runGlobalOp('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', applyNoiseReduction)
@@ -261,6 +264,7 @@ export const useAudioStore = defineStore('audio', () => {
       if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
     })
     audioFiles.value = []
+    r128Applied.value = false
     setStatus('Alle Dateien gelöscht', 'info')
   }
 
@@ -274,6 +278,7 @@ export const useAudioStore = defineStore('audio', () => {
         file.processedBlobUrl = null
       }
     })
+    r128Applied.value = false
     setStatus('Alle Änderungen zurückgesetzt', 'success')
   }
 
@@ -328,6 +333,7 @@ export const useAudioStore = defineStore('audio', () => {
     isProcessing,
     isLoading,
     loadingMessage,
+    r128Applied,
     setProgress,
     setStatus,
     handleFilesInput,

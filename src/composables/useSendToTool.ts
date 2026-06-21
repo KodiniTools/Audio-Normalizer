@@ -18,7 +18,6 @@ export function useSendToTool(getFiles: () => AudioFileData[]) {
   const isSending = ref(false)
   const sentToTool = ref<string | null>(null)
 
-  // Only true when at least one file has actually been processed (not just loaded)
   const hasNormalizedFiles = computed(() => getFiles().some((f) => f.processedBlobUrl !== null))
 
   const sendToTool = async (tool: TargetTool): Promise<void> => {
@@ -28,6 +27,16 @@ export function useSendToTool(getFiles: () => AudioFileData[]) {
     sentToTool.value = null
 
     try {
+      // Open the window SYNCHRONOUSLY within the user-gesture context so the
+      // browser popup-blocker does not suppress it. autoShare() has already
+      // pre-populated IndexedDB after the last processing step, so the target
+      // tool will find the files immediately on load.
+      const separator = tool.url.includes('?') ? '&' : '?'
+      const targetUrl = `${tool.url}${separator}source=audionormalizer`
+      window.open(targetUrl, '_blank')
+      sentToTool.value = tool.key
+
+      // Refresh IndexedDB in the background with the latest buffers.
       const blobs = getFiles()
         .map((f) => {
           const buf = f.processedBuffer ?? f.originalBuffer
@@ -38,13 +47,9 @@ export function useSendToTool(getFiles: () => AudioFileData[]) {
         })
         .filter((x): x is { name: string; blob: Blob } => x !== null)
 
-      if (blobs.length === 0) return
-
-      await shareFiles(blobs, 'audionormalizer')
-      sentToTool.value = tool.key
-
-      const separator = tool.url.includes('?') ? '&' : '?'
-      window.open(`${tool.url}${separator}source=audionormalizer`, '_blank')
+      if (blobs.length > 0) {
+        await shareFiles(blobs, 'audionormalizer')
+      }
     } finally {
       isSending.value = false
       setTimeout(() => {

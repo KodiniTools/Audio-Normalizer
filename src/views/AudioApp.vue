@@ -46,7 +46,10 @@
               @change="handleFiles"
             />
             <Upload :size="20" class="drop-icon" />
-            <span class="drop-label">{{ t('app.selectFiles') }}</span>
+            <div class="drop-label-group">
+              <span class="drop-label">{{ t('app.selectFiles') }}</span>
+              <span class="drop-paste-hint">{{ t('app.pasteHint') }}</span>
+            </div>
             <div class="drop-actions">
               <button type="button" class="btn btn--ghost" @click="fileInputRef?.click()">
                 {{ t('app.selectFilesBtn') }}
@@ -446,11 +449,23 @@
     flex-shrink: 0;
   }
 
-  .drop-label {
+  .drop-label-group {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .drop-label {
     font-size: 0.82rem;
     color: var(--muted);
     font-weight: 500;
+  }
+
+  .drop-paste-hint {
+    font-size: 0.7rem;
+    color: var(--muted);
+    opacity: 0.6;
   }
 
   .drop-actions {

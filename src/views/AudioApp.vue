@@ -94,6 +94,35 @@
             </button>
           </div>
 
+          <!-- Send-to panel -->
+          <div class="send-to-panel">
+            <span class="send-to-label">
+              <ExternalLink :size="12" />
+              {{ t('app.sendTo') }}
+            </span>
+            <div class="send-to-actions">
+              <button
+                v-for="tool in TARGET_TOOLS"
+                :key="tool.key"
+                class="btn btn--send"
+                :disabled="isProcessing || audioFiles.length === 0 || isSending"
+                @click="sendToTool(tool)"
+              >
+                <component
+                  :is="sentToTool === tool.key ? CheckCircle : ExternalLink"
+                  :size="12"
+                />
+                {{
+                  isSending && sentToTool !== tool.key
+                    ? t('app.sendToSending')
+                    : sentToTool === tool.key
+                      ? t('app.sendToSent')
+                      : t(`app.sendTo${tool.key.charAt(0).toUpperCase() + tool.key.slice(1)}`)
+                }}
+              </button>
+            </div>
+          </div>
+
           <!-- Controls panel -->
           <div class="controls-panel">
             <div class="controls-row">
@@ -251,6 +280,7 @@
     Trash2,
     RotateCcw,
     Zap,
+    ExternalLink,
   } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
   import { useAudioStore } from '../stores/audioStore'
@@ -259,6 +289,7 @@
   import AudioFileItem from '../components/AudioFileItem.vue'
   import HeaderControls from '../components/HeaderControls.vue'
   import PresetSelector from '../components/PresetSelector.vue'
+  import { useSendToTool, TARGET_TOOLS } from '../composables/useSendToTool'
 
   const { t } = useI18n()
   const route = useRoute()
@@ -303,6 +334,8 @@
     useFileDrop(handleFilesInput)
 
   const { sharedBanner } = useSharedFiles(handleSharedFiles, t, route, router)
+
+  const { isSending, sentToTool, sendToTool } = useSendToTool(() => audioFiles.value)
 
   const confirmDeleteAll = () => {
     if (audioFiles.value.length > 0 && confirm(t('app.confirmDeleteAll'))) deleteAll()
@@ -519,6 +552,49 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+  }
+
+  /* ── Send-to panel ───────────────────────────────────── */
+  .send-to-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .send-to-label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .send-to-actions {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .btn--send {
+    background: var(--btn);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+    font-size: 0.73rem;
+  }
+  .btn--send:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--panel-highlight);
   }
 
   /* ── Controls panel ──────────────────────────────────── */

@@ -26,7 +26,10 @@ function openDB(): Promise<IDBDatabase> {
   })
 }
 
-export async function shareFiles(files: { name: string; blob: Blob }[]): Promise<void> {
+export async function shareFiles(
+  files: { name: string; blob: Blob }[],
+  source = 'audiokonverter',
+): Promise<void> {
   const db = await openDB()
   const tx = db.transaction(STORE_NAME, 'readwrite')
   const store = tx.objectStore(STORE_NAME)
@@ -38,7 +41,7 @@ export async function shareFiles(files: { name: string; blob: Blob }[]): Promise
       name: file.name,
       blob: file.blob,
       mimeType: file.blob.type,
-      source: 'audiokonverter',
+      source,
       sharedAt: Date.now(),
     })
   }

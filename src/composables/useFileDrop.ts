@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { isAudioFile } from '../utils/audioUtils'
 
 export function useFileDrop(handleFilesInput: (files: File[]) => void) {
@@ -57,6 +57,22 @@ export function useFileDrop(handleFilesInput: (files: File[]) => void) {
     const audioOnly = collected.filter(isAudioFile)
     if (audioOnly.length > 0) handleFilesInput(audioOnly)
   }
+
+  const handlePaste = (event: ClipboardEvent): void => {
+    const items = event.clipboardData?.items
+    if (!items) return
+    const files: File[] = []
+    for (const item of Array.from(items)) {
+      if (item.kind === 'file') {
+        const file = item.getAsFile()
+        if (file && isAudioFile(file)) files.push(file)
+      }
+    }
+    if (files.length > 0) handleFilesInput(files)
+  }
+
+  onMounted(() => window.addEventListener('paste', handlePaste))
+  onUnmounted(() => window.removeEventListener('paste', handlePaste))
 
   return { fileInputRef, folderInputRef, isDragging, handleFiles, handleDrop }
 }

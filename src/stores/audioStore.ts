@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { generateId, calculateRMS, calculatePeak, dbToRms, isAudioFile } from '../utils/audioUtils'
+import { generateId, calculateRMS, calculatePeak, dbToRms, isAudioFile, bufferToWave } from '../utils/audioUtils'
+import { shareFiles } from '../utils/sharedFileRepository'
 import {
   scaleAudioBuffer,
   normalizeToLoudnessR128,
@@ -111,6 +112,24 @@ export const useAudioStore = defineStore('audio', () => {
     return buildFileData(buffer, name, fileRef)
   }
 
+  // ── Auto-share: write processed buffers to IndexedDB after each operation ──
+
+  const autoShare = async (): Promise<void> => {
+    const toShare = audioFiles.value.filter((f) => f.processedBuffer)
+    if (toShare.length === 0) return
+    try {
+      const blobs = toShare.map((f) => {
+        const buf = f.processedBuffer!
+        const blob = bufferToWave(buf, 0, buf.length)
+        const baseName = f.name.replace(/\.[^/.]+$/, '')
+        return { name: `${baseName}.wav`, blob }
+      })
+      await shareFiles(blobs, 'audionormalizer')
+    } catch (e) {
+      console.warn('[AudioNormalizer] autoShare failed:', e)
+    }
+  }
+
   // ── File Handling ──────────────────────────────────────────────────────────
 
   const handleFilesInput = async (files: File[]): Promise<void> => {
@@ -209,19 +228,24 @@ export const useAudioStore = defineStore('audio', () => {
     setStatus(successMsg, 'success')
   }
 
-  const applyGlobalRms = (): Promise<void> =>
-    runGlobalOp('RMS Skalierung', 'RMS Skalierung abgeschlossen', (f) =>
+  const applyGlobalRms = async (): Promise<void> => {
+    await runGlobalOp('RMS Skalierung', 'RMS Skalierung abgeschlossen', (f) =>
       scaleAudioBuffer(f, globalRmsValue.value),
     )
+    await autoShare()
+  }
 
-  const applyGlobalDb = (): Promise<void> =>
-    runGlobalOp('dB Skalierung', 'dB Skalierung abgeschlossen', (f) =>
+  const applyGlobalDb = async (): Promise<void> => {
+    await runGlobalOp('dB Skalierung', 'dB Skalierung abgeschlossen', (f) =>
       scaleAudioBuffer(f, dbToRms(globalDbValue.value)),
     )
+    await autoShare()
+  }
 
   const applyEBUR128 = async (): Promise<void> => {
     await runGlobalOp('EBU R128', 'EBU R128 Normalisierung abgeschlossen', normalizeToLoudnessR128)
     r128Applied.value = true
+    await autoShare()
   }
 
   const applyPreset = async (preset: Preset): Promise<void> => {
@@ -237,21 +261,28 @@ export const useAudioStore = defineStore('audio', () => {
     })
     isProcessing.value = false
     r128Applied.value = true
-    setStatus(`Preset „${preset.id}" angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`, 'success')
+    setStatus(`Preset „${preset.id}“ angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`, 'success')
+    await autoShare()
   }
 
-  const applyNoiseReductionAll = (): Promise<void> =>
-    runGlobalOp('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', applyNoiseReduction)
+  const applyNoiseReductionAll = async (): Promise<void> => {
+    await runGlobalOp('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', applyNoiseReduction)
+    await autoShare()
+  }
 
-  const reduceClippingAll = (): Promise<void> =>
-    runGlobalOp('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', reduceClipping)
+  const reduceClippingAll = async (): Promise<void> => {
+    await runGlobalOp('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', reduceClipping)
+    await autoShare()
+  }
 
-  const applyDynamicCompressionAll = (): Promise<void> =>
-    runGlobalOp(
+  const applyDynamicCompressionAll = async (): Promise<void> => {
+    await runGlobalOp(
       'Dynamikkompression',
       'Dynamikkompression abgeschlossen',
       applyDynamicCompression,
     )
+    await autoShare()
+  }
 
   const analyzeAll = (): void => setStatus('Alle Dateien bereits analysiert', 'info')
 

@@ -96,16 +96,21 @@
 
           <!-- Send-to panel -->
           <div class="send-to-panel">
-            <span class="send-to-label">
-              <ExternalLink :size="12" />
-              {{ t('app.sendTo') }}
-            </span>
+            <div class="send-to-header">
+              <span class="send-to-label">
+                <ExternalLink :size="12" />
+                {{ t('app.sendTo') }}
+              </span>
+              <span v-if="!hasNormalizedFiles && audioFiles.length > 0" class="send-to-hint">
+                {{ t('app.sendToHint') }}
+              </span>
+            </div>
             <div class="send-to-actions">
               <button
                 v-for="tool in TARGET_TOOLS"
                 :key="tool.key"
                 class="btn btn--send"
-                :disabled="isProcessing || audioFiles.length === 0 || isSending"
+                :disabled="isProcessing || !hasNormalizedFiles || isSending"
                 @click="sendToTool(tool)"
               >
                 <component
@@ -335,7 +340,9 @@
 
   const { sharedBanner } = useSharedFiles(handleSharedFiles, t, route, router)
 
-  const { isSending, sentToTool, sendToTool } = useSendToTool(() => audioFiles.value)
+  const { isSending, sentToTool, hasNormalizedFiles, sendToTool } = useSendToTool(
+    () => audioFiles.value,
+  )
 
   const confirmDeleteAll = () => {
     if (audioFiles.value.length > 0 && confirm(t('app.confirmDeleteAll'))) deleteAll()
@@ -557,13 +564,26 @@
   /* ── Send-to panel ───────────────────────────────────── */
   .send-to-panel {
     display: flex;
-    align-items: center;
-    gap: 0.625rem;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     background: var(--panel);
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
+  }
+
+  .send-to-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     flex-wrap: wrap;
+  }
+
+  .send-to-hint {
+    font-size: 0.68rem;
+    color: var(--muted);
+    opacity: 0.7;
+    font-style: italic;
   }
 
   .send-to-label {

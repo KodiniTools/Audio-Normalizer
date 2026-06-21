@@ -36,11 +36,11 @@ export function useSendToTool(getFiles: () => AudioFileData[]) {
 
       if (blobs.length === 0) return
 
-      await shareFiles(blobs, 'audionormalizer')
+      await shareFiles(blobs, 'audiokonverter')
       sentToTool.value = tool.key
 
       const separator = tool.url.includes('?') ? '&' : '?'
-      window.open(`${tool.url}${separator}source=audionormalizer`, '_blank')
+      window.open(`${tool.url}${separator}source=audiokonverter`, '_blank')
     } finally {
       isSending.value = false
       setTimeout(() => { sentToTool.value = null }, 4000)

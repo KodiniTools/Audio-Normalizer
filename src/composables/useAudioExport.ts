@@ -198,9 +198,11 @@ export const exportFile = async (
   format: string,
   setLoadingMessage: (msg: string) => void,
   setStatus: SetStatus,
+  onProgress?: (pct: number) => void,
 ): Promise<void> => {
   try {
     const { blob, filename } = await getFileBlob(file, format, (pct) => {
+      onProgress?.(pct)
       if (format === 'mp3') setLoadingMessage(`MP3-Konvertierung: ${pct}%`)
       else if (format === 'webm') setLoadingMessage(`WebM-Konvertierung: ${pct}%`)
     })
@@ -243,6 +245,7 @@ export const exportAll = async (
     const zipBlob = await zip.generateAsync(
       { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
       (meta) => {
+        setProgress('ZIP', meta.percent)
         setLoadingMessage(`ZIP wird erstellt: ${Math.round(meta.percent)}%`)
       },
     )

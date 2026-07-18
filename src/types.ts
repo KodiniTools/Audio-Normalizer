@@ -47,6 +47,40 @@ export interface BatchResult {
   errors: number
 }
 
+// ── DSP worker pool messages ────────────────────────────────────────────────
+export type DspOp =
+  | 'rmsScale'
+  | 'ebur128'
+  | 'noiseReduction'
+  | 'reduceClipping'
+  | 'dynamicCompression'
+
+export interface DspParams {
+  targetRms?: number
+  targetLufs?: number
+  targetDbtp?: number
+  maxRmsGain?: number
+  lowpassFreq?: number
+  lowpassQ?: number
+  threshold?: number
+  knee?: number
+  ratio?: number
+  attack?: number
+  release?: number
+}
+
+export interface DspRequest {
+  jobId: number
+  op: DspOp
+  channels: Float32Array[]
+  sampleRate: number
+  params: DspParams
+}
+
+export type DspResponse =
+  | { jobId: number; ok: true; channels: Float32Array[]; peak: number; rms: number }
+  | { jobId: number; ok: false; error: string }
+
 export interface Mp3WorkerInput {
   baseUrl: string
   left: Float32Array

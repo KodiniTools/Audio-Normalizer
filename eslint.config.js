@@ -68,6 +68,7 @@ export default [
         Element: 'readonly',
         DOMException: 'readonly',
         MessageEvent: 'readonly',
+        ErrorEvent: 'readonly',
         DragEvent: 'readonly',
       },
     },
@@ -79,8 +80,8 @@ export default [
     },
   },
   {
-    // Web Worker — plain JS, no TS parser
-    files: ['src/workers/**/*.js'],
+    // Web Worker global scope (classic .js worker and module .ts workers)
+    files: ['src/workers/**/*.js', 'src/workers/**/*.ts'],
     languageOptions: {
       globals: {
         self: 'readonly',

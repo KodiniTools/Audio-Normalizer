@@ -11,7 +11,15 @@ export interface AudioFileData {
   processedBlobUrl: string | null
   originalBlobUrl: string
   targetRms?: number
+  /** Duration in seconds (from the decoded buffer) — used for playlist display. */
+  duration: number
+  /** Whether the row is selected in the interactive playlist (edit target). */
+  selected: boolean
+  /** Whether any edit/normalisation has been applied — export considers only these. */
+  processed: boolean
 }
+
+export type PlaybackMode = 'original' | 'processed'
 
 export interface SharedFileRecord {
   id?: number

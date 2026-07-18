@@ -1,8 +1,35 @@
 <template>
-  <div class="file-item">
-    <!-- Row 1: name + meters + remove -->
+  <div
+    class="file-item"
+    :class="{ 'file-item--active': isActive, 'file-item--selected': file.selected }"
+  >
+    <!-- Row 1: select + play + name + meters + remove -->
     <div class="item-header">
-      <span class="file-name" :title="file.name">{{ file.name }}</span>
+      <input
+        type="checkbox"
+        class="item-check"
+        :checked="file.selected"
+        :aria-label="t('app.selectFile')"
+        @change="$emit('toggle-select', file.id)"
+      />
+
+      <button
+        class="play-btn"
+        :class="{ 'play-btn--active': isActive }"
+        :title="t('app.play')"
+        @click="$emit('play', file.id)"
+      >
+        <component :is="isActive ? Volume2 : Play" :size="13" />
+      </button>
+
+      <div class="name-block">
+        <span class="file-name" :title="file.name">{{ file.name }}</span>
+        <span class="file-sub">
+          {{ formatTime(file.duration) }}
+          <span v-if="file.processed" class="proc-badge">{{ t('app.processedBadge') }}</span>
+        </span>
+      </div>
+
       <div class="meters">
         <div class="meter-group">
           <span class="meter-tag">Peak</span>
@@ -25,7 +52,8 @@
           <span class="meter-val">{{ (file.rms || 0).toFixed(2) }}</span>
         </div>
       </div>
-      <button class="remove-btn" title="Entfernen" @click="$emit('remove', file)">
+
+      <button class="remove-btn" :title="t('app.removeFile')" @click="$emit('remove', file)">
         <X :size="12" />
       </button>
     </div>
@@ -53,45 +81,28 @@
         />
       </div>
       <button class="item-btn item-btn--accent" @click="applyValues">{{ t('app.apply') }}</button>
-      <button
-        class="item-btn item-btn--toggle"
-        :title="isNormalizedPlaying ? t('app.playOriginal') : t('app.playNormalized')"
-        @click="togglePlayback"
-      >
-        <component :is="isNormalizedPlaying ? Music : Music2" :size="13" />
-        {{ isNormalizedPlaying ? t('app.playOriginal') : t('app.playNormalized') }}
-      </button>
       <button class="item-btn item-btn--export" @click="$emit('export', file)">
         <Download :size="13" />{{ t('app.export') }}
       </button>
     </div>
-
-    <!-- Row 3: audio player -->
-    <audio
-      :ref="(el) => (audioRef = el as HTMLAudioElement | null)"
-      controls
-      :src="currentAudioSrc"
-      class="audio-player"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, watch } from 'vue'
-  import { X, Download, Music, Music2 } from 'lucide-vue-next'
+  import { ref, watch } from 'vue'
+  import { X, Download, Play, Volume2 } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
 
   const props = defineProps({
     file: { type: Object, required: true },
+    isActive: { type: Boolean, default: false },
   })
 
-  const emit = defineEmits(['update', 'remove', 'export'])
+  const emit = defineEmits(['update', 'remove', 'export', 'toggle-select', 'play'])
 
   const { t } = useI18n()
 
   const localRms = ref(props.file.rms || 0)
-  const isNormalizedPlaying = ref(false)
-  const audioRef = ref<HTMLAudioElement | null>(null)
 
   watch(
     () => props.file.rms,
@@ -100,26 +111,15 @@
     },
   )
 
-  const currentAudioSrc = computed(() => {
-    if (isNormalizedPlaying.value && props.file.processedBlobUrl) {
-      return props.file.processedBlobUrl
-    }
-    return props.file.originalBlobUrl || URL.createObjectURL(props.file.file)
-  })
+  const formatTime = (seconds: number): string => {
+    if (!isFinite(seconds) || seconds < 0) return '0:00'
+    const m = Math.floor(seconds / 60)
+    const s = Math.floor(seconds % 60)
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
 
   const applyValues = () => {
     emit('update', { ...props.file, targetRms: localRms.value })
-  }
-
-  const togglePlayback = () => {
-    isNormalizedPlaying.value = !isNormalizedPlaying.value
-    if (audioRef.value) {
-      audioRef.value.pause()
-      audioRef.value.currentTime = 0
-      audioRef.value.play().catch((err: Error) => {
-        if (err.name !== 'AbortError') console.error('Playback error:', err)
-      })
-    }
   }
 </script>
 
@@ -132,19 +132,71 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    transition: border-color 0.15s;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
   }
 
   .file-item:hover {
     border-color: var(--accent);
   }
 
+  .file-item--selected {
+    background: var(--panel-highlight);
+  }
+
+  .file-item--active {
+    border-color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
   /* ── Row 1 ─────────────────────────────────────────── */
   .item-header {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: auto auto 1fr auto auto;
     align-items: center;
     gap: 0.625rem;
+  }
+
+  .item-check {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .play-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--btn);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+
+  .play-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .play-btn--active {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+
+  .name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
   }
 
   .file-name {
@@ -155,6 +207,26 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
+  }
+
+  .file-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .proc-badge {
+    padding: 0.02rem 0.3rem;
+    border-radius: 9999px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .meters {
@@ -231,7 +303,7 @@
   /* ── Row 2 ─────────────────────────────────────────── */
   .item-controls {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 0.375rem;
     flex-wrap: wrap;
   }
@@ -283,7 +355,6 @@
     cursor: pointer;
     transition: all 0.15s ease;
     white-space: nowrap;
-    align-self: flex-end;
   }
 
   .item-btn--accent {
@@ -293,15 +364,6 @@
   .item-btn--accent:hover {
     border-color: var(--accent);
     color: var(--accent);
-  }
-
-  .item-btn--toggle {
-    background: var(--btn);
-    color: var(--muted);
-  }
-  .item-btn--toggle:hover {
-    border-color: var(--accent-secondary);
-    color: var(--accent-secondary);
   }
 
   .item-btn--export {
@@ -315,25 +377,10 @@
     border-color: #22c55e;
   }
 
-  /* ── Row 3 ─────────────────────────────────────────── */
-  .audio-player {
-    width: 100%;
-    height: 32px;
-    border-radius: 0.3rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color-scheme: dark;
-  }
-
-  [data-theme='light'] .audio-player {
-    background: var(--btn);
-    color-scheme: light;
-  }
-
   /* ── Responsive ──────────────────────────────────────── */
   @media (max-width: 640px) {
     .item-header {
-      grid-template-columns: 1fr auto;
+      grid-template-columns: auto auto 1fr auto;
     }
     .meters {
       display: none;

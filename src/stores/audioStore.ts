@@ -26,14 +26,13 @@ export const useAudioStore = defineStore('audio', () => {
   const globalRmsValue = ref(0.5)
   const globalDbValue = ref(-20)
   const downloadFormat = ref('wav')
-  const showProgress = ref(false)
-  const progress = ref(0)
-  const progressLabel = ref('')
   const statusMessage = ref('')
   const statusType = ref<StatusType>('info')
   const isProcessing = ref(false)
   const isLoading = ref(false)
   const loadingMessage = ref('Verarbeite...')
+  // Overlay progress: 0–100 for a determinate bar, null for an indeterminate spinner.
+  const loadingProgress = ref<number | null>(null)
   const r128Applied = ref(false)
 
   // ── Playlist / player-bar state ──────────────────────────────────────────────
@@ -96,14 +95,18 @@ export const useAudioStore = defineStore('audio', () => {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
+  // All long-running processes report through the loading overlay. `setProgress`
+  // shows the overlay with a determinate bar; each operation clears it via
+  // `endLoading()` in its finally block so the bar never lingers.
   const setProgress = (label: string, value: number): void => {
-    showProgress.value = true
-    progressLabel.value = label
-    progress.value = value
-    if (value >= 100)
-      setTimeout(() => {
-        showProgress.value = false
-      }, 500)
+    isLoading.value = true
+    loadingMessage.value = label
+    loadingProgress.value = value
+  }
+
+  const endLoading = (): void => {
+    isLoading.value = false
+    loadingProgress.value = null
   }
 
   const setStatus = (message: string, type: StatusType = 'info'): void => {
@@ -232,6 +235,7 @@ export const useAudioStore = defineStore('audio', () => {
     )
 
     isProcessing.value = false
+    endLoading()
     if (processed > 0) setStatus(`${processed} Datei(en) erfolgreich hochgeladen`, 'success')
     else if (errors > 0) setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
   }
@@ -297,6 +301,7 @@ export const useAudioStore = defineStore('audio', () => {
       }
     })
     isProcessing.value = false
+    endLoading()
     setStatus(successMsg, 'success')
   }
 
@@ -337,6 +342,7 @@ export const useAudioStore = defineStore('audio', () => {
       }
     })
     isProcessing.value = false
+    endLoading()
     r128Applied.value = true
     setStatus(
       `Preset „${preset.id}“ angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`,
@@ -376,6 +382,7 @@ export const useAudioStore = defineStore('audio', () => {
     const index = audioFiles.value.findIndex((f) => f.id === updatedFile.id)
     if (index === -1) return
     isLoading.value = true
+    loadingMessage.value = `${updatedFile.name} wird bearbeitet...`
     try {
       await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms ?? globalRmsValue.value)
       audioFiles.value[index].processed = true
@@ -387,7 +394,7 @@ export const useAudioStore = defineStore('audio', () => {
         setStatus(`Fehler bei ${updatedFile.name}`, 'error')
       }
     }
-    isLoading.value = false
+    endLoading()
   }
 
   const removeFile = (file: AudioFileData): void => {
@@ -447,7 +454,7 @@ export const useAudioStore = defineStore('audio', () => {
         setStatus,
       )
     } finally {
-      isLoading.value = false
+      endLoading()
     }
   }
 
@@ -472,7 +479,7 @@ export const useAudioStore = defineStore('audio', () => {
         setStatus,
       )
     } finally {
-      isLoading.value = false
+      endLoading()
     }
   }
 
@@ -481,14 +488,12 @@ export const useAudioStore = defineStore('audio', () => {
     globalRmsValue,
     globalDbValue,
     downloadFormat,
-    showProgress,
-    progress,
-    progressLabel,
     statusMessage,
     statusType,
     isProcessing,
     isLoading,
     loadingMessage,
+    loadingProgress,
     r128Applied,
     // Playlist / player-bar state
     currentTrackId,

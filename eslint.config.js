@@ -64,6 +64,7 @@ export default [
         DataView: 'readonly',
         HTMLAudioElement: 'readonly',
         HTMLInputElement: 'readonly',
+        HTMLLinkElement: 'readonly',
         HTMLElement: 'readonly',
         Element: 'readonly',
         DOMException: 'readonly',

@@ -1,0 +1,22 @@
+{
+  "name": "Audio Normalizer",
+  "short_name": "Audio Norm.",
+  "description": "Professionelle Audio-Normalisierung (EBU R128, LUFS, RMS, Peak) direkt im Browser – kostenlos, ohne Upload.",
+  "lang": "de",
+  "dir": "ltr",
+  "start_url": "/audionormalisierer/app",
+  "scope": "/audionormalisierer/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#091428",
+  "theme_color": "#091428",
+  "categories": ["music", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/audionormalisierer/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

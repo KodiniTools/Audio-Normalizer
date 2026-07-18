@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Audio Normalizer">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1c32"/>
+      <stop offset="1" stop-color="#091428"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c9984d"/>
+      <stop offset="1" stop-color="#e8b06a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Waveform -->
+  <g fill="url(#gold)" opacity="0.9">
+    <rect x="90"  y="300" width="14" height="30"  rx="7"/>
+    <rect x="120" y="270" width="14" height="90"  rx="7"/>
+    <rect x="150" y="230" width="14" height="170" rx="7"/>
+    <rect x="180" y="180" width="14" height="270" rx="7"/>
+    <rect x="210" y="250" width="14" height="130" rx="7"/>
+    <rect x="240" y="210" width="14" height="210" rx="7"/>
+    <rect x="270" y="290" width="14" height="50"  rx="7"/>
+  </g>
+  <text x="90" y="150" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#c9984d" letter-spacing="3">KODINITOOLS</text>
+  <text x="86" y="510" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="86" font-weight="800" fill="#f9f2d5">Audio Normalizer</text>
+  <text x="90" y="575" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="33" font-weight="500" fill="#7a8da0">EBU R128 · LUFS · RMS · Peak — kostenlos &amp; lokal im Browser</text>
+</svg>

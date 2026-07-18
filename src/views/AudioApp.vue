@@ -252,6 +252,15 @@
             </span>
           </div>
 
+          <!-- Hint: no file marked for editing -->
+          <div
+            v-if="audioFiles.length > 0 && !someSelected"
+            class="alert alert--warning selection-hint"
+          >
+            <AlertTriangle :size="15" />
+            <span>{{ t('app.noSelectionHint') }}</span>
+          </div>
+
           <!-- File meta / empty state -->
           <div v-else class="file-meta file-meta--empty">
             {{ t('app.noFiles') }}
@@ -829,6 +838,10 @@
     font-size: 0.68rem;
     font-weight: 700;
     line-height: 1.3;
+  }
+
+  .selection-hint {
+    font-size: 0.75rem;
   }
 
   /* ── Sticky player bar ───────────────────────────────── */

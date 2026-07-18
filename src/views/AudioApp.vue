@@ -60,15 +60,6 @@
             </div>
           </div>
 
-          <!-- Progress bar -->
-          <div v-if="showProgress" class="progress-strip">
-            <span class="progress-label">{{ progressLabel }}</span>
-            <div class="progress-track">
-              <div class="progress-fill" :style="{ width: progress + '%' }" />
-            </div>
-            <span class="progress-pct">{{ Math.round(progress) }}%</span>
-          </div>
-
           <!-- Toolbar -->
           <div class="toolbar">
             <button
@@ -293,10 +284,24 @@
       </div>
     </section>
 
-    <!-- Loading overlay -->
+    <!-- Loading overlay — all processes report their progress here -->
     <div v-if="isLoading" class="loading-overlay">
-      <div class="spinner" />
-      <p>{{ loadingMessage }}</p>
+      <div class="loading-card">
+        <div class="spinner" />
+        <p class="loading-message">{{ loadingMessage }}</p>
+        <div class="loading-progress">
+          <div class="loading-progress-track">
+            <div
+              class="loading-progress-fill"
+              :class="{ 'loading-progress-fill--indeterminate': loadingProgress === null }"
+              :style="loadingProgress !== null ? { width: loadingProgress + '%' } : undefined"
+            />
+          </div>
+          <span v-if="loadingProgress !== null" class="loading-progress-pct">
+            {{ Math.round(loadingProgress) }}%
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -336,11 +341,9 @@
     globalRmsValue,
     globalDbValue,
     downloadFormat,
-    showProgress,
-    progress,
-    progressLabel,
     isLoading,
     loadingMessage,
+    loadingProgress,
     statusMessage,
     statusType,
     isProcessing,
@@ -550,46 +553,6 @@
     display: flex;
     gap: 0.5rem;
     flex-shrink: 0;
-  }
-
-  /* ── Progress strip ──────────────────────────────────── */
-  .progress-strip {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.5rem 0.875rem;
-    background: var(--panel);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-  }
-
-  .progress-label {
-    font-size: 0.73rem;
-    font-weight: 600;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .progress-track {
-    height: 4px;
-    background: var(--btn);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-
-  .progress-pct {
-    font-size: 0.73rem;
-    font-weight: 700;
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
   }
 
   /* ── Toolbar ─────────────────────────────────────────── */
@@ -966,32 +929,91 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.65);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
     z-index: 9999;
+    backdrop-filter: blur(2px);
+  }
+
+  .loading-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: min(90vw, 340px);
+    padding: 1.75rem 1.5rem;
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0.9rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   }
 
   .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.15);
+    border: 3px solid var(--btn);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
 
-  .loading-overlay p {
-    color: white;
-    font-size: 0.875rem;
+  .loading-message {
+    color: var(--text);
+    font-size: 0.85rem;
     font-weight: 600;
     margin: 0;
+    text-align: center;
+    line-height: 1.35;
+  }
+
+  .loading-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  .loading-progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--btn);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .loading-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+    border-radius: 3px;
+    transition: width 0.25s ease;
+  }
+
+  .loading-progress-fill--indeterminate {
+    width: 40%;
+    animation: indeterminate 1.1s ease-in-out infinite;
+  }
+
+  .loading-progress-pct {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    min-width: 2.6rem;
+    text-align: right;
   }
 
   @keyframes spin {
     to {
       transform: rotate(360deg);
+    }
+  }
+
+  @keyframes indeterminate {
+    0% {
+      margin-left: -40%;
+    }
+    100% {
+      margin-left: 100%;
     }
   }
 

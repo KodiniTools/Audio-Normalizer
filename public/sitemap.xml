@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://kodinitools.com/audionormalisierer/</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-07-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://kodinitools.com/audionormalisierer/og-image.svg</image:loc>
+      <image:title>Audio Normalizer – EBU R128, LUFS, RMS &amp; Peak im Browser</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://kodinitools.com/audionormalisierer/app</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-07-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://kodinitools.com/audionormalisierer/anleitung</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-07-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

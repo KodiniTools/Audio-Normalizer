@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Explicitly welcome the major crawlers / AI answer engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://kodinitools.com/audionormalisierer/sitemap.xml

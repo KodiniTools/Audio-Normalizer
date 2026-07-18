@@ -13,10 +13,10 @@
   "categories": ["music", "utilities", "productivity"],
   "icons": [
     {
-      "src": "/audionormalisierer/favicon.svg",
+      "src": "/favicon.ico",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/x-icon",
+      "purpose": "any"
     }
   ]
 }

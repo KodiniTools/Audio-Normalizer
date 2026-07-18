@@ -430,6 +430,8 @@
     );
     cursor: pointer;
     outline: none;
+    /* Horizontal drag scrubs the slider; vertical drag still scrolls the page. */
+    touch-action: pan-y;
   }
 
   .pb-range:disabled {
@@ -542,6 +544,36 @@
   @media (max-width: 480px) {
     .pb-range--vol {
       display: none;
+    }
+  }
+
+  /* Larger, easier-to-hit controls and grab handles on touch devices. */
+  @media (pointer: coarse) {
+    .pb-btn {
+      width: 44px;
+      height: 44px;
+    }
+    .pb-btn--play {
+      width: 52px;
+      height: 52px;
+    }
+    .pb-icon-btn {
+      width: 44px;
+      height: 44px;
+    }
+    .pb-range {
+      height: 8px;
+    }
+    .pb-range::-webkit-slider-thumb {
+      width: 22px;
+      height: 22px;
+    }
+    .pb-range::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+    }
+    .pb-range--vol {
+      height: 6px;
     }
   }
 </style>

@@ -1550,3 +1550,72 @@ body:not(.light-mode) .light-icon {
     font-size: var(--font-size-base);
   }
 }
+
+/* ==========================================================================
+   22. Touch & Mobile Ergonomics
+   ========================================================================== */
+
+/* Remove the grey/blue tap flash and the 300 ms double-tap-zoom delay so taps
+   feel instant. Interactive elements get their own :active feedback below. */
+a,
+button,
+label,
+select,
+summary,
+[role='button'],
+input[type='range'],
+input[type='checkbox'],
+input[type='file'] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* iOS Safari zooms the page in when a focused form control has a font-size
+   below 16px. Enforce 16px on touch-sized viewports to stop that jump. */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Touch devices have no hover: neutralise the "lift" transforms so a tapped
+   element doesn't stay visually stuck in its hover state after the tap. */
+@media (hover: none) {
+  .btn:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-danger:hover,
+  .btn-large:hover,
+  .apply-btn:hover,
+  .export-btn:hover,
+  .remove-btn:hover,
+  .toggle-play-btn:hover,
+  .feature-card:hover,
+  .benefit-item:hover,
+  .testimonial-card:hover,
+  .file-item:hover,
+  .file-input-wrapper:hover,
+  .back-link:hover,
+  .theme-toggle:hover,
+  .lang-toggle:hover {
+    transform: none;
+  }
+
+  /* Instant press feedback in place of hover. */
+  .btn:active,
+  .btn-primary:active,
+  .btn-secondary:active,
+  .apply-btn:active,
+  .export-btn:active {
+    filter: brightness(0.95);
+  }
+}
+
+/* Comfortable finger hit area for text buttons on coarse pointers. */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
+}

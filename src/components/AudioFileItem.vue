@@ -393,4 +393,23 @@
       width: 60px;
     }
   }
+
+  /* Larger tap targets for the playlist row controls on touch devices. */
+  @media (pointer: coarse) {
+    .item-check {
+      width: 22px;
+      height: 22px;
+    }
+    .play-btn {
+      width: 40px;
+      height: 40px;
+    }
+    .remove-btn {
+      width: 38px;
+      height: 38px;
+    }
+    .item-btn {
+      min-height: 40px;
+    }
+  }
 </style>

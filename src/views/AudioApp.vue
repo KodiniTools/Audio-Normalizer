@@ -1079,4 +1079,30 @@
       padding: 0.25rem 0.6rem;
     }
   }
+
+  /* Touch devices: comfortable hit areas and no stuck hover-lift after a tap. */
+  @media (pointer: coarse) {
+    .btn--sm,
+    .chip,
+    .btn--send {
+      min-height: 40px;
+    }
+    .ctrl-input,
+    .ctrl-select,
+    .btn--ebu,
+    .btn--accent {
+      min-height: 44px;
+    }
+    .select-all input {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  @media (hover: none) {
+    .btn--primary:hover,
+    .btn--ghost:hover {
+      transform: none;
+    }
+  }
 </style>

@@ -490,6 +490,7 @@ export const useAudioStore = defineStore('audio', () => {
 
   const exportFile = async (file: AudioFileData): Promise<void> => {
     isLoading.value = true
+    loadingProgress.value = null
     loadingMessage.value = `Exportiere ${file.name}...`
     try {
       await doExportFile(
@@ -499,6 +500,10 @@ export const useAudioStore = defineStore('audio', () => {
           loadingMessage.value = msg
         },
         setStatus,
+        // Feed the MP3/WebM conversion percentage into the overlay's bar.
+        (pct) => {
+          loadingProgress.value = pct
+        },
       )
     } finally {
       endLoading()

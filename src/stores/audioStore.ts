@@ -7,17 +7,20 @@ import {
   dbToRms,
   isAudioFile,
   bufferToWave,
+  CONSTANTS,
 } from '../utils/audioUtils'
 import { shareFiles } from '../utils/sharedFileRepository'
-import {
-  scaleAudioBuffer,
-  normalizeToLoudnessR128,
-  applyNoiseReduction,
-  reduceClipping,
-  applyDynamicCompression,
-} from '../composables/useAudioNormalization'
+import { dspPool } from '../utils/dspPool'
+import type { DspJobResult } from '../utils/dspPool'
 import { exportFile as doExportFile, exportAll as doExportAll } from '../composables/useAudioExport'
-import type { AudioFileData, BatchResult, StatusType, PlaybackMode } from '../types'
+import type {
+  AudioFileData,
+  BatchResult,
+  StatusType,
+  PlaybackMode,
+  DspOp,
+  DspParams,
+} from '../types'
 import type { Preset } from '../data/presets'
 
 export const useAudioStore = defineStore('audio', () => {
@@ -273,12 +276,46 @@ export const useAudioStore = defineStore('audio', () => {
     return { processed, errors }
   }
 
-  // ── Global Operations ──────────────────────────────────────────────────────
+  // ── Global Operations (DSP worker pool) ─────────────────────────────────────
 
-  const runGlobalOp = async (
+  // Copy channel data so the source AudioBuffer isn't detached when the arrays
+  // are transferred to a worker.
+  const copyChannels = (buffer: AudioBuffer): Float32Array[] =>
+    Array.from(
+      { length: buffer.numberOfChannels },
+      (_, c) => new Float32Array(buffer.getChannelData(c)),
+    )
+
+  // Rebuild an AudioBuffer from worker-returned channels and refresh the file's
+  // meters and preview URL.
+  const applyDspResult = (
+    file: AudioFileData,
+    channels: Float32Array[],
+    peak: number,
+    rms: number,
+  ): void => {
+    const sampleRate = file.originalBuffer.sampleRate
+    const out = new AudioBuffer({
+      length: channels[0].length,
+      numberOfChannels: channels.length,
+      sampleRate,
+    })
+    channels.forEach((ch, c) => out.copyToChannel(ch as Float32Array<ArrayBuffer>, c))
+    file.processedBuffer = out
+    file.peak = peak
+    file.rms = rms
+    file.processed = true
+    if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
+    file.processedBlobUrl = URL.createObjectURL(bufferToWave(out, 0, out.length))
+  }
+
+  // Dispatch a DSP op over the selected files in parallel across the worker pool.
+  const runDspBatch = async (
     label: string,
     successMsg: string,
-    fn: (file: AudioFileData) => Promise<void>,
+    op: DspOp,
+    params: DspParams,
+    { fromOriginal = false, markR128 = false }: { fromOriginal?: boolean; markR128?: boolean } = {},
   ): Promise<void> => {
     if (audioFiles.value.length === 0) return
     // Only the marked (selected) files in the interactive playlist are edited.
@@ -288,111 +325,121 @@ export const useAudioStore = defineStore('audio', () => {
       return
     }
     isProcessing.value = true
-    await runBatch(files, label, async (file) => {
-      try {
-        await fn(file)
-        file.processed = true
-      } catch (e) {
-        if (e instanceof Error && e.message === 'silent') {
+    setProgress(label, 0)
+
+    const jobs = files.map((file) => {
+      const source = fromOriginal
+        ? file.originalBuffer
+        : (file.processedBuffer ?? file.originalBuffer)
+      return { op, channels: copyChannels(source), sampleRate: source.sampleRate, params }
+    })
+
+    const results: DspJobResult[] = await dspPool.run(jobs, (done, total) =>
+      setProgress(label, (done / total) * 100),
+    )
+
+    results.forEach((res, i) => {
+      const file = files[i]
+      if (!res.ok) {
+        if (res.error === 'silent') {
           setStatus(`${file.name}: Datei ist zu leise zum Skalieren`, 'warning')
         } else {
-          console.error(`[${label}] ${file.name}:`, e)
+          console.error(`[${label}] ${file.name}:`, res.error)
         }
+        return
       }
+      applyDspResult(file, res.channels, res.peak, res.rms)
     })
+
     isProcessing.value = false
     endLoading()
+    if (markR128) r128Applied.value = true
     setStatus(successMsg, 'success')
-  }
-
-  const applyGlobalRms = async (): Promise<void> => {
-    await runGlobalOp('RMS Skalierung', 'RMS Skalierung abgeschlossen', (f) =>
-      scaleAudioBuffer(f, globalRmsValue.value),
-    )
     await autoShare()
   }
 
-  const applyGlobalDb = async (): Promise<void> => {
-    await runGlobalOp('dB Skalierung', 'dB Skalierung abgeschlossen', (f) =>
-      scaleAudioBuffer(f, dbToRms(globalDbValue.value)),
-    )
-    await autoShare()
-  }
-
-  const applyEBUR128 = async (): Promise<void> => {
-    await runGlobalOp('EBU R128', 'EBU R128 Normalisierung abgeschlossen', normalizeToLoudnessR128)
-    r128Applied.value = true
-    await autoShare()
-  }
-
-  const applyPreset = async (preset: Preset): Promise<void> => {
-    if (audioFiles.value.length === 0) return
-    const files = selectedFiles.value.slice()
-    if (files.length === 0) {
-      setStatus('Bitte markieren Sie mindestens eine Datei in der Playliste', 'warning')
-      return
-    }
-    isProcessing.value = true
-    await runBatch(files, preset.id, async (file) => {
-      try {
-        await normalizeToLoudnessR128(file, preset.lufs, preset.truePeakDbtp)
-        file.processed = true
-      } catch (e) {
-        console.error(`[Preset ${preset.id}] ${file.name}:`, e)
-      }
+  const applyGlobalRms = (): Promise<void> =>
+    runDspBatch('RMS Skalierung', 'RMS Skalierung abgeschlossen', 'rmsScale', {
+      targetRms: globalRmsValue.value,
+      targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+      maxRmsGain: 10,
     })
-    isProcessing.value = false
-    endLoading()
-    r128Applied.value = true
-    setStatus(
+
+  const applyGlobalDb = (): Promise<void> =>
+    runDspBatch('dB Skalierung', 'dB Skalierung abgeschlossen', 'rmsScale', {
+      targetRms: dbToRms(globalDbValue.value),
+      targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+      maxRmsGain: 10,
+    })
+
+  const applyEBUR128 = (): Promise<void> =>
+    runDspBatch(
+      'EBU R128',
+      'EBU R128 Normalisierung abgeschlossen',
+      'ebur128',
+      {
+        targetLufs: CONSTANTS.EBU_R128_TARGET_LUFS,
+        targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+      },
+      { fromOriginal: true, markR128: true },
+    )
+
+  const applyPreset = (preset: Preset): Promise<void> =>
+    runDspBatch(
+      preset.id,
       `Preset „${preset.id}“ angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`,
-      'success',
+      'ebur128',
+      { targetLufs: preset.lufs, targetDbtp: preset.truePeakDbtp },
+      { fromOriginal: true, markR128: true },
     )
-    await autoShare()
-  }
 
-  const applyNoiseReductionAll = async (): Promise<void> => {
-    await runGlobalOp(
-      'Rauschunterdrückung',
-      'Rauschunterdrückung abgeschlossen',
-      applyNoiseReduction,
-    )
-    await autoShare()
-  }
+  const applyNoiseReductionAll = (): Promise<void> =>
+    runDspBatch('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', 'noiseReduction', {
+      lowpassFreq: CONSTANTS.LOWPASS_FREQ,
+      lowpassQ: CONSTANTS.LOWPASS_Q,
+    })
 
-  const reduceClippingAll = async (): Promise<void> => {
-    await runGlobalOp('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', reduceClipping)
-    await autoShare()
-  }
+  const reduceClippingAll = (): Promise<void> =>
+    runDspBatch('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', 'reduceClipping', {})
 
-  const applyDynamicCompressionAll = async (): Promise<void> => {
-    await runGlobalOp(
-      'Dynamikkompression',
-      'Dynamikkompression abgeschlossen',
-      applyDynamicCompression,
-    )
-    await autoShare()
-  }
+  const applyDynamicCompressionAll = (): Promise<void> =>
+    runDspBatch('Dynamikkompression', 'Dynamikkompression abgeschlossen', 'dynamicCompression', {
+      threshold: CONSTANTS.COMPRESSOR_THRESHOLD,
+      knee: CONSTANTS.COMPRESSOR_KNEE,
+      ratio: CONSTANTS.COMPRESSOR_RATIO,
+      attack: CONSTANTS.COMPRESSOR_ATTACK,
+      release: CONSTANTS.COMPRESSOR_RELEASE,
+    })
 
   const analyzeAll = (): void => setStatus('Alle Dateien bereits analysiert', 'info')
 
   // ── Individual File Operations ─────────────────────────────────────────────
 
   const updateFile = async (updatedFile: AudioFileData): Promise<void> => {
-    const index = audioFiles.value.findIndex((f) => f.id === updatedFile.id)
-    if (index === -1) return
+    const file = audioFiles.value.find((f) => f.id === updatedFile.id)
+    if (!file) return
     isLoading.value = true
     loadingMessage.value = `${updatedFile.name} wird bearbeitet...`
-    try {
-      await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms ?? globalRmsValue.value)
-      audioFiles.value[index].processed = true
+    const source = file.processedBuffer ?? file.originalBuffer
+    const [res] = await dspPool.run([
+      {
+        op: 'rmsScale',
+        channels: copyChannels(source),
+        sampleRate: source.sampleRate,
+        params: {
+          targetRms: updatedFile.targetRms ?? globalRmsValue.value,
+          targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+          maxRmsGain: 10,
+        },
+      },
+    ])
+    if (res.ok) {
+      applyDspResult(file, res.channels, res.peak, res.rms)
       setStatus(`${updatedFile.name} aktualisiert`, 'success')
-    } catch (e) {
-      if (e instanceof Error && e.message === 'silent') {
-        setStatus(`${updatedFile.name}: Datei ist zu leise zum Skalieren`, 'warning')
-      } else {
-        setStatus(`Fehler bei ${updatedFile.name}`, 'error')
-      }
+    } else if (res.error === 'silent') {
+      setStatus(`${updatedFile.name}: Datei ist zu leise zum Skalieren`, 'warning')
+    } else {
+      setStatus(`Fehler bei ${updatedFile.name}`, 'error')
     }
     endLoading()
   }

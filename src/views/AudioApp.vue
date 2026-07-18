@@ -73,10 +73,12 @@
           <div class="toolbar">
             <button
               class="btn btn--primary btn--sm"
-              :disabled="isProcessing || audioFiles.length === 0"
+              :disabled="isProcessing || processedCount === 0"
+              :title="processedCount === 0 ? t('app.exportHint') : ''"
               @click="exportAll"
             >
-              <Download :size="14" />{{ t('app.exportAll') }}
+              <Download :size="14" />{{ t('app.exportProcessed') }}
+              <span v-if="processedCount > 0" class="count-pill">{{ processedCount }}</span>
             </button>
             <button
               class="btn btn--danger btn--sm"
@@ -113,10 +115,7 @@
                 :disabled="isProcessing || !hasNormalizedFiles || isSending"
                 @click="sendToTool(tool)"
               >
-                <component
-                  :is="sentToTool === tool.key ? CheckCircle : ExternalLink"
-                  :size="12"
-                />
+                <component :is="sentToTool === tool.key ? CheckCircle : ExternalLink" :size="12" />
                 {{
                   isSending && sentToTool !== tool.key
                     ? t('app.sendToSending')
@@ -237,23 +236,44 @@
             </button>
           </div>
 
-          <!-- File meta / empty state -->
-          <div class="file-meta" :class="{ 'file-meta--empty': audioFiles.length === 0 }">
-            <template v-if="audioFiles.length === 0">{{ t('app.noFiles') }}</template>
-            <template v-else>{{ t('app.fileCount', { count: audioFiles.length }) }}</template>
+          <!-- Playlist header -->
+          <div v-if="audioFiles.length > 0" class="playlist-header">
+            <label class="select-all">
+              <input
+                type="checkbox"
+                :checked="allSelected"
+                :indeterminate.prop="someSelected && !allSelected"
+                @change="toggleSelectAll"
+              />
+              <span>{{ allSelected ? t('app.deselectAll') : t('app.selectAll') }}</span>
+            </label>
+            <span class="playlist-count">
+              {{ t('app.selectedCount', { count: selectedCount, total: audioFiles.length }) }}
+            </span>
           </div>
 
-          <!-- File list -->
+          <!-- File meta / empty state -->
+          <div v-else class="file-meta file-meta--empty">
+            {{ t('app.noFiles') }}
+          </div>
+
+          <!-- Interactive playlist -->
           <div v-if="audioFiles.length > 0" class="file-list">
             <AudioFileItem
               v-for="file in audioFiles"
               :key="file.id"
               :file="file"
+              :is-active="file.id === currentTrackId"
               @update="updateFile"
               @remove="removeFile"
               @export="exportFile"
+              @toggle-select="toggleSelect"
+              @play="playTrack"
             />
           </div>
+
+          <!-- Sticky player bar -->
+          <PlayerBar v-if="audioFiles.length > 0" class="sticky-player" />
 
           <!-- Status toast -->
           <div v-if="statusMessage" class="alert alert--toast" :class="'alert--' + statusType">
@@ -292,6 +312,7 @@
   import { useFileDrop } from '../composables/useFileDrop'
   import { useSharedFiles } from '../composables/useSharedFiles'
   import AudioFileItem from '../components/AudioFileItem.vue'
+  import PlayerBar from '../components/PlayerBar.vue'
   import HeaderControls from '../components/HeaderControls.vue'
   import PresetSelector from '../components/PresetSelector.vue'
   import { useSendToTool, TARGET_TOOLS } from '../composables/useSendToTool'
@@ -315,6 +336,11 @@
     statusType,
     isProcessing,
     r128Applied,
+    allSelected,
+    someSelected,
+    selectedCount,
+    processedCount,
+    currentTrackId,
   } = storeToRefs(store)
 
   const {
@@ -333,6 +359,9 @@
     updateFile,
     removeFile,
     exportFile,
+    toggleSelect,
+    toggleSelectAll,
+    playTrack,
   } = store
 
   const { fileInputRef, folderInputRef, isDragging, handleFiles, handleDrop } =
@@ -755,6 +784,56 @@
   .chip:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
+
+  /* ── Playlist header ─────────────────────────────────── */
+  .playlist-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+  }
+
+  .select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .select-all input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .playlist-count {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .count-pill {
+    padding: 0.02rem 0.4rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  /* ── Sticky player bar ───────────────────────────────── */
+  .sticky-player {
+    margin-top: 0.25rem;
   }
 
   /* ── File meta ───────────────────────────────────────── */

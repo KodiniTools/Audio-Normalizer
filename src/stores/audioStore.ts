@@ -1,6 +1,13 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { generateId, calculateRMS, calculatePeak, dbToRms, isAudioFile, bufferToWave } from '../utils/audioUtils'
+import {
+  generateId,
+  calculateRMS,
+  calculatePeak,
+  dbToRms,
+  isAudioFile,
+  bufferToWave,
+} from '../utils/audioUtils'
 import { shareFiles } from '../utils/sharedFileRepository'
 import {
   scaleAudioBuffer,
@@ -9,11 +16,8 @@ import {
   reduceClipping,
   applyDynamicCompression,
 } from '../composables/useAudioNormalization'
-import {
-  exportFile as doExportFile,
-  exportAll as doExportAll,
-} from '../composables/useAudioExport'
-import type { AudioFileData, BatchResult, StatusType } from '../types'
+import { exportFile as doExportFile, exportAll as doExportAll } from '../composables/useAudioExport'
+import type { AudioFileData, BatchResult, StatusType, PlaybackMode } from '../types'
 import type { Preset } from '../data/presets'
 
 export const useAudioStore = defineStore('audio', () => {
@@ -31,6 +35,64 @@ export const useAudioStore = defineStore('audio', () => {
   const isLoading = ref(false)
   const loadingMessage = ref('Verarbeite...')
   const r128Applied = ref(false)
+
+  // ── Playlist / player-bar state ──────────────────────────────────────────────
+  const currentTrackId = ref<string | null>(null)
+  const playbackMode = ref<PlaybackMode>('original')
+
+  // ── Derived selection / playlist getters ─────────────────────────────────────
+  const selectedFiles = computed(() => audioFiles.value.filter((f) => f.selected))
+  const processedFiles = computed(() => audioFiles.value.filter((f) => f.processed))
+  const selectedCount = computed(() => selectedFiles.value.length)
+  const processedCount = computed(() => processedFiles.value.length)
+  const allSelected = computed(
+    () => audioFiles.value.length > 0 && audioFiles.value.every((f) => f.selected),
+  )
+  const someSelected = computed(() => audioFiles.value.some((f) => f.selected))
+  const currentTrack = computed(
+    () => audioFiles.value.find((f) => f.id === currentTrackId.value) ?? null,
+  )
+
+  // ── Selection actions ─────────────────────────────────────────────────────────
+  const toggleSelect = (id: string): void => {
+    const file = audioFiles.value.find((f) => f.id === id)
+    if (file) file.selected = !file.selected
+  }
+
+  const setAllSelected = (value: boolean): void => {
+    audioFiles.value.forEach((f) => {
+      f.selected = value
+    })
+  }
+
+  const toggleSelectAll = (): void => setAllSelected(!allSelected.value)
+
+  // ── Player-bar actions ────────────────────────────────────────────────────────
+  const playTrack = (id: string): void => {
+    const file = audioFiles.value.find((f) => f.id === id)
+    if (!file) return
+    currentTrackId.value = id
+    // Fall back to the original take if the processed version doesn't exist yet.
+    if (playbackMode.value === 'processed' && !file.processed) playbackMode.value = 'original'
+  }
+
+  const setPlaybackMode = (mode: PlaybackMode): void => {
+    if (mode === 'processed' && !currentTrack.value?.processed) return
+    playbackMode.value = mode
+  }
+
+  const playAdjacent = (direction: 1 | -1): void => {
+    const list = audioFiles.value
+    if (list.length === 0) return
+    const idx = list.findIndex((f) => f.id === currentTrackId.value)
+    let next = idx === -1 ? 0 : idx + direction
+    if (next < 0) next = list.length - 1
+    if (next >= list.length) next = 0
+    playTrack(list[next].id)
+  }
+
+  const playNext = (): void => playAdjacent(1)
+  const playPrev = (): void => playAdjacent(-1)
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -92,6 +154,10 @@ export const useAudioStore = defineStore('audio', () => {
     originalRms: calculateRMS(buffer),
     processedBlobUrl: null,
     originalBlobUrl: URL.createObjectURL(originalRef),
+    duration: buffer.duration,
+    // Newly added files start selected, so batch edits apply to them by default.
+    selected: true,
+    processed: false,
   })
 
   const decodeAudio = async (arrayBuffer: ArrayBuffer): Promise<AudioBuffer> => {
@@ -211,11 +277,17 @@ export const useAudioStore = defineStore('audio', () => {
     fn: (file: AudioFileData) => Promise<void>,
   ): Promise<void> => {
     if (audioFiles.value.length === 0) return
+    // Only the marked (selected) files in the interactive playlist are edited.
+    const files = selectedFiles.value.slice()
+    if (files.length === 0) {
+      setStatus('Bitte markieren Sie mindestens eine Datei in der Playliste', 'warning')
+      return
+    }
     isProcessing.value = true
-    const files = audioFiles.value.slice()
     await runBatch(files, label, async (file) => {
       try {
         await fn(file)
+        file.processed = true
       } catch (e) {
         if (e instanceof Error && e.message === 'silent') {
           setStatus(`${file.name}: Datei ist zu leise zum Skalieren`, 'warning')
@@ -250,23 +322,35 @@ export const useAudioStore = defineStore('audio', () => {
 
   const applyPreset = async (preset: Preset): Promise<void> => {
     if (audioFiles.value.length === 0) return
+    const files = selectedFiles.value.slice()
+    if (files.length === 0) {
+      setStatus('Bitte markieren Sie mindestens eine Datei in der Playliste', 'warning')
+      return
+    }
     isProcessing.value = true
-    const files = audioFiles.value.slice()
     await runBatch(files, preset.id, async (file) => {
       try {
         await normalizeToLoudnessR128(file, preset.lufs, preset.truePeakDbtp)
+        file.processed = true
       } catch (e) {
         console.error(`[Preset ${preset.id}] ${file.name}:`, e)
       }
     })
     isProcessing.value = false
     r128Applied.value = true
-    setStatus(`Preset „${preset.id}“ angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`, 'success')
+    setStatus(
+      `Preset „${preset.id}“ angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`,
+      'success',
+    )
     await autoShare()
   }
 
   const applyNoiseReductionAll = async (): Promise<void> => {
-    await runGlobalOp('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', applyNoiseReduction)
+    await runGlobalOp(
+      'Rauschunterdrückung',
+      'Rauschunterdrückung abgeschlossen',
+      applyNoiseReduction,
+    )
     await autoShare()
   }
 
@@ -294,6 +378,7 @@ export const useAudioStore = defineStore('audio', () => {
     isLoading.value = true
     try {
       await scaleAudioBuffer(audioFiles.value[index], updatedFile.targetRms ?? globalRmsValue.value)
+      audioFiles.value[index].processed = true
       setStatus(`${updatedFile.name} aktualisiert`, 'success')
     } catch (e) {
       if (e instanceof Error && e.message === 'silent') {
@@ -311,6 +396,10 @@ export const useAudioStore = defineStore('audio', () => {
     if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
     if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
     audioFiles.value.splice(index, 1)
+    if (currentTrackId.value === file.id) {
+      currentTrackId.value = null
+      playbackMode.value = 'original'
+    }
     setStatus(`${file.name} entfernt`, 'info')
   }
 
@@ -321,6 +410,8 @@ export const useAudioStore = defineStore('audio', () => {
     })
     audioFiles.value = []
     r128Applied.value = false
+    currentTrackId.value = null
+    playbackMode.value = 'original'
     setStatus('Alle Dateien gelöscht', 'info')
   }
 
@@ -329,12 +420,15 @@ export const useAudioStore = defineStore('audio', () => {
       file.processedBuffer = file.originalBuffer
       file.peak = file.originalPeak
       file.rms = file.originalRms
+      file.processed = false
       if (file.processedBlobUrl) {
         URL.revokeObjectURL(file.processedBlobUrl)
         file.processedBlobUrl = null
       }
     })
     r128Applied.value = false
+    // The processed take no longer exists — fall back to original playback.
+    playbackMode.value = 'original'
     setStatus('Alle Änderungen zurückgesetzt', 'success')
   }
 
@@ -359,11 +453,17 @@ export const useAudioStore = defineStore('audio', () => {
 
   const exportAll = async (): Promise<void> => {
     if (audioFiles.value.length === 0) return
+    // Only edited (processed) files are included in the export.
+    const files = processedFiles.value.slice()
+    if (files.length === 0) {
+      setStatus('Keine bearbeiteten Dateien zum Exportieren', 'warning')
+      return
+    }
     isLoading.value = true
     loadingMessage.value = 'ZIP wird erstellt...'
     try {
       await doExportAll(
-        audioFiles.value.slice(),
+        files,
         downloadFormat.value,
         setProgress,
         (msg) => {
@@ -390,6 +490,23 @@ export const useAudioStore = defineStore('audio', () => {
     isLoading,
     loadingMessage,
     r128Applied,
+    // Playlist / player-bar state
+    currentTrackId,
+    playbackMode,
+    selectedFiles,
+    processedFiles,
+    selectedCount,
+    processedCount,
+    allSelected,
+    someSelected,
+    currentTrack,
+    toggleSelect,
+    setAllSelected,
+    toggleSelectAll,
+    playTrack,
+    setPlaybackMode,
+    playNext,
+    playPrev,
     setProgress,
     setStatus,
     handleFilesInput,

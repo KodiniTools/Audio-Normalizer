@@ -1,6 +1,12 @@
 import JSZip from 'jszip'
 import { Muxer, ArrayBufferTarget } from 'webm-muxer'
-import { CONSTANTS, bufferToWave, triggerDownload } from '../utils/audioUtils'
+import {
+  CONSTANTS,
+  bufferToWave,
+  triggerDownload,
+  pickSaveFileHandle,
+  writeBlobToFileHandle,
+} from '../utils/audioUtils'
 import type { AudioFileData, ExportResult, Mp3WorkerOutput, StatusType } from '../types'
 
 type ProgressCallback = ((pct: number) => void) | null
@@ -193,6 +199,12 @@ const getFileBlob = async (
 
 type SetStatus = (message: string, type?: StatusType) => void
 
+const filenameFor = (file: AudioFileData, format: string): string => {
+  const baseName = file.name.replace(/\.[^/.]+$/, '')
+  const ext = format === 'mp3' ? 'mp3' : format === 'webm' ? 'webm' : 'wav'
+  return `${baseName}.${ext}`
+}
+
 export const exportFile = async (
   file: AudioFileData,
   format: string,
@@ -200,14 +212,38 @@ export const exportFile = async (
   setStatus: SetStatus,
   onProgress?: (pct: number) => void,
 ): Promise<void> => {
+  // Ask for the save location FIRST, while the click's user activation is still
+  // valid — before the potentially long MP3/WebM conversion runs. On browsers
+  // without the File System Access API this returns null and we fall back to a
+  // classic download into the default folder.
+  let handle: FileSystemFileHandle | null = null
+  const pendingHandle = pickSaveFileHandle(filenameFor(file, format), format)
+  if (pendingHandle) {
+    try {
+      handle = await pendingHandle
+    } catch (error) {
+      if ((error as DOMException)?.name === 'AbortError') {
+        setStatus(`Export von ${file.name} abgebrochen`, 'info')
+        return
+      }
+      // Any other picker error → fall back to a normal download.
+      handle = null
+    }
+  }
+
   try {
     const { blob, filename } = await getFileBlob(file, format, (pct) => {
       onProgress?.(pct)
       if (format === 'mp3') setLoadingMessage(`MP3-Konvertierung: ${pct}%`)
       else if (format === 'webm') setLoadingMessage(`WebM-Konvertierung: ${pct}%`)
     })
-    triggerDownload(blob, filename)
-    setStatus(`${file.name} heruntergeladen`, 'success')
+    if (handle) {
+      await writeBlobToFileHandle(handle, blob)
+      setStatus(`${file.name} gespeichert`, 'success')
+    } else {
+      triggerDownload(blob, filename)
+      setStatus(`${file.name} heruntergeladen`, 'success')
+    }
   } catch (error) {
     console.error(`Error exporting ${file.name}:`, error)
     setStatus(`Fehler beim Exportieren von ${file.name}`, 'error')

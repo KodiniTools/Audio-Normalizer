@@ -257,6 +257,24 @@ export const exportAll = async (
   setLoadingMessage: (msg: string) => void,
   setStatus: SetStatus,
 ): Promise<void> => {
+  const zipName = `audio-normalized-${new Date().toISOString().slice(0, 10)}.zip`
+
+  // Ask for the save location FIRST, within the click's user activation, before
+  // the long zipping work. Browsers without the picker fall back to a download.
+  let handle: FileSystemFileHandle | null = null
+  const pendingHandle = pickSaveFileHandle(zipName, 'zip')
+  if (pendingHandle) {
+    try {
+      handle = await pendingHandle
+    } catch (error) {
+      if ((error as DOMException)?.name === 'AbortError') {
+        setStatus('ZIP-Export abgebrochen', 'info')
+        return
+      }
+      handle = null
+    }
+  }
+
   const zip = new JSZip()
   const total = audioFiles.length
 
@@ -286,8 +304,13 @@ export const exportAll = async (
       },
     )
 
-    triggerDownload(zipBlob, `audio-normalized-${new Date().toISOString().slice(0, 10)}.zip`)
-    setStatus(`${total} Datei(en) als ZIP heruntergeladen`, 'success')
+    if (handle) {
+      await writeBlobToFileHandle(handle, zipBlob)
+      setStatus(`${total} Datei(en) als ZIP gespeichert`, 'success')
+    } else {
+      triggerDownload(zipBlob, zipName)
+      setStatus(`${total} Datei(en) als ZIP heruntergeladen`, 'success')
+    }
   } catch (error) {
     console.error('Error creating ZIP:', error)
     setStatus('Fehler beim Erstellen der ZIP-Datei', 'error')

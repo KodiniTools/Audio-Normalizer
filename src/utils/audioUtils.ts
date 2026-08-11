@@ -147,6 +147,8 @@ const acceptTypeForFormat = (
 ): { description: string; accept: Record<string, string[]> } => {
   if (format === 'mp3') return { description: 'MP3 Audio', accept: { 'audio/mpeg': ['.mp3'] } }
   if (format === 'webm') return { description: 'WebM Audio', accept: { 'audio/webm': ['.webm'] } }
+  if (format === 'zip')
+    return { description: 'ZIP-Archiv', accept: { 'application/zip': ['.zip'] } }
   return { description: 'WAV Audio', accept: { 'audio/wav': ['.wav'] } }
 }
 

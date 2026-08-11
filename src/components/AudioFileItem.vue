@@ -89,7 +89,15 @@
       >
         <RotateCcw :size="13" />{{ t('app.reset') }}
       </button>
-      <button class="item-btn item-btn--export" @click="$emit('export', file)">
+      <div class="input-pair">
+        <label class="input-label">{{ t('app.format') }}</label>
+        <select v-model="localFormat" class="item-select" :aria-label="t('app.downloadFormat')">
+          <option value="wav">WAV</option>
+          <option value="mp3">MP3 320 kbps</option>
+          <option value="webm">WebM / Opus</option>
+        </select>
+      </div>
+      <button class="item-btn item-btn--export" @click="$emit('export', file, localFormat)">
         <Download :size="13" />{{ t('app.export') }}
       </button>
     </div>
@@ -104,6 +112,7 @@
   const props = defineProps({
     file: { type: Object, required: true },
     isActive: { type: Boolean, default: false },
+    defaultFormat: { type: String, default: 'wav' },
   })
 
   const emit = defineEmits(['update', 'reset', 'remove', 'export', 'toggle-select', 'play'])
@@ -111,6 +120,8 @@
   const { t } = useI18n()
 
   const localRms = ref(props.file.rms || 0)
+  // Per-file export format, seeded from the global default at mount time.
+  const localFormat = ref(props.defaultFormat)
 
   watch(
     () => props.file.rms,
@@ -349,6 +360,23 @@
   .item-input--readonly {
     opacity: 0.55;
     cursor: not-allowed;
+  }
+
+  .item-select {
+    width: 112px;
+    padding: 0.3rem 0.4rem;
+    background: var(--btn);
+    border: 1px solid var(--border-color);
+    border-radius: 0.3rem;
+    color: var(--text);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .item-select:focus {
+    outline: none;
+    border-color: var(--accent);
   }
 
   .item-btn {

@@ -508,14 +508,17 @@ export const useAudioStore = defineStore('audio', () => {
 
   // ── Export ─────────────────────────────────────────────────────────────────
 
-  const exportFile = async (file: AudioFileData): Promise<void> => {
+  const exportFile = async (
+    file: AudioFileData,
+    format: string = downloadFormat.value,
+  ): Promise<void> => {
     isLoading.value = true
     loadingProgress.value = null
     loadingMessage.value = `Exportiere ${file.name}...`
     try {
       await doExportFile(
         file,
-        downloadFormat.value,
+        format,
         (msg) => {
           loadingMessage.value = msg
         },

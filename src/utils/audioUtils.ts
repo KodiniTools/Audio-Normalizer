@@ -135,5 +135,58 @@ export const triggerDownload = (blob: Blob, filename: string): void => {
   window.URL.revokeObjectURL(url)
 }
 
+// ── "Save as" dialog (File System Access API) with download fallback ─────────
+
+type SaveFilePickerOptions = {
+  suggestedName?: string
+  types?: Array<{ description?: string; accept: Record<string, string[]> }>
+}
+
+const acceptTypeForFormat = (
+  format: string,
+): { description: string; accept: Record<string, string[]> } => {
+  if (format === 'mp3') return { description: 'MP3 Audio', accept: { 'audio/mpeg': ['.mp3'] } }
+  if (format === 'webm') return { description: 'WebM Audio', accept: { 'audio/webm': ['.webm'] } }
+  return { description: 'WAV Audio', accept: { 'audio/wav': ['.wav'] } }
+}
+
+/** Whether the browser supports the native "Save as" file picker (Chromium). */
+export const supportsSaveFilePicker = (): boolean =>
+  typeof window !== 'undefined' && 'showSaveFilePicker' in window
+
+/**
+ * Opens the native "Save as" dialog so the user can choose the destination
+ * folder and filename. Returns a writable file handle, or `null` when the
+ * browser lacks the API (callers must then fall back to {@link triggerDownload}).
+ *
+ * MUST be invoked synchronously from a user gesture (e.g. a click handler),
+ * before any long-running work, otherwise the browser rejects the call.
+ *
+ * The returned promise rejects with a DOMException named 'AbortError' when the
+ * user cancels the dialog.
+ */
+export const pickSaveFileHandle = (
+  suggestedName: string,
+  format: string,
+): Promise<FileSystemFileHandle> | null => {
+  if (!supportsSaveFilePicker()) return null
+  const showSaveFilePicker = (
+    window as unknown as {
+      showSaveFilePicker: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>
+    }
+  ).showSaveFilePicker
+  return showSaveFilePicker({ suggestedName, types: [acceptTypeForFormat(format)] })
+}
+
+/** Streams a blob into a picked file handle and closes the stream. */
+export const writeBlobToFileHandle = async (
+  handle: FileSystemFileHandle,
+  blob: Blob,
+): Promise<void> => {
+  const writable = await handle.createWritable()
+  await writable.write(blob)
+  await writable.close()
+}
+
 export const isAudioFile = (file: File): boolean =>
   file.type.startsWith('audio/') || /\.(mp3|wav|flac|ogg|m4a|aac|opus|wma)$/i.test(file.name)

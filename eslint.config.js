@@ -55,6 +55,8 @@ export default [
         FileSystemEntry: 'readonly',
         FileSystemFileEntry: 'readonly',
         FileSystemDirectoryEntry: 'readonly',
+        FileSystemFileHandle: 'readonly',
+        FileSystemWritableFileStream: 'readonly',
         AudioBuffer: 'readonly',
         AudioBufferSourceNode: 'readonly',
         Float32Array: 'readonly',

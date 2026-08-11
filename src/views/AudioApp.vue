@@ -265,6 +265,7 @@
               :file="file"
               :is-active="file.id === currentTrackId"
               @update="updateFile"
+              @reset="resetFile"
               @remove="removeFile"
               @export="exportFile"
               @toggle-select="toggleSelect"
@@ -369,6 +370,7 @@
     reduceClippingAll,
     applyDynamicCompressionAll,
     updateFile,
+    resetFile,
     removeFile,
     exportFile,
     toggleSelect,

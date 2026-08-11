@@ -70,6 +70,7 @@ export interface DspParams {
   ratio?: number
   attack?: number
   release?: number
+  clipThreshold?: number
 }
 
 export interface DspRequest {

@@ -10,6 +10,8 @@ export const CONSTANTS = {
   LOWPASS_Q: 1,
   MP3_KBPS: 320,
   WEBM_KBPS: 128,
+  // "Reduce Clipping" only rounds peaks above this level; below it is untouched.
+  CLIP_THRESHOLD: 0.9,
 } as const
 
 export const generateId = (): string => '_' + Math.random().toString(36).substr(2, 9)

@@ -400,7 +400,9 @@ export const useAudioStore = defineStore('audio', () => {
     })
 
   const reduceClippingAll = (): Promise<void> =>
-    runDspBatch('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', 'reduceClipping', {})
+    runDspBatch('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', 'reduceClipping', {
+      clipThreshold: CONSTANTS.CLIP_THRESHOLD,
+    })
 
   const applyDynamicCompressionAll = (): Promise<void> =>
     runDspBatch('Dynamikkompression', 'Dynamikkompression abgeschlossen', 'dynamicCompression', {

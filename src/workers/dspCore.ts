@@ -290,10 +290,23 @@ const noiseReduction = (channels: Float32Array[], fs: number, params: DspParams)
   return finalize(channels)
 }
 
-const reduceClipping = (channels: Float32Array[]): DspOutput => {
-  // Continuous tanh soft-clip (the previous 256-point WaveShaper curve sampled
-  // tanh(x·2); applying it directly avoids the look-up-table quantisation).
-  for (const ch of channels) for (let i = 0; i < ch.length; i++) ch[i] = Math.tanh(ch[i] * 2)
+const reduceClipping = (channels: Float32Array[], params: DspParams): DspOutput => {
+  // Soft-knee peak taming. Samples below the threshold pass through UNCHANGED;
+  // only samples above it are smoothly rounded toward a 1.0 ceiling. Unlike a
+  // full-range waveshaper this never boosts the level and never touches the body
+  // of the signal — it just softens the hard edges that clipping produces. When
+  // nothing exceeds the threshold the audio is returned bit-for-bit unchanged.
+  const threshold = params.clipThreshold ?? 0.9
+  const range = 1 - threshold
+  for (const ch of channels) {
+    for (let i = 0; i < ch.length; i++) {
+      const x = ch[i]
+      const a = Math.abs(x)
+      if (a <= threshold) continue
+      const over = (a - threshold) / range
+      ch[i] = Math.sign(x) * (threshold + range * Math.tanh(over))
+    }
+  }
   return finalize(channels)
 }
 
@@ -369,7 +382,7 @@ export const runOp = (
     case 'noiseReduction':
       return noiseReduction(channels, fs, params)
     case 'reduceClipping':
-      return reduceClipping(channels)
+      return reduceClipping(channels, params)
     case 'dynamicCompression':
       return dynamicCompression(channels, fs, params)
     case 'analyze':

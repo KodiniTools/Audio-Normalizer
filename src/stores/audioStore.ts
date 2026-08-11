@@ -444,6 +444,26 @@ export const useAudioStore = defineStore('audio', () => {
     endLoading()
   }
 
+  // Revert a single file to its original, unprocessed state.
+  const resetFile = (file: AudioFileData): void => {
+    const target = audioFiles.value.find((f) => f.id === file.id)
+    if (!target || !target.processed) return
+    target.processedBuffer = target.originalBuffer
+    target.peak = target.originalPeak
+    target.rms = target.originalRms
+    target.targetRms = undefined
+    target.processed = false
+    if (target.processedBlobUrl) {
+      URL.revokeObjectURL(target.processedBlobUrl)
+      target.processedBlobUrl = null
+    }
+    // If this track is playing its processed take, fall back to the original.
+    if (currentTrackId.value === target.id && playbackMode.value === 'processed') {
+      playbackMode.value = 'original'
+    }
+    setStatus(`${target.name} zurückgesetzt`, 'success')
+  }
+
   const removeFile = (file: AudioFileData): void => {
     const index = audioFiles.value.findIndex((f) => f.id === file.id)
     if (index === -1) return
@@ -577,6 +597,7 @@ export const useAudioStore = defineStore('audio', () => {
     reduceClippingAll,
     applyDynamicCompressionAll,
     updateFile,
+    resetFile,
     removeFile,
     exportFile,
     exportAll,

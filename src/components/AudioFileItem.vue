@@ -81,6 +81,14 @@
         />
       </div>
       <button class="item-btn item-btn--accent" @click="applyValues">{{ t('app.apply') }}</button>
+      <button
+        v-if="file.processed"
+        class="item-btn item-btn--reset"
+        :title="t('app.resetFile')"
+        @click="$emit('reset', file)"
+      >
+        <RotateCcw :size="13" />{{ t('app.reset') }}
+      </button>
       <button class="item-btn item-btn--export" @click="$emit('export', file)">
         <Download :size="13" />{{ t('app.export') }}
       </button>
@@ -90,7 +98,7 @@
 
 <script setup lang="ts">
   import { ref, watch } from 'vue'
-  import { X, Download, Play, Volume2 } from 'lucide-vue-next'
+  import { X, Download, Play, Volume2, RotateCcw } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
 
   const props = defineProps({
@@ -98,7 +106,7 @@
     isActive: { type: Boolean, default: false },
   })
 
-  const emit = defineEmits(['update', 'remove', 'export', 'toggle-select', 'play'])
+  const emit = defineEmits(['update', 'reset', 'remove', 'export', 'toggle-select', 'play'])
 
   const { t } = useI18n()
 
@@ -364,6 +372,15 @@
   .item-btn--accent:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+
+  .item-btn--reset {
+    background: var(--btn);
+    color: var(--muted);
+  }
+  .item-btn--reset:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
   }
 
   .item-btn--export {

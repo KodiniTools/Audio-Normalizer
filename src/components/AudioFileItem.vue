@@ -51,6 +51,10 @@
           </div>
           <span class="meter-val">{{ (file.rms || 0).toFixed(2) }}</span>
         </div>
+        <div v-if="file.lufs != null" class="meter-group meter-group--lufs">
+          <span class="meter-tag">LUFS</span>
+          <span class="meter-val meter-val--lufs">{{ file.lufs.toFixed(1) }}</span>
+        </div>
       </div>
 
       <button class="remove-btn" :title="t('app.removeFile')" @click="$emit('remove', file)">
@@ -260,6 +264,15 @@
     grid-template-columns: 2.5rem 1fr 2.5rem;
     align-items: center;
     gap: 0.375rem;
+  }
+
+  /* LUFS has no bar — just a label and a right-aligned value spanning the row. */
+  .meter-group--lufs {
+    grid-template-columns: 2.5rem 1fr;
+  }
+
+  .meter-val--lufs {
+    color: var(--accent);
   }
 
   .meter-tag {

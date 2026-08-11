@@ -17,7 +17,7 @@ export interface DspJob {
 }
 
 export type DspJobResult =
-  | { ok: true; channels: Float32Array[]; peak: number; rms: number }
+  | { ok: true; channels: Float32Array[]; peak: number; rms: number; lufs?: number }
   | { ok: false; error: string }
 
 const POOL_SIZE = Math.max(1, Math.min(navigator.hardwareConcurrency || 2, 4))
@@ -62,7 +62,13 @@ class DspPool {
           worker.removeEventListener('message', handleMessage)
           worker.removeEventListener('error', handleError)
           results[jobId] = e.data.ok
-            ? { ok: true, channels: e.data.channels, peak: e.data.peak, rms: e.data.rms }
+            ? {
+                ok: true,
+                channels: e.data.channels,
+                peak: e.data.peak,
+                rms: e.data.rms,
+                lufs: e.data.lufs,
+              }
             : { ok: false, error: e.data.error }
           done++
           onProgress?.(done, total)

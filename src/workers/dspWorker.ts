@@ -6,9 +6,9 @@ import type { DspRequest, DspResponse } from '../types'
 self.onmessage = (e: MessageEvent<DspRequest>) => {
   const { jobId, op, channels, sampleRate, params } = e.data
   try {
-    const { peak, rms } = runOp(op, channels, sampleRate, params)
+    const { peak, rms, lufs } = runOp(op, channels, sampleRate, params)
     const transfer = channels.map((c) => c.buffer)
-    const message: DspResponse = { jobId, ok: true, channels, peak, rms }
+    const message: DspResponse = { jobId, ok: true, channels, peak, rms, lufs }
     ;(self as unknown as Worker).postMessage(message, transfer)
   } catch (err) {
     const message: DspResponse = {

@@ -8,6 +8,8 @@ export interface AudioFileData {
   rms: number
   originalPeak: number
   originalRms: number
+  /** Integrated loudness (LUFS, ITU-R BS.1770) from the last "Analyze" run. */
+  lufs?: number
   processedBlobUrl: string | null
   originalBlobUrl: string
   targetRms?: number
@@ -54,6 +56,7 @@ export type DspOp =
   | 'noiseReduction'
   | 'reduceClipping'
   | 'dynamicCompression'
+  | 'analyze'
 
 export interface DspParams {
   targetRms?: number
@@ -78,7 +81,7 @@ export interface DspRequest {
 }
 
 export type DspResponse =
-  | { jobId: number; ok: true; channels: Float32Array[]; peak: number; rms: number }
+  | { jobId: number; ok: true; channels: Float32Array[]; peak: number; rms: number; lufs?: number }
   | { jobId: number; ok: false; error: string }
 
 export interface Mp3WorkerInput {

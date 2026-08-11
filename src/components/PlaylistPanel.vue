@@ -15,14 +15,14 @@
     </span>
   </div>
 
-  <!-- Hint: no file marked for editing -->
+  <!-- Hint: files loaded but none marked for editing -->
   <div v-if="audioFiles.length > 0 && !someSelected" class="alert alert--warning selection-hint">
     <AlertTriangle :size="15" />
     <span>{{ t('app.noSelectionHint') }}</span>
   </div>
 
-  <!-- File meta / empty state -->
-  <div v-else class="file-meta file-meta--empty">
+  <!-- Empty state: only when there are genuinely no files -->
+  <div v-if="audioFiles.length === 0" class="file-meta file-meta--empty">
     {{ t('app.noFiles') }}
   </div>
 

@@ -7,7 +7,10 @@ import {
   pickSaveFileHandle,
   writeBlobToFileHandle,
 } from '../utils/audioUtils'
+import { useI18n } from './useI18n'
 import type { AudioFileData, ExportResult, Mp3WorkerOutput, StatusType } from '../types'
+
+const { t } = useI18n()
 
 type ProgressCallback = ((pct: number) => void) | null
 
@@ -223,7 +226,7 @@ export const exportFile = async (
       handle = await pendingHandle
     } catch (error) {
       if ((error as DOMException)?.name === 'AbortError') {
-        setStatus(`Export von ${file.name} abgebrochen`, 'info')
+        setStatus(t('status.exportCancelled', { name: file.name }), 'info')
         return
       }
       // Any other picker error → fall back to a normal download.
@@ -234,19 +237,19 @@ export const exportFile = async (
   try {
     const { blob, filename } = await getFileBlob(file, format, (pct) => {
       onProgress?.(pct)
-      if (format === 'mp3') setLoadingMessage(`MP3-Konvertierung: ${pct}%`)
-      else if (format === 'webm') setLoadingMessage(`WebM-Konvertierung: ${pct}%`)
+      if (format === 'mp3') setLoadingMessage(t('dsp.mp3Progress', { pct }))
+      else if (format === 'webm') setLoadingMessage(t('dsp.webmProgress', { pct }))
     })
     if (handle) {
       await writeBlobToFileHandle(handle, blob)
-      setStatus(`${file.name} gespeichert`, 'success')
+      setStatus(t('status.saved', { name: file.name }), 'success')
     } else {
       triggerDownload(blob, filename)
-      setStatus(`${file.name} heruntergeladen`, 'success')
+      setStatus(t('status.downloaded', { name: file.name }), 'success')
     }
   } catch (error) {
     console.error(`Error exporting ${file.name}:`, error)
-    setStatus(`Fehler beim Exportieren von ${file.name}`, 'error')
+    setStatus(t('status.exportError', { name: file.name }), 'error')
   }
 }
 
@@ -268,7 +271,7 @@ export const exportAll = async (
       handle = await pendingHandle
     } catch (error) {
       if ((error as DOMException)?.name === 'AbortError') {
-        setStatus('ZIP-Export abgebrochen', 'info')
+        setStatus(t('status.zipCancelled'), 'info')
         return
       }
       handle = null
@@ -278,41 +281,42 @@ export const exportAll = async (
   const zip = new JSZip()
   const total = audioFiles.length
 
-  setProgress('Export', 0)
+  setProgress(t('dsp.export'), 0)
 
   try {
     for (let i = 0; i < total; i++) {
       const file = audioFiles[i]
-      setLoadingMessage(`Verarbeite ${file.name} (${i + 1}/${total})...`)
+      setLoadingMessage(t('dsp.processingFile', { name: file.name, index: i + 1, total }))
 
       const { blob, filename } = await getFileBlob(file, format, (pct) => {
-        setProgress('Export', (i / total) * 100 + (pct / 100) * (100 / total))
-        if (format === 'mp3') setLoadingMessage(`MP3-Konvertierung ${file.name}: ${pct}%`)
-        else if (format === 'webm') setLoadingMessage(`WebM-Konvertierung ${file.name}: ${pct}%`)
+        setProgress(t('dsp.export'), (i / total) * 100 + (pct / 100) * (100 / total))
+        if (format === 'mp3') setLoadingMessage(t('dsp.mp3ProgressFile', { name: file.name, pct }))
+        else if (format === 'webm')
+          setLoadingMessage(t('dsp.webmProgressFile', { name: file.name, pct }))
       })
 
       zip.file(filename, blob)
-      setProgress('Export', ((i + 1) / total) * 100)
+      setProgress(t('dsp.export'), ((i + 1) / total) * 100)
     }
 
-    setLoadingMessage('ZIP wird finalisiert...')
+    setLoadingMessage(t('dsp.zipFinalizing'))
     const zipBlob = await zip.generateAsync(
       { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
       (meta) => {
-        setProgress('ZIP', meta.percent)
-        setLoadingMessage(`ZIP wird erstellt: ${Math.round(meta.percent)}%`)
+        setProgress(t('dsp.zip'), meta.percent)
+        setLoadingMessage(t('dsp.zipProgress', { pct: Math.round(meta.percent) }))
       },
     )
 
     if (handle) {
       await writeBlobToFileHandle(handle, zipBlob)
-      setStatus(`${total} Datei(en) als ZIP gespeichert`, 'success')
+      setStatus(t('status.zipSaved', { count: total }), 'success')
     } else {
       triggerDownload(zipBlob, zipName)
-      setStatus(`${total} Datei(en) als ZIP heruntergeladen`, 'success')
+      setStatus(t('status.zipDownloaded', { count: total }), 'success')
     }
   } catch (error) {
     console.error('Error creating ZIP:', error)
-    setStatus('Fehler beim Erstellen der ZIP-Datei', 'error')
+    setStatus(t('status.zipError'), 'error')
   }
 }

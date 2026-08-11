@@ -13,6 +13,7 @@ import { shareFiles } from '../utils/sharedFileRepository'
 import { dspPool } from '../utils/dspPool'
 import type { DspJobResult } from '../utils/dspPool'
 import { exportFile as doExportFile, exportAll as doExportAll } from '../composables/useAudioExport'
+import { useI18n } from '../composables/useI18n'
 import type {
   AudioFileData,
   BatchResult,
@@ -24,6 +25,8 @@ import type {
 import type { Preset } from '../data/presets'
 
 export const useAudioStore = defineStore('audio', () => {
+  const { t } = useI18n()
+
   // ── State ──────────────────────────────────────────────────────────────────
   const audioFiles = ref<AudioFileData[]>([])
   const globalRmsValue = ref(0.5)
@@ -33,7 +36,7 @@ export const useAudioStore = defineStore('audio', () => {
   const statusType = ref<StatusType>('info')
   const isProcessing = ref(false)
   const isLoading = ref(false)
-  const loadingMessage = ref('Verarbeite...')
+  const loadingMessage = ref(t('dsp.processing'))
   // Overlay progress: 0–100 for a determinate bar, null for an indeterminate spinner.
   const loadingProgress = ref<number | null>(null)
   const r128Applied = ref(false)
@@ -208,12 +211,12 @@ export const useAudioStore = defineStore('audio', () => {
     isProcessing.value = true
     const audioOnly = files.filter((f) => {
       const ok = isAudioFile(f)
-      if (!ok) setStatus(`${f.name} ist keine gültige Audiodatei`, 'warning')
+      if (!ok) setStatus(t('status.invalidFile', { name: f.name }), 'warning')
       return ok
     })
 
     if (audioOnly.length === 0) {
-      setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
+      setStatus(t('status.noValidFiles'), 'error')
       isProcessing.value = false
       return
     }
@@ -223,14 +226,14 @@ export const useAudioStore = defineStore('audio', () => {
 
     await runBatch(
       audioOnly as unknown as AudioFileData[],
-      'Upload',
+      t('dsp.upload'),
       async (item) => {
         const file = item as unknown as File
         try {
           audioFiles.value.push(await analyzeFile(file))
           processed++
         } catch {
-          setStatus(`Fehler bei ${(file as File).name}`, 'error')
+          setStatus(t('status.fileError', { name: (file as File).name }), 'error')
           errors++
         }
       },
@@ -239,8 +242,8 @@ export const useAudioStore = defineStore('audio', () => {
 
     isProcessing.value = false
     endLoading()
-    if (processed > 0) setStatus(`${processed} Datei(en) erfolgreich hochgeladen`, 'success')
-    else if (errors > 0) setStatus('Keine gültigen Audio-Dateien gefunden', 'error')
+    if (processed > 0) setStatus(t('status.uploaded', { count: processed }), 'success')
+    else if (errors > 0) setStatus(t('status.noValidFiles'), 'error')
   }
 
   const handleSharedFiles = async (
@@ -272,7 +275,7 @@ export const useAudioStore = defineStore('audio', () => {
     }
 
     isProcessing.value = false
-    if (processed > 0) setStatus(`${processed} Datei(en) importiert`, 'success')
+    if (processed > 0) setStatus(t('status.imported', { count: processed }), 'success')
     return { processed, errors }
   }
 
@@ -321,7 +324,7 @@ export const useAudioStore = defineStore('audio', () => {
     // Only the marked (selected) files in the interactive playlist are edited.
     const files = selectedFiles.value.slice()
     if (files.length === 0) {
-      setStatus('Bitte markieren Sie mindestens eine Datei in der Playliste', 'warning')
+      setStatus(t('status.selectAtLeastOne'), 'warning')
       return
     }
     isProcessing.value = true
@@ -342,7 +345,7 @@ export const useAudioStore = defineStore('audio', () => {
       const file = files[i]
       if (!res.ok) {
         if (res.error === 'silent') {
-          setStatus(`${file.name}: Datei ist zu leise zum Skalieren`, 'warning')
+          setStatus(t('status.tooQuiet', { name: file.name }), 'warning')
         } else {
           console.error(`[${label}] ${file.name}:`, res.error)
         }
@@ -359,14 +362,14 @@ export const useAudioStore = defineStore('audio', () => {
   }
 
   const applyGlobalRms = (): Promise<void> =>
-    runDspBatch('RMS Skalierung', 'RMS Skalierung abgeschlossen', 'rmsScale', {
+    runDspBatch(t('dsp.rmsScaling'), t('status.rmsDone'), 'rmsScale', {
       targetRms: globalRmsValue.value,
       targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
       maxRmsGain: 10,
     })
 
   const applyGlobalDb = (): Promise<void> =>
-    runDspBatch('dB Skalierung', 'dB Skalierung abgeschlossen', 'rmsScale', {
+    runDspBatch(t('dsp.dbScaling'), t('status.dbDone'), 'rmsScale', {
       targetRms: dbToRms(globalDbValue.value),
       targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
       maxRmsGain: 10,
@@ -374,8 +377,8 @@ export const useAudioStore = defineStore('audio', () => {
 
   const applyEBUR128 = (): Promise<void> =>
     runDspBatch(
-      'EBU R128',
-      'EBU R128 Normalisierung abgeschlossen',
+      t('dsp.ebu'),
+      t('status.ebuDone'),
       'ebur128',
       {
         targetLufs: CONSTANTS.EBU_R128_TARGET_LUFS,
@@ -387,26 +390,30 @@ export const useAudioStore = defineStore('audio', () => {
   const applyPreset = (preset: Preset): Promise<void> =>
     runDspBatch(
       preset.id,
-      `Preset „${preset.id}“ angewendet (${preset.lufs} LUFS, ${preset.truePeakDbtp} dBTP)`,
+      t('status.presetDone', {
+        preset: preset.id,
+        lufs: preset.lufs,
+        dbtp: preset.truePeakDbtp,
+      }),
       'ebur128',
       { targetLufs: preset.lufs, targetDbtp: preset.truePeakDbtp },
       { fromOriginal: true, markR128: true },
     )
 
   const applyNoiseReductionAll = (): Promise<void> =>
-    runDspBatch('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', 'noiseReduction', {
+    runDspBatch(t('dsp.noise'), t('status.noiseDone'), 'noiseReduction', {
       nrOverSubtraction: CONSTANTS.NR_OVERSUBTRACTION,
       nrFloorGain: CONSTANTS.NR_FLOOR_GAIN,
       nrNoiseQuantile: CONSTANTS.NR_NOISE_QUANTILE,
     })
 
   const reduceClippingAll = (): Promise<void> =>
-    runDspBatch('Clipping Reduktion', 'Clipping Reduktion abgeschlossen', 'reduceClipping', {
+    runDspBatch(t('dsp.clipping'), t('status.clippingDone'), 'reduceClipping', {
       clipThreshold: CONSTANTS.CLIP_THRESHOLD,
     })
 
   const applyDynamicCompressionAll = (): Promise<void> =>
-    runDspBatch('Dynamikkompression', 'Dynamikkompression abgeschlossen', 'dynamicCompression', {
+    runDspBatch(t('dsp.compression'), t('status.compressionDone'), 'dynamicCompression', {
       threshold: CONSTANTS.COMPRESSOR_THRESHOLD,
       knee: CONSTANTS.COMPRESSOR_KNEE,
       ratio: CONSTANTS.COMPRESSOR_RATIO,
@@ -421,7 +428,7 @@ export const useAudioStore = defineStore('audio', () => {
     const files = audioFiles.value.slice()
     if (files.length === 0) return
     isProcessing.value = true
-    setProgress('Analyse', 0)
+    setProgress(t('dsp.analysis'), 0)
 
     const jobs = files.map((file) => {
       const source = file.processedBuffer ?? file.originalBuffer
@@ -434,7 +441,7 @@ export const useAudioStore = defineStore('audio', () => {
     })
 
     const results: DspJobResult[] = await dspPool.run(jobs, (done, total) =>
-      setProgress('Analyse', (done / total) * 100),
+      setProgress(t('dsp.analysis'), (done / total) * 100),
     )
 
     let analyzed = 0
@@ -449,7 +456,7 @@ export const useAudioStore = defineStore('audio', () => {
 
     isProcessing.value = false
     endLoading()
-    setStatus(`${analyzed} Datei(en) analysiert`, 'success')
+    setStatus(t('status.analyzed', { count: analyzed }), 'success')
   }
 
   // ── Individual File Operations ─────────────────────────────────────────────
@@ -458,7 +465,7 @@ export const useAudioStore = defineStore('audio', () => {
     const file = audioFiles.value.find((f) => f.id === updatedFile.id)
     if (!file) return
     isLoading.value = true
-    loadingMessage.value = `${updatedFile.name} wird bearbeitet...`
+    loadingMessage.value = t('dsp.editingFile', { name: updatedFile.name })
     const source = file.processedBuffer ?? file.originalBuffer
     const [res] = await dspPool.run([
       {
@@ -474,11 +481,11 @@ export const useAudioStore = defineStore('audio', () => {
     ])
     if (res.ok) {
       applyDspResult(file, res.channels, res.peak, res.rms)
-      setStatus(`${updatedFile.name} aktualisiert`, 'success')
+      setStatus(t('status.updated', { name: updatedFile.name }), 'success')
     } else if (res.error === 'silent') {
-      setStatus(`${updatedFile.name}: Datei ist zu leise zum Skalieren`, 'warning')
+      setStatus(t('status.tooQuiet', { name: updatedFile.name }), 'warning')
     } else {
-      setStatus(`Fehler bei ${updatedFile.name}`, 'error')
+      setStatus(t('status.fileError', { name: updatedFile.name }), 'error')
     }
     endLoading()
   }
@@ -500,7 +507,7 @@ export const useAudioStore = defineStore('audio', () => {
     if (currentTrackId.value === target.id && playbackMode.value === 'processed') {
       playbackMode.value = 'original'
     }
-    setStatus(`${target.name} zurückgesetzt`, 'success')
+    setStatus(t('status.fileReset', { name: target.name }), 'success')
   }
 
   const removeFile = (file: AudioFileData): void => {
@@ -513,7 +520,7 @@ export const useAudioStore = defineStore('audio', () => {
       currentTrackId.value = null
       playbackMode.value = 'original'
     }
-    setStatus(`${file.name} entfernt`, 'info')
+    setStatus(t('status.fileRemoved', { name: file.name }), 'info')
   }
 
   const deleteAll = (): void => {
@@ -525,7 +532,7 @@ export const useAudioStore = defineStore('audio', () => {
     r128Applied.value = false
     currentTrackId.value = null
     playbackMode.value = 'original'
-    setStatus('Alle Dateien gelöscht', 'info')
+    setStatus(t('status.allDeleted'), 'info')
   }
 
   const resetAll = (): void => {
@@ -542,7 +549,7 @@ export const useAudioStore = defineStore('audio', () => {
     r128Applied.value = false
     // The processed take no longer exists — fall back to original playback.
     playbackMode.value = 'original'
-    setStatus('Alle Änderungen zurückgesetzt', 'success')
+    setStatus(t('status.allReset'), 'success')
   }
 
   // ── Export ─────────────────────────────────────────────────────────────────
@@ -553,7 +560,7 @@ export const useAudioStore = defineStore('audio', () => {
   ): Promise<void> => {
     isLoading.value = true
     loadingProgress.value = null
-    loadingMessage.value = `Exportiere ${file.name}...`
+    loadingMessage.value = t('dsp.exportingFile', { name: file.name })
     try {
       await doExportFile(
         file,
@@ -577,11 +584,11 @@ export const useAudioStore = defineStore('audio', () => {
     // Only edited (processed) files are included in the export.
     const files = processedFiles.value.slice()
     if (files.length === 0) {
-      setStatus('Keine bearbeiteten Dateien zum Exportieren', 'warning')
+      setStatus(t('status.noProcessedFiles'), 'warning')
       return
     }
     isLoading.value = true
-    loadingMessage.value = 'ZIP wird erstellt...'
+    loadingMessage.value = t('dsp.zipCreating')
     try {
       await doExportAll(
         files,

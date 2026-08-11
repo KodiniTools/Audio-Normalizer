@@ -6,10 +6,11 @@
 // plain math so the work can run off the main thread and in parallel.
 //
 // Biquad coefficients follow the exact Web Audio API formulas so the K-weighting
-// (loudness measurement) and the low-pass (noise reduction) match the previous
-// results. For lowpass/highpass the `Q` value is interpreted in dB, exactly as
-// the Web Audio spec does:  Q_lin = 10^(Q/20),
+// used for loudness measurement matches the previous Web Audio results. For the
+// high-pass the `Q` value is interpreted in dB, exactly as the Web Audio spec
+// does:  Q_lin = 10^(Q/20),
 //   alpha = (sin w0 / 2) · √((4 − √(16 − 16/Q_lin²)) / 2)
+// Noise reduction is now spectral subtraction (STFT), further down in the file.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { DspOp, DspParams } from '../types'
@@ -41,13 +42,6 @@ const normalize = (
 const alphaLpHp = (sinw0: number, qDb: number): number => {
   const qLin = Math.pow(10, qDb / 20)
   return (sinw0 / 2) * Math.sqrt((4 - Math.sqrt(16 - 16 / (qLin * qLin))) / 2)
-}
-
-const makeLowpass = (f0: number, fs: number, qDb: number): Biquad => {
-  const w0 = (2 * Math.PI * f0) / fs
-  const cos = Math.cos(w0)
-  const alpha = alphaLpHp(Math.sin(w0), qDb)
-  return normalize((1 - cos) / 2, 1 - cos, (1 - cos) / 2, 1 + alpha, -2 * cos, 1 - alpha)
 }
 
 const makeHighpass = (f0: number, fs: number, qDb: number): Biquad => {
@@ -284,9 +278,196 @@ const ebur128 = (channels: Float32Array[], fs: number, params: DspParams): DspOu
   return finalize(channels)
 }
 
-const noiseReduction = (channels: Float32Array[], fs: number, params: DspParams): DspOutput => {
-  const lp = makeLowpass(params.lowpassFreq ?? 8000, fs, params.lowpassQ ?? 1)
-  for (const ch of channels) applyBiquad(ch, lp)
+// ── FFT (radix-2, in-place) for the spectral noise reducer ───────────────────
+
+interface Fft {
+  forward(re: Float64Array, im: Float64Array): void
+  inverse(re: Float64Array, im: Float64Array): void
+}
+
+const makeFft = (n: number): Fft => {
+  const levels = Math.log2(n)
+  const rev = new Uint32Array(n)
+  for (let i = 0; i < n; i++) {
+    let x = i
+    let r = 0
+    for (let j = 0; j < levels; j++) {
+      r = (r << 1) | (x & 1)
+      x >>= 1
+    }
+    rev[i] = r
+  }
+  const cosT = new Float64Array(n / 2)
+  const sinT = new Float64Array(n / 2)
+  for (let i = 0; i < n / 2; i++) {
+    const a = (2 * Math.PI * i) / n
+    cosT[i] = Math.cos(a)
+    sinT[i] = Math.sin(a)
+  }
+  const transform = (re: Float64Array, im: Float64Array, inverse: boolean): void => {
+    for (let i = 0; i < n; i++) {
+      const j = rev[i]
+      if (j > i) {
+        let t = re[i]
+        re[i] = re[j]
+        re[j] = t
+        t = im[i]
+        im[i] = im[j]
+        im[j] = t
+      }
+    }
+    for (let size = 2; size <= n; size <<= 1) {
+      const half = size >> 1
+      const step = n / size
+      for (let i = 0; i < n; i += size) {
+        for (let j = i, k = 0; j < i + half; j++, k += step) {
+          const wr = cosT[k]
+          const wi = inverse ? sinT[k] : -sinT[k]
+          const tr = re[j + half] * wr - im[j + half] * wi
+          const ti = re[j + half] * wi + im[j + half] * wr
+          re[j + half] = re[j] - tr
+          im[j + half] = im[j] - ti
+          re[j] += tr
+          im[j] += ti
+        }
+      }
+    }
+    if (inverse) {
+      for (let i = 0; i < n; i++) {
+        re[i] /= n
+        im[i] /= n
+      }
+    }
+  }
+  return {
+    forward: (re, im) => transform(re, im, false),
+    inverse: (re, im) => transform(re, im, true),
+  }
+}
+
+const hannWindow = (n: number): Float64Array => {
+  const w = new Float64Array(n)
+  for (let i = 0; i < n; i++) w[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (n - 1))
+  return w
+}
+
+// Spectral-subtraction noise reduction — a genuine broadband denoiser that
+// replaces the old fixed low-pass. The noise magnitude spectrum is estimated
+// from the quietest frames of the file (assumed to be noise-only pauses), then
+// subtracted from every frame in the STFT domain with an over-subtraction
+// factor and a spectral floor. A per-frame gain mask, smoothed across frequency
+// to suppress "musical noise", is reconstructed via weighted overlap-add, so a
+// clean signal is returned essentially unchanged while stationary broadband
+// noise is attenuated.
+const NR_FFT_SIZE = 2048
+
+const noiseReduction = (channels: Float32Array[], params: DspParams): DspOutput => {
+  const N = NR_FFT_SIZE
+  const H = N >> 2 // 75 % overlap
+  const half = N >> 1
+  const alpha = params.nrOverSubtraction ?? 2.0
+  const floorGain = params.nrFloorGain ?? 0.1
+  const quantile = params.nrNoiseQuantile ?? 0.2
+  const smoothR = 2
+  const eps = 1e-10
+
+  const fft = makeFft(N)
+  const win = hannWindow(N)
+  const re = new Float64Array(N)
+  const im = new Float64Array(N)
+  const noiseProf = new Float64Array(half + 1)
+  const gain = new Float64Array(half + 1)
+  const gainS = new Float64Array(half + 1)
+
+  const loadFrame = (ch: Float32Array, p: number, len: number): void => {
+    for (let nn = 0; nn < N; nn++) {
+      const idx = p + nn
+      re[nn] = idx < len ? ch[idx] * win[nn] : 0
+      im[nn] = 0
+    }
+  }
+
+  for (const ch of channels) {
+    const len = ch.length
+    if (len < N) continue // too short to analyse — leave untouched
+
+    const positions: number[] = []
+    for (let p = 0; p < len; p += H) positions.push(p)
+    const M = positions.length
+
+    // Pass 0: windowed frame energy (time domain, no FFT) → noise-frame gate.
+    const energies = new Float64Array(M)
+    for (let m = 0; m < M; m++) {
+      const p = positions[m]
+      let e = 0
+      for (let nn = 0; nn < N; nn++) {
+        const idx = p + nn
+        const s = idx < len ? ch[idx] * win[nn] : 0
+        e += s * s
+      }
+      energies[m] = e
+    }
+    const energyThresh =
+      Float64Array.from(energies).sort()[Math.min(M - 1, Math.floor(quantile * M))]
+
+    // Pass 1: average magnitude spectrum over the quiet frames = noise profile.
+    noiseProf.fill(0)
+    let noiseCount = 0
+    for (let m = 0; m < M; m++) {
+      if (energies[m] > energyThresh) continue
+      loadFrame(ch, positions[m], len)
+      fft.forward(re, im)
+      for (let k = 0; k <= half; k++) noiseProf[k] += Math.hypot(re[k], im[k])
+      noiseCount++
+    }
+    if (noiseCount === 0) continue
+    for (let k = 0; k <= half; k++) noiseProf[k] /= noiseCount
+
+    // Pass 2: subtract noise per bin, reconstruct via weighted overlap-add.
+    const out = new Float32Array(len)
+    const norm = new Float32Array(len)
+    for (let m = 0; m < M; m++) {
+      const p = positions[m]
+      loadFrame(ch, p, len)
+      fft.forward(re, im)
+      for (let k = 0; k <= half; k++) {
+        const mag = Math.hypot(re[k], im[k])
+        gain[k] = Math.max(floorGain, 1 - (alpha * noiseProf[k]) / (mag + eps))
+      }
+      // Smooth the gain across frequency to suppress musical noise.
+      for (let k = 0; k <= half; k++) {
+        let s = 0
+        let c = 0
+        for (let d = -smoothR; d <= smoothR; d++) {
+          const kk = k + d
+          if (kk >= 0 && kk <= half) {
+            s += gain[kk]
+            c++
+          }
+        }
+        gainS[k] = s / c
+      }
+      for (let k = 0; k <= half; k++) {
+        re[k] *= gainS[k]
+        im[k] *= gainS[k]
+      }
+      for (let k = 1; k < half; k++) {
+        const kk = N - k
+        re[kk] *= gainS[k]
+        im[kk] *= gainS[k]
+      }
+      fft.inverse(re, im)
+      for (let nn = 0; nn < N; nn++) {
+        const idx = p + nn
+        if (idx >= len) break
+        out[idx] += re[nn] * win[nn]
+        norm[idx] += win[nn] * win[nn]
+      }
+    }
+    for (let i = 0; i < len; i++) {
+      if (norm[i] > 1e-6) ch[i] = out[i] / norm[i]
+    }
+  }
   return finalize(channels)
 }
 
@@ -380,7 +561,7 @@ export const runOp = (
     case 'ebur128':
       return ebur128(channels, fs, params)
     case 'noiseReduction':
-      return noiseReduction(channels, fs, params)
+      return noiseReduction(channels, params)
     case 'reduceClipping':
       return reduceClipping(channels, params)
     case 'dynamicCompression':

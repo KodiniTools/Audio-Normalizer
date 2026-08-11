@@ -395,8 +395,9 @@ export const useAudioStore = defineStore('audio', () => {
 
   const applyNoiseReductionAll = (): Promise<void> =>
     runDspBatch('Rauschunterdrückung', 'Rauschunterdrückung abgeschlossen', 'noiseReduction', {
-      lowpassFreq: CONSTANTS.LOWPASS_FREQ,
-      lowpassQ: CONSTANTS.LOWPASS_Q,
+      nrOverSubtraction: CONSTANTS.NR_OVERSUBTRACTION,
+      nrFloorGain: CONSTANTS.NR_FLOOR_GAIN,
+      nrNoiseQuantile: CONSTANTS.NR_NOISE_QUANTILE,
     })
 
   const reduceClippingAll = (): Promise<void> =>

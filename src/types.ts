@@ -63,8 +63,9 @@ export interface DspParams {
   targetLufs?: number
   targetDbtp?: number
   maxRmsGain?: number
-  lowpassFreq?: number
-  lowpassQ?: number
+  nrOverSubtraction?: number
+  nrFloorGain?: number
+  nrNoiseQuantile?: number
   threshold?: number
   knee?: number
   ratio?: number

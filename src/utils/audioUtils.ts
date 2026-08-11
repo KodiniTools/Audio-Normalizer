@@ -6,8 +6,12 @@ export const CONSTANTS = {
   COMPRESSOR_RATIO: 12,
   COMPRESSOR_ATTACK: 0.003,
   COMPRESSOR_RELEASE: 0.25,
-  LOWPASS_FREQ: 8000,
-  LOWPASS_Q: 1,
+  // Spectral-subtraction noise reduction: over-subtraction factor, residual
+  // spectral floor (gain), and the quantile of quietest frames used to estimate
+  // the noise profile.
+  NR_OVERSUBTRACTION: 2.0,
+  NR_FLOOR_GAIN: 0.1,
+  NR_NOISE_QUANTILE: 0.2,
   MP3_KBPS: 320,
   WEBM_KBPS: 128,
   // "Reduce Clipping" only rounds peaks above this level; below it is untouched.

@@ -33,6 +33,7 @@
       :key="file.id"
       :file="file"
       :is-active="file.id === currentTrackId"
+      :default-format="downloadFormat"
       @update="updateFile"
       @reset="resetFile"
       @remove="removeFile"
@@ -56,7 +57,7 @@
 
   const { t } = useI18n()
   const store = useAudioStore()
-  const { audioFiles, allSelected, someSelected, selectedCount, currentTrackId } =
+  const { audioFiles, allSelected, someSelected, selectedCount, currentTrackId, downloadFormat } =
     storeToRefs(store)
   const {
     toggleSelectAll,

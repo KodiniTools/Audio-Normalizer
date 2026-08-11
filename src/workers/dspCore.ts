@@ -17,6 +17,7 @@ import type { DspOp, DspParams } from '../types'
 export interface DspOutput {
   peak: number
   rms: number
+  lufs?: number
 }
 
 interface Biquad {
@@ -346,6 +347,14 @@ const dynamicCompression = (channels: Float32Array[], fs: number, params: DspPar
   return finalize(channels)
 }
 
+// Read-only measurement: sample peak, RMS and integrated loudness (LUFS).
+// Leaves the channel data untouched — used by the "Analyze" action.
+const analyze = (channels: Float32Array[], fs: number): DspOutput => ({
+  peak: calcPeak(channels),
+  rms: calcRMS(channels),
+  lufs: measureLoudnessR128(channels, fs),
+})
+
 export const runOp = (
   op: DspOp,
   channels: Float32Array[],
@@ -363,6 +372,8 @@ export const runOp = (
       return reduceClipping(channels)
     case 'dynamicCompression':
       return dynamicCompression(channels, fs, params)
+    case 'analyze':
+      return analyze(channels, fs)
     default:
       throw new Error(`Unknown DSP op: ${op}`)
   }

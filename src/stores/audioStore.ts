@@ -411,7 +411,43 @@ export const useAudioStore = defineStore('audio', () => {
       release: CONSTANTS.COMPRESSOR_RELEASE,
     })
 
-  const analyzeAll = (): void => setStatus('Alle Dateien bereits analysiert', 'info')
+  // Re-measure every loaded file (sample peak, RMS and integrated LUFS) on the
+  // current take — the processed buffer if it exists, otherwise the original.
+  // Read-only: the audio is not modified and files are not marked as processed.
+  const analyzeAll = async (): Promise<void> => {
+    const files = audioFiles.value.slice()
+    if (files.length === 0) return
+    isProcessing.value = true
+    setProgress('Analyse', 0)
+
+    const jobs = files.map((file) => {
+      const source = file.processedBuffer ?? file.originalBuffer
+      return {
+        op: 'analyze' as DspOp,
+        channels: copyChannels(source),
+        sampleRate: source.sampleRate,
+        params: {},
+      }
+    })
+
+    const results: DspJobResult[] = await dspPool.run(jobs, (done, total) =>
+      setProgress('Analyse', (done / total) * 100),
+    )
+
+    let analyzed = 0
+    results.forEach((res, i) => {
+      if (!res.ok) return
+      const file = files[i]
+      file.peak = res.peak
+      file.rms = res.rms
+      if (res.lufs !== undefined) file.lufs = res.lufs
+      analyzed++
+    })
+
+    isProcessing.value = false
+    endLoading()
+    setStatus(`${analyzed} Datei(en) analysiert`, 'success')
+  }
 
   // ── Individual File Operations ─────────────────────────────────────────────
 

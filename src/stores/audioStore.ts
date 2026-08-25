@@ -18,6 +18,7 @@ import type {
   AudioFileData,
   BatchResult,
   StatusType,
+  Toast,
   PlaybackMode,
   DspOp,
   DspParams,
@@ -32,8 +33,9 @@ export const useAudioStore = defineStore('audio', () => {
   const globalRmsValue = ref(0.5)
   const globalDbValue = ref(-20)
   const downloadFormat = ref('wav')
-  const statusMessage = ref('')
-  const statusType = ref<StatusType>('info')
+  // Stack of subtle, auto-dismissing toast notifications. Every user-facing
+  // action reports its outcome here via `setStatus`.
+  const toasts = ref<Toast[]>([])
   const isProcessing = ref(false)
   const isLoading = ref(false)
   const loadingMessage = ref(t('dsp.processing'))
@@ -115,13 +117,23 @@ export const useAudioStore = defineStore('audio', () => {
     loadingProgress.value = null
   }
 
+  // Newest toast id; incremented per push so every toast owns its own dismiss
+  // timer (no shared slot, so a rapid second action can't clear the first early).
+  let toastSeq = 0
+  const MAX_TOASTS = 4
+
+  const dismissToast = (id: number): void => {
+    const index = toasts.value.findIndex((toast) => toast.id === id)
+    if (index !== -1) toasts.value.splice(index, 1)
+  }
+
   const setStatus = (message: string, type: StatusType = 'info'): void => {
-    statusMessage.value = message
-    statusType.value = type
+    const id = ++toastSeq
+    toasts.value.push({ id, type, message })
+    // Cap the stack so a burst of actions never buries the screen.
+    if (toasts.value.length > MAX_TOASTS) toasts.value.shift()
     const duration = type === 'error' ? 5000 : type === 'warning' ? 4000 : 3000
-    setTimeout(() => {
-      statusMessage.value = ''
-    }, duration)
+    setTimeout(() => dismissToast(id), duration)
   }
 
   // NOTE: Keep concurrency=1 for OfflineAudioContext — each context holds a full
@@ -609,8 +621,8 @@ export const useAudioStore = defineStore('audio', () => {
     globalRmsValue,
     globalDbValue,
     downloadFormat,
-    statusMessage,
-    statusType,
+    toasts,
+    dismissToast,
     isProcessing,
     isLoading,
     loadingMessage,

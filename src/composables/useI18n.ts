@@ -400,6 +400,9 @@ const translations = {
     'status.zipSaved': '{count} Datei(en) als ZIP gespeichert',
     'status.zipDownloaded': '{count} Datei(en) als ZIP heruntergeladen',
     'status.zipError': 'Fehler beim Erstellen der ZIP-Datei',
+    'status.sentTo': 'An {tool} weitergeleitet',
+    'status.sendError': 'Weiterleiten an {tool} fehlgeschlagen',
+    'toast.dismiss': 'Ausblenden',
   },
 
   en: {
@@ -784,6 +787,9 @@ const translations = {
     'status.zipSaved': '{count} file(s) saved as ZIP',
     'status.zipDownloaded': '{count} file(s) downloaded as ZIP',
     'status.zipError': 'Error creating ZIP file',
+    'status.sentTo': 'Sent to {tool}',
+    'status.sendError': 'Could not send to {tool}',
+    'toast.dismiss': 'Dismiss',
   },
 }
 

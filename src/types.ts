@@ -44,6 +44,12 @@ export interface StatusBanner {
   message: string
 }
 
+export interface Toast {
+  id: number
+  type: StatusType
+  message: string
+}
+
 export interface BatchResult {
   processed: number
   errors: number

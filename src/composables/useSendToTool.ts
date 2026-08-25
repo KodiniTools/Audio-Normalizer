@@ -14,7 +14,10 @@ export const TARGET_TOOLS: TargetTool[] = [
   { key: 'playlistKonverter', url: 'https://kodinitools.com/playlistkonverter/app.html' },
 ]
 
-export function useSendToTool(getFiles: () => AudioFileData[]) {
+export function useSendToTool(
+  getFiles: () => AudioFileData[],
+  onResult?: (result: { ok: boolean; tool: TargetTool }) => void,
+) {
   const isSending = ref(false)
   const sentToTool = ref<string | null>(null)
 
@@ -50,6 +53,10 @@ export function useSendToTool(getFiles: () => AudioFileData[]) {
       if (blobs.length > 0) {
         await shareFiles(blobs, 'audionormalizer')
       }
+      onResult?.({ ok: true, tool })
+    } catch (error) {
+      console.error('[AudioNormalizer] sendToTool failed:', error)
+      onResult?.({ ok: false, tool })
     } finally {
       isSending.value = false
       setTimeout(() => {

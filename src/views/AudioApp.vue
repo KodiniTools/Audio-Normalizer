@@ -43,15 +43,12 @@
 
           <!-- Interactive playlist + player bar -->
           <PlaylistPanel />
-
-          <!-- Status toast -->
-          <div v-if="statusMessage" class="alert alert--toast" :class="'alert--' + statusType">
-            <component :is="statusIcons[statusType]" :size="15" />
-            <span>{{ statusMessage }}</span>
-          </div>
         </div>
       </div>
     </section>
+
+    <!-- Subtle toast notifications — every action reports its outcome here -->
+    <ToastStack />
 
     <!-- Loading overlay — all processes report their progress here -->
     <LoadingOverlay />
@@ -74,6 +71,7 @@
   import EffectsStrip from '../components/EffectsStrip.vue'
   import PlaylistPanel from '../components/PlaylistPanel.vue'
   import LoadingOverlay from '../components/LoadingOverlay.vue'
+  import ToastStack from '../components/ToastStack.vue'
   import '../assets/audio-app.css'
 
   const { t } = useI18n()
@@ -81,7 +79,7 @@
   const router = useRouter()
 
   const store = useAudioStore()
-  const { audioFiles, statusMessage, statusType, isProcessing } = storeToRefs(store)
+  const { audioFiles, isProcessing } = storeToRefs(store)
 
   const { sharedBanner } = useSharedFiles(store.handleSharedFiles, t, route, router)
 

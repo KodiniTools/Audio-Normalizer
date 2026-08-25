@@ -86,10 +86,6 @@
   font-weight: 500;
 }
 
-.audio-app .alert--toast {
-  animation: an-slideUp 0.2s ease;
-}
-
 .audio-app .alert--success {
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
@@ -109,6 +105,99 @@
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   color: #3b82f6;
+}
+
+/* ── Toast notifications (teleported to <body>, so unscoped) ─────────
+   A subtle, stacked, self-dismissing feed for every action's outcome. */
+.toast-stack {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(360px, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--toast-accent, var(--border-color));
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.toast:hover {
+  transform: translateY(-1px);
+}
+
+.toast__icon {
+  flex-shrink: 0;
+  color: var(--toast-accent, var(--text));
+}
+
+.toast__message {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast--success {
+  --toast-accent: #22c55e;
+}
+.toast--error {
+  --toast-accent: #ef4444;
+}
+.toast--warning {
+  --toast-accent: #f59e0b;
+}
+.toast--info {
+  --toast-accent: #3b82f6;
+}
+
+/* TransitionGroup enter/leave/move — a gentle slide-and-fade. */
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(16px);
+}
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(16px);
+}
+.toast-leave-active {
+  position: absolute;
+  right: 0;
+  width: 100%;
+}
+.toast-move {
+  transition: transform 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toast-enter-from,
+  .toast-leave-to,
+  .toast-move {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* ── Drop zone ───────────────────────────────────────── */
@@ -619,17 +708,6 @@
   }
   100% {
     margin-left: 100%;
-  }
-}
-
-@keyframes an-slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 

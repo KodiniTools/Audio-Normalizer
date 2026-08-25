@@ -43,5 +43,12 @@
 
   const { isSending, sentToTool, hasNormalizedFiles, sendToTool } = useSendToTool(
     () => audioFiles.value,
+    ({ ok, tool }) => {
+      const name = t(`app.sendTo${tool.key.charAt(0).toUpperCase() + tool.key.slice(1)}`)
+      store.setStatus(
+        ok ? t('status.sentTo', { tool: name }) : t('status.sendError', { tool: name }),
+        ok ? 'success' : 'error',
+      )
+    },
   )
 </script>

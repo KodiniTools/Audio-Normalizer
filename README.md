@@ -8,6 +8,7 @@ Eine moderne Audio-Normalisierungs-Anwendung, die mit Vue 3 und der Composition 
 - 🔇 **Rauschunterdrückung** - Intelligente Filterung von Hintergrundgeräuschen
 - ⚡ **Dynamikkompression** - Professionelle Audio-Kompression
 - 📋 **Batch-Verarbeitung** - Mehrere Dateien gleichzeitig bearbeiten
+- ↩️ **Undo/Redo** - Jede Bearbeitung, jedes Zurücksetzen sowie Hinzufügen/Entfernen von Dateien lässt sich rückgängig machen (Strg+Z / Strg+Shift+Z) und wiederherstellen; Verlaufsmenü zum Springen zwischen Schritten
 - 💾 **Flexible Exporte** - WAV oder MP3 (320 kbps)
 - 🔒 **100% Privat** - Alle Verarbeitung erfolgt lokal im Browser
 - 🌓 **Dark/Light Mode** - Umschaltbares Farbschema
@@ -73,7 +74,8 @@ Die Landing Page zeigt alle Features, Vorteile und FAQs. Benutzer können über 
 2. **Globale Einstellungen**: RMS, dB oder EBU R128 auf alle Dateien anwenden
 3. **Einzelne Anpassungen**: Jede Datei individuell bearbeiten
 4. **Effekte anwenden**: Rauschunterdrückung, Clipping-Reduktion, Kompression
-5. **Exportieren**: Als WAV oder MP3 herunterladen
+5. **Rückgängig/Wiederherstellen**: Strg+Z bzw. Strg+Shift+Z (oder Strg+Y), Toolbar-Buttons oder das Verlaufsmenü. Der Verlauf hält bis zu 50 Schritte bzw. 512 MiB an zurückgehaltenen Audiodaten.
+6. **Exportieren**: Als WAV oder MP3 herunterladen
 
 ## Audio-Verarbeitung
 

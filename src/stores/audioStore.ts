@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import {
   generateId,
@@ -12,6 +12,14 @@ import {
 import { shareFiles } from '../utils/sharedFileRepository'
 import { dspPool } from '../utils/dspPool'
 import type { DspJobResult } from '../utils/dspPool'
+import {
+  DEFAULT_HISTORY_LIMITS,
+  emptyHistory,
+  pushHistory,
+  undoHistory,
+  redoHistory,
+} from '../utils/history'
+import type { HistoryState } from '../utils/history'
 import { exportFile as doExportFile, exportAll as doExportAll } from '../composables/useAudioExport'
 import { useI18n } from '../composables/useI18n'
 import type {
@@ -22,6 +30,9 @@ import type {
   PlaybackMode,
   DspOp,
   DspParams,
+  FileTake,
+  HistoryEntry,
+  HistoryLabel,
 } from '../types'
 import type { Preset } from '../data/presets'
 
@@ -100,6 +111,271 @@ export const useAudioStore = defineStore('audio', () => {
 
   const playNext = (): void => playAdjacent(1)
   const playPrev = (): void => playAdjacent(-1)
+
+  // ── Undo / redo history ──────────────────────────────────────────────────────
+  //
+  // Every document-level action (edits, resets, adding/removing files) records
+  // a `HistoryEntry`. Edits snapshot the affected files' "takes" before and
+  // after; list changes retain the removed/added file objects so they can be
+  // put back as-is. View state (selection, playback, slider values) is not
+  // tracked. The stacks are immutable and kept in a shallowRef so the toolbar
+  // reacts to pushes/undos without Vue deep-proxying every snapshot.
+  const history = shallowRef<HistoryState<HistoryEntry>>(emptyHistory())
+  let historySeq = 0
+
+  const canUndo = computed(() => history.value.past.length > 0)
+  const canRedo = computed(() => history.value.future.length > 0)
+  const undoLabel = computed<HistoryLabel | null>(
+    () => history.value.past[history.value.past.length - 1]?.label ?? null,
+  )
+  const redoLabel = computed<HistoryLabel | null>(
+    () => history.value.future[history.value.future.length - 1]?.label ?? null,
+  )
+  /** Undoable entries, oldest first. */
+  const historyPast = computed(() => history.value.past)
+  /** Redoable entries, next redo first (i.e. in chronological order). */
+  const historyFuture = computed(() => history.value.future.slice().reverse())
+
+  const findFile = (id: string): AudioFileData | undefined =>
+    audioFiles.value.find((f) => f.id === id)
+
+  const takeOf = (file: AudioFileData): FileTake => ({
+    processedBuffer: file.processedBuffer,
+    peak: file.peak,
+    rms: file.rms,
+    lufs: file.lufs,
+    targetRms: file.targetRms,
+    processed: file.processed,
+  })
+
+  const takeEquals = (a: FileTake, b: FileTake): boolean =>
+    a.processedBuffer === b.processedBuffer &&
+    a.peak === b.peak &&
+    a.rms === b.rms &&
+    a.lufs === b.lufs &&
+    a.targetRms === b.targetRms &&
+    a.processed === b.processed
+
+  // Put a snapshot back onto a file and rebuild its preview URL from the buffer.
+  const restoreTake = (file: AudioFileData, take: FileTake): void => {
+    file.processedBuffer = take.processedBuffer
+    file.peak = take.peak
+    file.rms = take.rms
+    file.lufs = take.lufs
+    file.targetRms = take.targetRms
+    file.processed = take.processed
+    if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
+    file.processedBlobUrl = take.processed
+      ? URL.createObjectURL(bufferToWave(take.processedBuffer, 0, take.processedBuffer.length))
+      : null
+  }
+
+  // Bytes held only by the history: unique buffers referenced by the given
+  // entries that are neither a live file's original nor its current take.
+  const measureRetained = (entries: readonly HistoryEntry[]): number => {
+    const live = new Set<AudioBuffer>()
+    audioFiles.value.forEach((f) => {
+      live.add(f.originalBuffer)
+      live.add(f.processedBuffer)
+    })
+    const seen = new Set<AudioBuffer>()
+    let bytes = 0
+    const count = (buffer: AudioBuffer): void => {
+      if (live.has(buffer) || seen.has(buffer)) return
+      seen.add(buffer)
+      bytes += buffer.length * buffer.numberOfChannels * Float32Array.BYTES_PER_ELEMENT
+    }
+    entries.forEach((entry) => {
+      if (entry.kind === 'edit') {
+        entry.changes.forEach((c) => {
+          count(c.before.processedBuffer)
+          count(c.after.processedBuffer)
+        })
+      } else {
+        entry.files.forEach(({ file }) => {
+          count(file.originalBuffer)
+          count(file.processedBuffer)
+        })
+      }
+    })
+    return bytes
+  }
+
+  // Revoke the blob URLs of files that only the discarded entries still
+  // referenced. A file that is live again, or still held by another entry
+  // (e.g. its "add" and "remove" entries), keeps its URLs.
+  const releaseEntries = (discarded: HistoryEntry[]): void => {
+    if (discarded.length === 0) return
+    const stillHeld = new Set<string>()
+    audioFiles.value.forEach((f) => stillHeld.add(f.id))
+    const remaining = [...history.value.past, ...history.value.future]
+    remaining.forEach((entry) => {
+      if (entry.kind !== 'edit') entry.files.forEach(({ file }) => stillHeld.add(file.id))
+    })
+    const released = new Set<string>()
+    discarded.forEach((entry) => {
+      if (entry.kind === 'edit') return
+      entry.files.forEach(({ file }) => {
+        if (stillHeld.has(file.id) || released.has(file.id)) return
+        released.add(file.id)
+        if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
+        if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
+      })
+    })
+  }
+
+  // `Omit` would collapse the union, so distribute it over each entry kind.
+  type HistoryEntryInput = HistoryEntry extends infer E
+    ? E extends HistoryEntry
+      ? Omit<E, 'id' | 'at'>
+      : never
+    : never
+
+  const recordHistory = (entry: HistoryEntryInput): void => {
+    const full: HistoryEntry = { ...entry, id: ++historySeq, at: Date.now() }
+    const { state, discarded } = pushHistory(
+      history.value,
+      full,
+      DEFAULT_HISTORY_LIMITS,
+      measureRetained,
+    )
+    history.value = state
+    releaseEntries(discarded)
+  }
+
+  // Record an edit only if something actually changed.
+  const recordEdit = (
+    label: HistoryLabel,
+    changes: { id: string; before: FileTake; after: FileTake }[],
+    r128Before: boolean,
+  ): void => {
+    const r128After = r128Applied.value
+    if (changes.length === 0 && r128Before === r128After) return
+    recordHistory({
+      kind: 'edit',
+      label,
+      changes,
+      r128: r128Before === r128After ? undefined : { before: r128Before, after: r128After },
+    })
+  }
+
+  // After the playlist or a take changed under the player, keep the player-bar
+  // state valid: no dangling current track, no "processed" mode without a take.
+  const ensurePlaybackConsistency = (): void => {
+    if (currentTrackId.value !== null && !findFile(currentTrackId.value)) {
+      currentTrackId.value = null
+      playbackMode.value = 'original'
+    }
+    if (playbackMode.value === 'processed' && !currentTrack.value?.processed) {
+      playbackMode.value = 'original'
+    }
+  }
+
+  const removeFilesById = (ids: Set<string>): void => {
+    audioFiles.value = audioFiles.value.filter((f) => !ids.has(f.id))
+  }
+
+  const insertFiles = (files: { file: AudioFileData; index: number }[]): void => {
+    const list = audioFiles.value.slice()
+    // Ascending by index so earlier insertions don't shift later targets.
+    files
+      .slice()
+      .sort((a, b) => a.index - b.index)
+      .forEach(({ file, index }) => {
+        if (list.some((f) => f.id === file.id)) return
+        list.splice(Math.min(index, list.length), 0, file)
+      })
+    audioFiles.value = list
+  }
+
+  // Apply an entry in the given direction. 'undo' restores the "before" side,
+  // 'redo' the "after" side.
+  const applyEntry = (entry: HistoryEntry, direction: 'undo' | 'redo'): void => {
+    const undoing = direction === 'undo'
+    if (entry.kind === 'edit') {
+      entry.changes.forEach((change) => {
+        const file = findFile(change.id)
+        if (file) restoreTake(file, undoing ? change.before : change.after)
+      })
+    } else {
+      // 'add' undone or 'remove' redone takes files out; the opposite puts them back.
+      const takeOut = entry.kind === 'add' ? undoing : !undoing
+      if (takeOut) removeFilesById(new Set(entry.files.map(({ file }) => file.id)))
+      else insertFiles(entry.files)
+    }
+    if (entry.r128) r128Applied.value = undoing ? entry.r128.before : entry.r128.after
+    ensurePlaybackConsistency()
+  }
+
+  // Undo/redo are refused while an operation is running — a snapshot taken
+  // mid-batch would otherwise race with the results being applied.
+  const historyBusy = (): boolean => isProcessing.value || isLoading.value
+
+  const undoStep = (): HistoryEntry | undefined => {
+    const { state, entry } = undoHistory(history.value)
+    if (!entry) return undefined
+    history.value = state
+    applyEntry(entry, 'undo')
+    return entry
+  }
+
+  const redoStep = (): HistoryEntry | undefined => {
+    const { state, entry } = redoHistory(history.value)
+    if (!entry) return undefined
+    history.value = state
+    applyEntry(entry, 'redo')
+    return entry
+  }
+
+  const undo = (): boolean => {
+    if (historyBusy()) return false
+    const entry = undoStep()
+    if (!entry) return false
+    setStatus(t('history.undone', { action: t(entry.label.key, entry.label.params) }), 'info')
+    // Keep the IndexedDB hand-off in step with the restored takes (same as every edit).
+    void autoShare()
+    return true
+  }
+
+  const redo = (): boolean => {
+    if (historyBusy()) return false
+    const entry = redoStep()
+    if (!entry) return false
+    setStatus(t('history.redone', { action: t(entry.label.key, entry.label.params) }), 'info')
+    void autoShare()
+    return true
+  }
+
+  /**
+   * Jump to the state right after the entry with the given id, or to the
+   * initial state (before the oldest retained entry) when `id` is null.
+   */
+  const jumpToHistory = (id: number | null): boolean => {
+    if (historyBusy()) return false
+    const { past, future } = history.value
+    let undoCount = 0
+    let redoCount = 0
+    if (id === null) {
+      undoCount = past.length
+    } else {
+      const pastIdx = past.findIndex((e) => e.id === id)
+      const futureIdx = future.findIndex((e) => e.id === id)
+      if (pastIdx !== -1) undoCount = past.length - 1 - pastIdx
+      else if (futureIdx !== -1) redoCount = future.length - futureIdx
+      else return false
+    }
+    if (undoCount === 0 && redoCount === 0) return false
+    let last: HistoryEntry | undefined
+    for (let i = 0; i < undoCount; i++) last = undoStep()
+    for (let i = 0; i < redoCount; i++) last = redoStep()
+    if (undoCount > 0 && last) {
+      setStatus(t('history.undone', { action: t(last.label.key, last.label.params) }), 'info')
+    } else if (last) {
+      setStatus(t('history.redone', { action: t(last.label.key, last.label.params) }), 'info')
+    }
+    void autoShare()
+    return true
+  }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -235,6 +511,7 @@ export const useAudioStore = defineStore('audio', () => {
 
     let processed = 0
     let errors = 0
+    const added: { file: AudioFileData; index: number }[] = []
 
     await runBatch(
       audioOnly as unknown as AudioFileData[],
@@ -242,7 +519,9 @@ export const useAudioStore = defineStore('audio', () => {
       async (item) => {
         const file = item as unknown as File
         try {
-          audioFiles.value.push(await analyzeFile(file))
+          const data = await analyzeFile(file)
+          added.push({ file: data, index: audioFiles.value.length })
+          audioFiles.value.push(data)
           processed++
         } catch {
           setStatus(t('status.fileError', { name: (file as File).name }), 'error')
@@ -254,6 +533,13 @@ export const useAudioStore = defineStore('audio', () => {
 
     isProcessing.value = false
     endLoading()
+    if (added.length > 0) {
+      recordHistory({
+        kind: 'add',
+        label: { key: 'history.addFiles', params: { count: added.length } },
+        files: added,
+      })
+    }
     if (processed > 0) setStatus(t('status.uploaded', { count: processed }), 'success')
     else if (errors > 0) setStatus(t('status.noValidFiles'), 'error')
   }
@@ -264,6 +550,7 @@ export const useAudioStore = defineStore('audio', () => {
     isProcessing.value = true
     let processed = 0
     let errors = 0
+    const added: { file: AudioFileData; index: number }[] = []
 
     for (const record of sharedRecords) {
       try {
@@ -278,7 +565,9 @@ export const useAudioStore = defineStore('audio', () => {
           continue
         }
 
-        audioFiles.value.push(await analyzeBlob(blob, record.name))
+        const data = await analyzeBlob(blob, record.name)
+        added.push({ file: data, index: audioFiles.value.length })
+        audioFiles.value.push(data)
         processed++
       } catch (error) {
         console.error(`[AudioNormalizer] Failed to import shared file "${record.name}":`, error)
@@ -287,6 +576,13 @@ export const useAudioStore = defineStore('audio', () => {
     }
 
     isProcessing.value = false
+    if (added.length > 0) {
+      recordHistory({
+        kind: 'add',
+        label: { key: 'history.importFiles', params: { count: added.length } },
+        files: added,
+      })
+    }
     if (processed > 0) setStatus(t('status.imported', { count: processed }), 'success')
     return { processed, errors }
   }
@@ -325,6 +621,7 @@ export const useAudioStore = defineStore('audio', () => {
   }
 
   // Dispatch a DSP op over the selected files in parallel across the worker pool.
+  // `label` is both the overlay caption and the name of the resulting history entry.
   const runDspBatch = async (
     label: string,
     successMsg: string,
@@ -353,6 +650,7 @@ export const useAudioStore = defineStore('audio', () => {
       setProgress(label, (done / total) * 100),
     )
 
+    const changes: { id: string; before: FileTake; after: FileTake }[] = []
     results.forEach((res, i) => {
       const file = files[i]
       if (!res.ok) {
@@ -363,12 +661,20 @@ export const useAudioStore = defineStore('audio', () => {
         }
         return
       }
+      const before = takeOf(file)
       applyDspResult(file, res.channels, res.peak, res.rms)
+      changes.push({ id: file.id, before, after: takeOf(file) })
     })
 
     isProcessing.value = false
     endLoading()
+    const r128Before = r128Applied.value
     if (markR128) r128Applied.value = true
+    recordEdit(
+      { key: 'history.batch', params: { action: label, count: changes.length } },
+      changes,
+      r128Before,
+    )
     setStatus(successMsg, 'success')
     await autoShare()
   }
@@ -401,7 +707,7 @@ export const useAudioStore = defineStore('audio', () => {
 
   const applyPreset = (preset: Preset): Promise<void> =>
     runDspBatch(
-      preset.id,
+      t('history.preset', { preset: t(`presets.${preset.id}`) }),
       t('status.presetDone', {
         preset: preset.id,
         lufs: preset.lufs,
@@ -492,7 +798,19 @@ export const useAudioStore = defineStore('audio', () => {
       },
     ])
     if (res.ok) {
+      const before = takeOf(file)
       applyDspResult(file, res.channels, res.peak, res.rms)
+      recordEdit(
+        {
+          key: 'history.editFile',
+          params: {
+            name: file.name,
+            rms: Number(updatedFile.targetRms ?? globalRmsValue.value).toFixed(2),
+          },
+        },
+        [{ id: file.id, before, after: takeOf(file) }],
+        r128Applied.value,
+      )
       setStatus(t('status.updated', { name: updatedFile.name }), 'success')
     } else if (res.error === 'silent') {
       setStatus(t('status.tooQuiet', { name: updatedFile.name }), 'warning')
@@ -506,6 +824,7 @@ export const useAudioStore = defineStore('audio', () => {
   const resetFile = (file: AudioFileData): void => {
     const target = audioFiles.value.find((f) => f.id === file.id)
     if (!target || !target.processed) return
+    const before = takeOf(target)
     target.processedBuffer = target.originalBuffer
     target.peak = target.originalPeak
     target.rms = target.originalRms
@@ -515,6 +834,11 @@ export const useAudioStore = defineStore('audio', () => {
       URL.revokeObjectURL(target.processedBlobUrl)
       target.processedBlobUrl = null
     }
+    recordEdit(
+      { key: 'history.resetFile', params: { name: target.name } },
+      [{ id: target.id, before, after: takeOf(target) }],
+      r128Applied.value,
+    )
     // If this track is playing its processed take, fall back to the original.
     if (currentTrackId.value === target.id && playbackMode.value === 'processed') {
       playbackMode.value = 'original'
@@ -522,45 +846,63 @@ export const useAudioStore = defineStore('audio', () => {
     setStatus(t('status.fileReset', { name: target.name }), 'success')
   }
 
+  // Removed files keep their blob URLs: the history retains the file object so
+  // an undo can put it back untouched. URLs are revoked once the entry expires.
   const removeFile = (file: AudioFileData): void => {
     const index = audioFiles.value.findIndex((f) => f.id === file.id)
     if (index === -1) return
-    if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
-    if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
+    const removed = audioFiles.value[index]
     audioFiles.value.splice(index, 1)
     if (currentTrackId.value === file.id) {
       currentTrackId.value = null
       playbackMode.value = 'original'
     }
+    recordHistory({
+      kind: 'remove',
+      label: { key: 'history.removeFile', params: { name: removed.name } },
+      files: [{ file: removed, index }],
+    })
     setStatus(t('status.fileRemoved', { name: file.name }), 'info')
   }
 
   const deleteAll = (): void => {
-    audioFiles.value.forEach((file) => {
-      if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
-      if (file.originalBlobUrl) URL.revokeObjectURL(file.originalBlobUrl)
-    })
+    if (audioFiles.value.length === 0) return
+    const removed = audioFiles.value.map((file, index) => ({ file, index }))
+    const r128Before = r128Applied.value
     audioFiles.value = []
     r128Applied.value = false
     currentTrackId.value = null
     playbackMode.value = 'original'
+    recordHistory({
+      kind: 'remove',
+      label: { key: 'history.deleteAll', params: { count: removed.length } },
+      files: removed,
+      r128: r128Before ? { before: true, after: false } : undefined,
+    })
     setStatus(t('status.allDeleted'), 'info')
   }
 
   const resetAll = (): void => {
+    const r128Before = r128Applied.value
+    const changes: { id: string; before: FileTake; after: FileTake }[] = []
     audioFiles.value.forEach((file) => {
+      const before = takeOf(file)
       file.processedBuffer = file.originalBuffer
       file.peak = file.originalPeak
       file.rms = file.originalRms
+      file.targetRms = undefined
       file.processed = false
       if (file.processedBlobUrl) {
         URL.revokeObjectURL(file.processedBlobUrl)
         file.processedBlobUrl = null
       }
+      const after = takeOf(file)
+      if (!takeEquals(before, after)) changes.push({ id: file.id, before, after })
     })
     r128Applied.value = false
     // The processed take no longer exists — fall back to original playback.
     playbackMode.value = 'original'
+    recordEdit({ key: 'history.resetAll', params: { count: changes.length } }, changes, r128Before)
     setStatus(t('status.allReset'), 'success')
   }
 
@@ -664,5 +1006,15 @@ export const useAudioStore = defineStore('audio', () => {
     exportAll,
     deleteAll,
     resetAll,
+    // Undo / redo history
+    canUndo,
+    canRedo,
+    undoLabel,
+    redoLabel,
+    historyPast,
+    historyFuture,
+    undo,
+    redo,
+    jumpToHistory,
   }
 })

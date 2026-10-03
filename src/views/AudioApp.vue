@@ -62,6 +62,7 @@
   import { useI18n } from '../composables/useI18n'
   import { useAudioStore } from '../stores/audioStore'
   import { useSharedFiles } from '../composables/useSharedFiles'
+  import { useUndoRedoShortcuts } from '../composables/useUndoRedoShortcuts'
   import HeaderControls from '../components/HeaderControls.vue'
   import PresetSelector from '../components/PresetSelector.vue'
   import AppDropZone from '../components/AppDropZone.vue'
@@ -82,6 +83,9 @@
   const { audioFiles, isProcessing } = storeToRefs(store)
 
   const { sharedBanner } = useSharedFiles(store.handleSharedFiles, t, route, router)
+
+  // Ctrl/Cmd+Z → undo, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y → redo (only on the app page).
+  useUndoRedoShortcuts(store.undo, store.redo)
 
   const statusIcons = {
     success: CheckCircle,

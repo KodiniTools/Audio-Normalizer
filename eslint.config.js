@@ -73,6 +73,12 @@ export default [
         MessageEvent: 'readonly',
         ErrorEvent: 'readonly',
         DragEvent: 'readonly',
+        ClipboardEvent: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        EventTarget: 'readonly',
+        Node: 'readonly',
+        HTMLTextAreaElement: 'readonly',
       },
     },
     rules: {

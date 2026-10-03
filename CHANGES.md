@@ -311,6 +311,33 @@ npm run build
 
 ---
 
+## ↩️ Undo/Redo (Verlauf)
+
+Alle dokumentverändernden Aktionen sind rückgängig machbar und wiederherstellbar:
+
+- Normalisierungen (RMS, dB, EBU R128, Presets), Effekte (Rauschunterdrückung, Clipping-Reduktion, Kompression), „Anwenden“ pro Datei
+- „Zurücksetzen“ pro Datei und „Alle zurücksetzen“
+- Dateien hinzufügen (Upload, Drag & Drop, Zwischenablage, Import vom Audio Konverter), „Entfernen“ und „Alle löschen“
+
+Nicht im Verlauf: Auswahl-Häkchen, Wiedergabe, Slider-Werte, „Alle analysieren“ (reine Messung).
+
+**Bedienung**
+
+- Toolbar: „Rückgängig“, „Wiederherstellen“, „Verlauf“ (Liste aller Schritte; Klick springt zu einem Schritt)
+- Tastatur: `Strg+Z` rückgängig, `Strg+Shift+Z` oder `Strg+Y` wiederherstellen (in Textfeldern bleibt das native Undo des Browsers aktiv)
+- Jede Aktion meldet sich als Toast („Rückgängig: …“ / „Wiederhergestellt: …“)
+
+**Technik**
+
+- `src/utils/history.ts`: framework-freier Undo/Redo-Stack (immutable, mit Limits)
+- `src/stores/audioStore.ts`: Snapshots der „Takes“ (Buffer, Pegel, Flags) vor/nach jeder Bearbeitung; entfernte Dateien werden als Objekt gehalten und beim Undo an der alten Position wieder eingefügt
+- Speicherbudget: max. 50 Schritte bzw. 512 MiB an Audiodaten, die nur noch der Verlauf hält (älteste Schritte fallen zuerst weg; der neueste bleibt immer erhalten)
+- Blob-URLs werden erst freigegeben, wenn kein Verlaufseintrag die Datei mehr referenziert
+- Undo/Redo ist während laufender Verarbeitung/Export gesperrt
+- Tests: `npm test` (Vitest, `tests/`)
+
+---
+
 ## 🎉 Fazit
 
 Die Vue 3-Version bietet:

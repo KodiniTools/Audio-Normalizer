@@ -27,52 +27,44 @@
   .header-controls {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: var(--ds-space-2);
   }
 
   .hdr-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-primary);
+    width: var(--ds-control-md);
+    height: var(--ds-control-md);
+    border-radius: var(--ds-radius-md);
+    border: var(--ds-border-width) solid var(--ds-border-strong);
+    background: var(--ds-surface-2);
+    color: var(--ds-text);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    font-size: 0.7rem;
-    font-weight: 600;
+    transition:
+      background-color var(--ds-duration) var(--ds-ease),
+      border-color var(--ds-duration) var(--ds-ease);
+    font: inherit;
+    font-size: var(--ds-text-md);
+    font-weight: var(--ds-weight-semibold);
     flex-shrink: 0;
     padding: 0;
     line-height: 1;
   }
 
   .hdr-btn:hover {
-    background: var(--primary);
-    color: var(--bg-primary);
-    border-color: var(--primary);
+    background: var(--ds-surface-3);
   }
 
-  @media (max-width: 768px) {
-    .hdr-btn {
-      width: 40px;
-      height: 40px;
-      font-size: 0.8rem;
-      border-radius: 6px;
-    }
-
-    .header-controls {
-      gap: 0.35rem;
-    }
+  .hdr-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--ds-focus-ring);
   }
 
-  @media (max-width: 480px) {
+  @media (pointer: coarse) {
     .hdr-btn {
-      width: 44px;
-      height: 44px;
-      font-size: 0.85rem;
+      width: var(--ds-row-height);
+      height: var(--ds-row-height);
     }
   }
 </style>

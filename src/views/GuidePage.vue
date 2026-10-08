@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="guide-header">
       <div class="header-content">
-        <button class="back-btn" @click="router.push('/')">
+        <button class="back-btn" :aria-label="t('guide-back')" @click="router.push('/')">
           <ArrowLeft :size="16" />
           <span>{{ t('guide-back') }}</span>
         </button>
@@ -308,107 +308,105 @@
   /* Base */
   .guide-page {
     min-height: 100vh;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family:
-      'Supreme',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      sans-serif;
-    font-size: 0.8rem;
-    line-height: 1.6;
-    letter-spacing: -0.01em;
+    background: var(--ds-surface-0);
+    color: var(--ds-text);
+    font-size: var(--ds-text-md);
+    line-height: var(--ds-leading);
   }
 
   /* Header */
   .guide-header {
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    padding: 0.75rem 0;
+    background: var(--ds-surface-1);
+    border-bottom: var(--ds-border-width) solid var(--ds-border);
     position: sticky;
     top: 0;
-    z-index: 10;
-    backdrop-filter: blur(12px);
+    z-index: var(--ds-z-topbar);
   }
 
   .header-content {
-    max-width: 900px;
+    max-width: 960px;
+    min-height: var(--ds-topbar-height);
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 var(--ds-gutter);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--ds-space-3);
   }
 
   .back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0.375rem;
-    color: var(--text-primary);
-    font-size: 0.7rem;
-    font-weight: 500;
+    gap: var(--ds-space-2);
+    height: var(--ds-control-md);
+    padding: 0 var(--ds-space-3);
+    background: var(--ds-surface-2);
+    border: var(--ds-border-width) solid var(--ds-border-strong);
+    border-radius: var(--ds-radius-md);
+    color: var(--ds-text);
+    font: inherit;
+    font-size: var(--ds-text-sm);
+    font-weight: var(--ds-weight-medium);
     cursor: pointer;
-    transition: all 0.2s ease;
-    text-transform: none;
+    transition: background-color var(--ds-duration) var(--ds-ease);
   }
 
   .back-btn:hover {
-    background: var(--primary);
-    color: var(--bg-primary);
-    border-color: var(--primary);
+    background: var(--ds-surface-3);
+  }
+
+  .back-btn:focus-visible,
+  .toc-link:focus-visible {
+    outline: none;
+    box-shadow: var(--ds-focus-ring);
   }
 
   .header-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-primary);
+    gap: var(--ds-space-2);
+    color: var(--ds-text);
+    min-width: 0;
   }
 
   .header-title h1 {
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-semibold);
+    line-height: var(--ds-leading-tight);
     margin: 0;
-    text-transform: none;
-    letter-spacing: -0.02em;
   }
 
   /* Main */
   .guide-main {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: var(--ds-space-6) var(--ds-gutter);
     display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 2rem;
+    grid-template-columns: 200px 1fr;
+    gap: var(--ds-space-8);
   }
 
   /* Table of Contents */
   .toc {
     position: sticky;
-    top: 4rem;
+    top: calc(var(--ds-topbar-height) + var(--ds-space-4));
     height: fit-content;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 1rem;
+    background: var(--ds-surface-1);
+    border: var(--ds-border-width) solid var(--ds-border);
+    border-radius: var(--ds-radius-md);
+    padding: var(--ds-space-4);
   }
 
   .toc-title {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: none;
-    letter-spacing: 0.05em;
-    margin: 0 0 0.75rem 0;
+    gap: var(--ds-space-1);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 var(--ds-space-3) 0;
   }
 
   .toc-list {
@@ -417,79 +415,76 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 2px;
   }
 
   .toc-link {
     display: block;
-    padding: 0.3rem 0.5rem;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
+    padding: var(--ds-space-1) var(--ds-space-2);
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-2);
     text-decoration: none;
-    border-radius: 0.25rem;
-    transition: all 0.2s ease;
-    text-transform: none;
+    border-radius: var(--ds-radius-sm);
+    transition:
+      background-color var(--ds-duration) var(--ds-ease),
+      color var(--ds-duration) var(--ds-ease);
   }
 
   .toc-link:hover {
-    background: var(--bg-secondary);
-    color: var(--primary);
+    background: var(--ds-surface-2);
+    color: var(--ds-text);
   }
 
   /* Content */
   .guide-content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--ds-space-6);
+    min-width: 0;
   }
 
   /* Section */
   .section {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 1.25rem;
+    background: var(--ds-surface-1);
+    border: var(--ds-border-width) solid var(--ds-border);
+    border-radius: var(--ds-radius-md);
+    padding: var(--ds-space-5);
+    scroll-margin-top: calc(var(--ds-topbar-height) + var(--ds-space-4));
   }
 
   .section-highlight {
-    background: linear-gradient(135deg, var(--bg-card), rgba(201, 152, 77, 0.03));
-    border-color: rgba(201, 152, 77, 0.2);
+    border-color: var(--ds-accent);
   }
 
   .section-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
+    gap: var(--ds-space-2);
+    margin-bottom: var(--ds-space-4);
+    padding-bottom: var(--ds-space-3);
+    border-bottom: var(--ds-border-width) solid var(--ds-border);
   }
 
   .section-icon {
-    color: var(--primary);
-  }
-
-  .section-icon.highlight {
-    color: var(--primary);
+    color: var(--ds-accent);
+    flex-shrink: 0;
   }
 
   .section-header h2 {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--ds-text-xl);
+    font-weight: var(--ds-weight-semibold);
+    line-height: var(--ds-leading-tight);
     margin: 0;
-    text-transform: none;
-    letter-spacing: -0.02em;
   }
 
   .section-intro {
-    color: var(--text-secondary);
-    margin: 0 0 1rem 0;
-    font-size: 0.8rem;
+    color: var(--ds-text-2);
+    margin: 0 0 var(--ds-space-4) 0;
   }
 
   /* Subsection */
   .subsection {
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--ds-space-5);
   }
 
   .subsection:last-child {
@@ -499,22 +494,22 @@
   .subsection h3 {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    color: var(--text-primary);
-    text-transform: none;
+    gap: var(--ds-space-2);
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-semibold);
+    line-height: var(--ds-leading-tight);
+    margin: 0 0 var(--ds-space-2) 0;
+    color: var(--ds-text);
   }
 
   .subsection-icon {
-    color: var(--primary-secondary, #014f99);
+    color: var(--ds-text-2);
+    flex-shrink: 0;
   }
 
   .subsection p {
-    color: var(--text-secondary);
-    margin: 0 0 0.75rem 0;
-    font-size: 0.8rem;
+    color: var(--ds-text-2);
+    margin: 0 0 var(--ds-space-3) 0;
   }
 
   /* Lists */
@@ -524,60 +519,55 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--ds-space-1);
   }
 
   .feature-list li {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    padding-left: 0.75rem;
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-2);
+    padding-left: var(--ds-space-4);
     position: relative;
   }
 
   .feature-list li::before {
     content: '•';
     position: absolute;
-    left: 0;
-    color: var(--primary);
+    left: var(--ds-space-1);
+    color: var(--ds-accent);
   }
 
   .feature-list li strong {
-    color: var(--text-primary);
+    color: var(--ds-text);
   }
 
-  /* Info Boxes */
+  /* Info boxes: calm notes on surface 2, no coloured stripe. */
   .info-box,
   .tip-box,
   .warning-box {
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    margin-top: 0.5rem;
-  }
-
-  .info-box {
-    background: var(--bg-secondary);
-    border-left: 2px solid var(--text-secondary);
-  }
-
-  .tip-box {
-    background: rgba(201, 152, 77, 0.08);
-    border-left: 2px solid var(--primary);
-  }
-
-  .warning-box {
-    background: rgba(162, 134, 128, 0.1);
-    border-left: 2px solid var(--primary-secondary, #014f99);
+    padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface-2);
+    color: var(--ds-text-2);
+    font-size: var(--ds-text-sm);
+    margin-top: var(--ds-space-2);
   }
 
   .info-box strong,
   .tip-box strong,
   .warning-box strong {
     display: block;
-    font-size: 0.7rem;
-    text-transform: none;
-    margin-bottom: 0.35rem;
-    color: var(--text-primary);
+    font-size: var(--ds-text-sm);
+    font-weight: var(--ds-weight-semibold);
+    margin-bottom: var(--ds-space-1);
+    color: var(--ds-text);
+  }
+
+  .tip-box strong {
+    color: var(--ds-accent);
+  }
+
+  .warning-box strong {
+    color: var(--ds-warning);
   }
 
   .info-box ul,
@@ -589,35 +579,34 @@
   }
 
   .info-box li {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    padding: 0.15rem 0;
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-2);
+    padding: 2px 0;
   }
 
   /* Grid */
   .grid-2 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-3);
   }
 
   .grid-item {
-    background: var(--bg-secondary);
-    padding: 0.75rem;
-    border-radius: 0.375rem;
+    background: var(--ds-surface-2);
+    padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-md);
   }
 
   .grid-item h4 {
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem 0;
-    color: var(--text-primary);
-    text-transform: none;
+    font-size: var(--ds-text-md);
+    font-weight: var(--ds-weight-semibold);
+    margin: 0 0 var(--ds-space-1) 0;
+    color: var(--ds-text);
   }
 
   .grid-item p {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-2);
     margin: 0;
   }
 
@@ -628,42 +617,41 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--ds-space-2);
   }
 
   .check-list li {
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    gap: var(--ds-space-2);
+    color: var(--ds-text-2);
   }
 
   .check-icon {
-    color: var(--success);
+    color: var(--ds-success);
     flex-shrink: 0;
-    margin-top: 0.1rem;
+    margin-top: 3px;
   }
 
   .check-list li strong {
-    color: var(--text-primary);
+    color: var(--ds-text);
   }
 
   /* Tips Grid */
   .tips-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--ds-space-3);
   }
 
   .tip-card {
     display: grid;
-    grid-template-columns: 1.5rem 1fr;
+    grid-template-columns: var(--ds-control-sm) 1fr;
     grid-template-rows: auto auto;
-    gap: 0.25rem 0.5rem;
-    background: var(--bg-secondary);
-    padding: 0.75rem;
-    border-radius: 0.375rem;
+    gap: var(--ds-space-1) var(--ds-space-3);
+    background: var(--ds-surface-2);
+    padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-md);
   }
 
   .tip-number {
@@ -671,51 +659,49 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    background: var(--primary);
-    color: var(--bg-primary);
+    width: var(--ds-control-sm);
+    height: var(--ds-control-sm);
+    background: var(--ds-accent-soft);
+    color: var(--ds-text);
     border-radius: 50%;
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: var(--ds-text-sm);
+    font-weight: var(--ds-weight-semibold);
   }
 
   .tip-card h4 {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--ds-text-md);
+    font-weight: var(--ds-weight-semibold);
     margin: 0;
-    color: var(--text-primary);
-    text-transform: none;
+    color: var(--ds-text);
   }
 
   .tip-card p {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-2);
     margin: 0;
   }
 
   /* Footer */
   .guide-footer {
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border);
-    padding: 1.5rem;
+    background: var(--ds-surface-1);
+    border-top: var(--ds-border-width) solid var(--ds-border);
+    padding: var(--ds-space-6);
     text-align: center;
-    margin-top: 2rem;
+    margin-top: var(--ds-space-8);
   }
 
   .guide-footer p {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-2);
     margin: 0;
-    text-transform: none;
   }
 
   /* Responsive - Tablet */
   @media (max-width: 768px) {
     .guide-main {
       grid-template-columns: 1fr;
-      padding: 1rem;
-      gap: 1rem;
+      padding: var(--ds-space-4);
+      gap: var(--ds-space-4);
     }
 
     .toc {
@@ -726,16 +712,15 @@
     .toc-list {
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 0.25rem;
+      gap: var(--ds-space-1);
     }
 
     .toc-link {
-      font-size: 0.65rem;
-      padding: 0.35rem 0.6rem;
-      background: var(--bg-secondary);
-      min-height: 32px;
+      background: var(--ds-surface-2);
+      min-height: var(--ds-control-md);
       display: flex;
       align-items: center;
+      padding: 0 var(--ds-space-3);
     }
 
     .grid-2 {
@@ -743,132 +728,43 @@
     }
 
     .header-content {
-      padding: 0 1rem;
+      padding: 0 var(--ds-space-4);
     }
 
     .section {
-      padding: 1rem;
+      padding: var(--ds-space-4);
     }
 
     .back-btn {
-      padding: 0.45rem 0.85rem;
-      font-size: 0.65rem;
-      min-height: 36px;
-    }
-
-    .section-header h2 {
-      font-size: 0.9rem;
-    }
-
-    .guide-footer {
-      padding: 1.25rem;
-      margin-top: 1.5rem;
+      min-height: var(--ds-control-lg);
     }
   }
 
   /* Responsive - Phone */
   @media (max-width: 480px) {
     .guide-main {
-      padding: 0.75rem;
-      gap: 0.75rem;
+      padding: var(--ds-space-3);
+      gap: var(--ds-space-3);
     }
 
     .header-content {
-      padding: 0 0.75rem;
+      padding: 0 var(--ds-space-3);
     }
 
     .header-title h1 {
-      font-size: 0.85rem;
+      font-size: var(--ds-text-md);
     }
 
-    .back-btn {
-      padding: 0.5rem 0.75rem;
-      font-size: 0.65rem;
-      min-height: 40px;
-    }
-
-    .toc {
-      padding: 0.75rem;
-    }
-
-    .toc-link {
-      font-size: 0.6rem;
-      padding: 0.35rem 0.5rem;
-      min-height: 30px;
+    .back-btn span {
+      display: none;
     }
 
     .section {
-      padding: 0.85rem;
-    }
-
-    .section-header {
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
+      padding: var(--ds-space-3);
     }
 
     .section-header h2 {
-      font-size: 0.85rem;
-    }
-
-    .section-intro {
-      font-size: 0.75rem;
-    }
-
-    .subsection h3 {
-      font-size: 0.8rem;
-    }
-
-    .subsection p {
-      font-size: 0.75rem;
-    }
-
-    .feature-list li {
-      font-size: 0.7rem;
-      padding-left: 0.6rem;
-    }
-
-    .info-box,
-    .tip-box,
-    .warning-box {
-      padding: 0.6rem;
-      font-size: 0.7rem;
-    }
-
-    .info-box strong,
-    .tip-box strong,
-    .warning-box strong {
-      font-size: 0.65rem;
-    }
-
-    .tip-card {
-      padding: 0.6rem;
-      gap: 0.2rem 0.4rem;
-    }
-
-    .check-list li {
-      font-size: 0.75rem;
-      gap: 0.35rem;
-    }
-
-    .grid-item {
-      padding: 0.6rem;
-    }
-
-    .grid-item h4 {
-      font-size: 0.7rem;
-    }
-
-    .grid-item p {
-      font-size: 0.65rem;
-    }
-
-    .guide-footer {
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-
-    .guide-footer p {
-      font-size: 0.65rem;
+      font-size: var(--ds-text-lg);
     }
   }
 </style>

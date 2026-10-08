@@ -8,7 +8,6 @@
         class="preset-btn"
         :class="{ 'preset-btn--disabled': disabled }"
         :disabled="disabled"
-        :style="{ '--preset-color': preset.color }"
         :title="`${preset.lufs} LUFS · ${preset.truePeakDbtp} dBTP`"
         @click="$emit('apply', preset)"
       >
@@ -58,58 +57,72 @@
   .preset-section {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--ds-space-2);
   }
 
   .preset-title {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: var(--muted);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text-2);
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
   }
 
   .preset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 0.4rem;
+    grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+    gap: var(--ds-space-2);
   }
 
   .preset-btn {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.65rem;
-    border-radius: 0.4rem;
-    border: 1px solid var(--border-color);
-    background: var(--btn);
+    gap: var(--ds-space-2);
+    height: var(--ds-control-md);
+    padding: 0 var(--ds-space-3);
+    border-radius: var(--ds-radius-md);
+    border: var(--ds-border-width) solid var(--ds-border);
+    background: var(--ds-surface-2);
+    color: var(--ds-text);
+    font: inherit;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition:
+      background-color var(--ds-duration) var(--ds-ease),
+      border-color var(--ds-duration) var(--ds-ease);
     text-align: left;
     min-width: 0;
   }
 
   .preset-btn:not(.preset-btn--disabled):hover {
-    border-color: var(--preset-color);
-    background: color-mix(in srgb, var(--preset-color) 10%, transparent);
+    border-color: var(--ds-accent);
+    background: var(--ds-accent-soft);
+  }
+
+  .preset-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--ds-focus-ring);
   }
 
   .preset-btn--disabled {
-    opacity: 0.4;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 
   .preset-icon {
     display: flex;
     align-items: center;
-    color: var(--preset-color);
+    color: var(--ds-text-2);
     flex-shrink: 0;
   }
 
+  .preset-btn:not(.preset-btn--disabled):hover .preset-icon {
+    color: var(--ds-accent);
+  }
+
   .preset-name {
-    font-size: 0.73rem;
-    font-weight: 600;
-    color: var(--text);
+    font-size: var(--ds-text-sm);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text);
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -117,16 +130,23 @@
   }
 
   .preset-meta {
-    font-size: 0.62rem;
-    font-weight: 500;
-    color: var(--muted);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-medium);
+    color: var(--ds-text-2);
     white-space: nowrap;
     flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
   }
 
   @media (max-width: 640px) {
     .preset-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (pointer: coarse) {
+    .preset-btn {
+      min-height: var(--ds-row-height);
     }
   }
 </style>

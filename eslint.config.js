@@ -47,6 +47,7 @@ export default [
         sessionStorage: 'readonly',
         indexedDB: 'readonly',
         CustomEvent: 'readonly',
+        MutationObserver: 'readonly',
         Event: 'readonly',
         confirm: 'readonly',
         alert: 'readonly',

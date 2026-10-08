@@ -5,19 +5,32 @@
  * the app view (matching the previous scoped behaviour) while still applying
  * to the extracted child components, which render inside `.audio-app`.
  * Keyframes are prefixed `an-` to avoid clashing with global animations.
+ *
+ * Every value comes from the shared design tokens (--ds-*, see
+ * src/design-system/tokens-v2.css): flat surfaces, one 1px border, gold only
+ * for the primary action, focus and active states, shadows only on overlays,
+ * hover changes colour but never size.
  */
 
 /* ── Layout ─────────────────────────────────────────── */
+.audio-app {
+  min-height: 100vh;
+}
+
+.audio-app .app-section {
+  padding: var(--ds-space-6) 0 var(--ds-space-12);
+}
+
 .audio-app .container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 1.25rem 1.5rem;
+  padding: 0 var(--ds-space-6);
 }
 
 .audio-app .app-container {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: var(--ds-space-3);
 }
 
 /* ── Header ──────────────────────────────────────────── */
@@ -25,37 +38,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.625rem 1.25rem;
+  min-height: var(--ds-topbar-height);
+  padding: var(--ds-space-2) var(--ds-space-5);
   position: relative;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--ds-surface-1);
+  border-bottom: var(--ds-border-width) solid var(--ds-border);
 }
 
 .audio-app .header-controls-slot {
   position: absolute;
-  right: 1.25rem;
+  right: var(--ds-space-5);
 }
 
 .audio-app .back-link {
   position: absolute;
-  left: 1.25rem;
+  left: var(--ds-space-5);
   display: inline-flex;
   align-items: center;
-  padding: 0.3rem 0.65rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  color: var(--text);
-  font-size: 0.73rem;
-  font-weight: 500;
+  height: var(--ds-control-sm);
+  padding: 0 var(--ds-space-3);
+  background: var(--ds-surface-2);
+  border: var(--ds-border-width) solid var(--ds-border-strong);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition:
+    background-color var(--ds-duration) var(--ds-ease),
+    color var(--ds-duration) var(--ds-ease);
 }
 
 .audio-app .back-link:hover {
-  background: var(--accent);
-  color: var(--accent-text);
-  border-color: var(--accent);
+  background: var(--ds-surface-3);
+  color: var(--ds-text);
+}
+
+.audio-app .back-link:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .audio-app .header-titles {
@@ -63,95 +84,99 @@
 }
 
 .audio-app .app-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  line-height: var(--ds-leading-tight);
+  color: var(--ds-text);
   margin: 0;
 }
 
 .audio-app .app-subtitle {
-  font-size: 0.68rem;
-  color: var(--muted);
-  margin: 0.1rem 0 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
+  margin: 2px 0 0;
 }
 
-/* ── Alert (banner + toast shared base) ──────────────── */
+/* ── Alert (banner) ──────────────────────────────────────
+   Calm in-flow notice: surface 2, the status colour only in the icon. */
 .audio-app .alert {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 500;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-2);
+  color: var(--ds-text);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
 }
 
-.audio-app .alert--success {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #22c55e;
+.audio-app .alert svg {
+  flex-shrink: 0;
 }
-.audio-app .alert--error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+
+.audio-app .alert--success svg {
+  color: var(--ds-success);
 }
-.audio-app .alert--warning {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+.audio-app .alert--error svg {
+  color: var(--ds-danger);
 }
-.audio-app .alert--info {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+.audio-app .alert--warning svg {
+  color: var(--ds-warning);
+}
+.audio-app .alert--info svg {
+  color: var(--ds-info);
 }
 
 /* ── Toast notifications (teleported to <body>, so unscoped) ─────────
    A subtle, stacked, self-dismissing feed for every action's outcome. */
 .toast-stack {
   position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  z-index: 10000;
+  bottom: var(--ds-space-4);
+  right: var(--ds-space-4);
+  z-index: var(--ds-z-toast);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-width: min(360px, calc(100vw - 2rem));
+  gap: var(--ds-space-2);
+  max-width: min(400px, calc(100vw - 2 * var(--ds-space-4)));
   pointer-events: none;
 }
 
 .toast {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ds-space-3);
   width: 100%;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--border-color);
-  border-left: 3px solid var(--toast-accent, var(--border-color));
-  border-radius: 0.55rem;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-  color: var(--text);
-  font-size: 0.8rem;
-  font-weight: 500;
-  line-height: 1.35;
+  padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-3) var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-left: 3px solid var(--toast-accent, var(--ds-info));
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-1);
+  box-shadow: var(--ds-shadow-overlay);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  line-height: var(--ds-leading);
   text-align: left;
   cursor: pointer;
   pointer-events: auto;
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease;
+  transition: border-color var(--ds-duration) var(--ds-ease);
 }
 
 .toast:hover {
-  transform: translateY(-1px);
+  border-color: var(--ds-border-strong);
+  border-left-color: var(--toast-accent, var(--ds-info));
+}
+
+.toast:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .toast__icon {
   flex-shrink: 0;
-  color: var(--toast-accent, var(--text));
+  color: var(--toast-accent, var(--ds-text));
 }
 
 .toast__message {
@@ -160,26 +185,26 @@
 }
 
 .toast--success {
-  --toast-accent: #22c55e;
+  --toast-accent: var(--ds-success);
 }
 .toast--error {
-  --toast-accent: #ef4444;
+  --toast-accent: var(--ds-danger);
 }
 .toast--warning {
-  --toast-accent: #f59e0b;
+  --toast-accent: var(--ds-warning);
 }
 .toast--info {
-  --toast-accent: #3b82f6;
+  --toast-accent: var(--ds-info);
 }
 
-/* TransitionGroup enter/leave/move — a gentle slide-and-fade. */
-.toast-enter-from {
-  opacity: 0;
-  transform: translateX(16px);
+/* TransitionGroup enter/leave/move — a gentle fade. */
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity var(--ds-duration-slow) var(--ds-ease);
 }
+.toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(16px);
 }
 .toast-leave-active {
   position: absolute;
@@ -187,16 +212,15 @@
   width: 100%;
 }
 .toast-move {
-  transition: transform 0.2s ease;
+  transition: transform var(--ds-duration-slow) var(--ds-ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .toast,
-  .toast-enter-from,
-  .toast-leave-to,
+  .toast-enter-active,
+  .toast-leave-active,
   .toast-move {
     transition: none;
-    transform: none;
   }
 }
 
@@ -204,23 +228,23 @@
 .audio-app .drop-zone {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1.25rem;
-  background: var(--gradient-color);
-  border: 1.5px dashed var(--border-color);
-  border-radius: 0.625rem;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  background: var(--ds-surface-2);
+  border: var(--ds-border-width) dashed var(--ds-border-strong);
+  border-radius: var(--ds-radius-md);
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--ds-duration) var(--ds-ease),
+    background-color var(--ds-duration) var(--ds-ease);
 }
 
 .audio-app .drop-zone--active {
-  border-color: var(--accent);
-  background: var(--panel-highlight);
+  border-color: var(--ds-accent);
+  background: var(--ds-accent-soft);
 }
 
 .audio-app .drop-icon {
-  color: var(--accent);
+  color: var(--ds-accent);
   flex-shrink: 0;
 }
 
@@ -228,31 +252,30 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 2px;
 }
 
 .audio-app .drop-label {
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 500;
+  font-size: var(--ds-text-md);
+  color: var(--ds-text);
+  font-weight: var(--ds-weight-medium);
 }
 
 .audio-app .drop-paste-hint {
-  font-size: 0.7rem;
-  color: var(--muted);
-  opacity: 0.6;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
 }
 
 .audio-app .drop-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ds-space-2);
   flex-shrink: 0;
 }
 
 /* ── Toolbar ─────────────────────────────────────────── */
 .audio-app .toolbar {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ds-space-2);
   flex-wrap: wrap;
 }
 
@@ -260,34 +283,32 @@
 .audio-app .send-to-panel {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: var(--ds-surface-1);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
 }
 
 .audio-app .send-to-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ds-space-2);
   flex-wrap: wrap;
 }
 
 .audio-app .send-to-hint {
-  font-size: 0.68rem;
-  color: var(--muted);
-  opacity: 0.7;
-  font-style: italic;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
 }
 
 .audio-app .send-to-label {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--muted);
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-2);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
@@ -296,60 +317,43 @@
 
 .audio-app .send-to-actions {
   display: flex;
-  gap: 0.375rem;
+  gap: var(--ds-space-2);
   flex-wrap: wrap;
-}
-
-.audio-app .btn--send {
-  background: var(--btn);
-  color: var(--text);
-  border: 1px solid var(--border-color);
-  font-size: 0.73rem;
-}
-.audio-app .btn--send:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--panel-highlight);
 }
 
 /* ── Controls panel ──────────────────────────────────── */
 .audio-app .controls-panel {
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: 0.625rem;
-  padding: 0.875rem 1rem;
+  background: var(--ds-surface-1);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: var(--ds-space-3);
 }
 
 .audio-app .r128-warning {
   display: flex;
   align-items: flex-start;
-  gap: 0.4rem;
-  padding: 0.45rem 0.65rem;
-  border-radius: 0.35rem;
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.35);
-  color: #ca8a04;
-  font-size: 0.72rem;
-  line-height: 1.4;
-}
-
-[data-theme='light'] .audio-app .r128-warning {
-  background: rgba(234, 179, 8, 0.08);
-  color: #92400e;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-2);
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading);
 }
 
 .audio-app .r128-warning svg {
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
+  color: var(--ds-warning);
 }
 
 .audio-app .controls-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
 }
 
 .audio-app .controls-row--bottom {
@@ -360,59 +364,60 @@
 .audio-app .ctrl-field {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--ds-space-1);
 }
 
 .audio-app .ctrl-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-2);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .audio-app .ctrl-row {
   display: flex;
-  gap: 0.375rem;
+  gap: var(--ds-space-2);
+}
+
+.audio-app .ctrl-input,
+.audio-app .ctrl-select {
+  height: var(--ds-control-md);
+  padding: 0 var(--ds-space-3);
+  background: var(--ds-surface-2);
+  border: var(--ds-border-width) solid var(--ds-border-strong);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: var(--ds-text-md);
+  transition: border-color var(--ds-duration) var(--ds-ease);
 }
 
 .audio-app .ctrl-input {
   flex: 1;
   min-width: 0;
-  padding: 0.375rem 0.5rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  color: var(--text);
-  font-size: 0.82rem;
-  transition: border-color 0.15s;
-}
-
-.audio-app .ctrl-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.audio-app .ctrl-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .audio-app .ctrl-select {
-  padding: 0.375rem 0.5rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  color: var(--text);
-  font-size: 0.82rem;
   cursor: pointer;
-  transition: border-color 0.15s;
   min-width: 130px;
 }
 
-.audio-app .ctrl-select:focus {
+.audio-app .ctrl-input:focus-visible,
+.audio-app .ctrl-select:focus-visible {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--ds-accent);
+  box-shadow: var(--ds-focus-ring);
+}
+
+.audio-app .ctrl-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Buttons beside an input share its height. */
+.audio-app .ctrl-row .btn {
+  height: var(--ds-control-md);
 }
 
 .audio-app .btn--ebu {
@@ -424,31 +429,41 @@
 /* ── Effects strip ───────────────────────────────────── */
 .audio-app .effects-strip {
   display: flex;
-  gap: 0.375rem;
+  gap: var(--ds-space-2);
   flex-wrap: wrap;
 }
 
 .audio-app .chip {
-  padding: 0.3rem 0.75rem;
-  background: var(--btn);
-  border: 1px solid var(--border-color);
-  border-radius: 9999px;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 500;
+  height: var(--ds-control-sm);
+  padding: 0 var(--ds-space-3);
+  background: var(--ds-surface-2);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-full);
+  color: var(--ds-text-2);
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color var(--ds-duration) var(--ds-ease),
+    border-color var(--ds-duration) var(--ds-ease),
+    color var(--ds-duration) var(--ds-ease);
   white-space: nowrap;
 }
 
 .audio-app .chip:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--panel-highlight);
+  border-color: var(--ds-accent);
+  color: var(--ds-text);
+  background: var(--ds-accent-soft);
+}
+
+.audio-app .chip:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .audio-app .chip:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -457,229 +472,244 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.4rem 0.6rem;
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--ds-surface-1);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
 }
 
 .audio-app .select-all {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: var(--text);
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text);
   cursor: pointer;
 }
 
 .audio-app .select-all input {
   width: 16px;
   height: 16px;
-  accent-color: var(--accent);
+  accent-color: var(--ds-accent);
   cursor: pointer;
 }
 
 .audio-app .playlist-count {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--muted);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-2);
   font-variant-numeric: tabular-nums;
 }
 
 .audio-app .count-pill {
-  padding: 0.02rem 0.4rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.22);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.3;
+  padding: 0 var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-3);
+  color: var(--ds-text);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  line-height: 1.5;
+}
+
+/* On the gold primary button the pill sits on the accent fill. */
+.audio-app .btn--primary .count-pill {
+  background: var(--ds-on-accent);
+  color: var(--ds-accent);
 }
 
 .audio-app .selection-hint {
-  font-size: 0.75rem;
+  font-size: var(--ds-text-sm);
 }
 
 /* ── Sticky player bar ───────────────────────────────── */
 .audio-app .sticky-player {
-  margin-top: 0.25rem;
+  margin-top: var(--ds-space-1);
 }
 
 /* ── File meta ───────────────────────────────────────── */
 .audio-app .file-meta {
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: var(--muted);
-  padding: 0 0.25rem;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-2);
+  padding: 0 var(--ds-space-1);
 }
 
 .audio-app .file-meta--empty {
   text-align: center;
-  padding: 1.25rem;
-  background: var(--panel);
-  border: 1px dashed var(--border-color);
-  border-radius: 0.5rem;
-  font-size: 0.82rem;
+  padding: var(--ds-space-5);
+  background: var(--ds-surface-1);
+  border: var(--ds-border-width) dashed var(--ds-border-strong);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-md);
+  font-weight: var(--ds-weight-medium);
 }
 
 /* ── File list ───────────────────────────────────────── */
 .audio-app .file-list {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: var(--ds-space-2);
   max-height: 580px;
   overflow-y: auto;
-  padding-right: 0.25rem;
+  padding-right: var(--ds-space-1);
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  scrollbar-color: var(--ds-border-strong) transparent;
 }
 
 .audio-app .file-list::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 .audio-app .file-list::-webkit-scrollbar-track {
   background: transparent;
 }
 .audio-app .file-list::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
+  background: var(--ds-border-strong);
+  border-radius: var(--ds-radius-full);
 }
 .audio-app .file-list::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--ds-text-3);
 }
 
 /* ── Buttons ─────────────────────────────────────────── */
 .audio-app .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.45rem 0.875rem;
-  border: none;
-  border-radius: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  height: var(--ds-control-md);
+  padding: 0 var(--ds-space-4);
+  border: var(--ds-border-width) solid transparent;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-2);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: var(--ds-text-md);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color var(--ds-duration) var(--ds-ease),
+    border-color var(--ds-duration) var(--ds-ease),
+    color var(--ds-duration) var(--ds-ease);
   white-space: nowrap;
   text-decoration: none;
 }
 
-.audio-app .btn--sm {
-  padding: 0.35rem 0.7rem;
-  font-size: 0.75rem;
+.audio-app .btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
 }
 
+.audio-app .btn--sm {
+  height: var(--ds-control-sm);
+  padding: 0 var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-text-sm);
+}
+
+/* Primary: the only gold fill. */
 .audio-app .btn--primary {
-  background: var(--accent);
-  color: var(--accent-text);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-weight: var(--ds-weight-semibold);
 }
 .audio-app .btn--primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  background: var(--ds-accent-hover);
 }
 
-.audio-app .btn--accent {
-  background: var(--btn);
-  color: var(--text);
-  border: 1px solid var(--border-color);
+/* Secondary (named --accent / --ghost / --send in the templates). */
+.audio-app .btn--accent,
+.audio-app .btn--ghost,
+.audio-app .btn--send {
+  background: var(--ds-surface-2);
+  color: var(--ds-text);
+  border-color: var(--ds-border-strong);
 }
-.audio-app .btn--accent:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.audio-app .btn--ghost {
-  background: var(--btn);
-  color: var(--text);
-  border: 1px solid var(--border-color);
-}
-.audio-app .btn--ghost:hover:not(:disabled) {
-  background: var(--btn-hover);
-  transform: translateY(-1px);
+.audio-app .btn--accent:hover:not(:disabled),
+.audio-app .btn--ghost:hover:not(:disabled),
+.audio-app .btn--send:hover:not(:disabled) {
+  background: var(--ds-surface-3);
 }
 
+/* Destructive: text-based on a flat surface. */
 .audio-app .btn--danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: transparent;
+  color: var(--ds-danger);
+  border-color: var(--ds-border);
 }
 .audio-app .btn--danger:hover:not(:disabled) {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
+  background: var(--ds-surface-2);
 }
 
 .audio-app .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
-  transform: none !important;
-  filter: none !important;
 }
 
 /* ── Loading overlay ─────────────────────────────────── */
 .audio-app .loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(2px);
+  z-index: var(--ds-z-backdrop);
 }
 
 .audio-app .loading-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ds-space-4);
   width: min(90vw, 340px);
-  padding: 1.75rem 1.5rem;
-  background: var(--panel);
-  border: 1px solid var(--border-color);
-  border-radius: 0.9rem;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  padding: var(--ds-space-6);
+  background: var(--ds-surface-1);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-overlay);
 }
 
 .audio-app .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--btn);
-  border-top-color: var(--accent);
+  border: 3px solid var(--ds-surface-3);
+  border-top-color: var(--ds-accent);
   border-radius: 50%;
   animation: an-spin 0.7s linear infinite;
 }
 
 .audio-app .loading-message {
-  color: var(--text);
-  font-size: 0.85rem;
-  font-weight: 600;
+  color: var(--ds-text);
+  font-size: var(--ds-text-md);
+  font-weight: var(--ds-weight-semibold);
   margin: 0;
   text-align: center;
-  line-height: 1.35;
+  line-height: var(--ds-leading-tight);
 }
 
 .audio-app .loading-progress {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--ds-space-3);
   width: 100%;
 }
 
 .audio-app .loading-progress-track {
   flex: 1;
   height: 6px;
-  background: var(--btn);
-  border-radius: 3px;
+  background: var(--ds-surface-3);
+  border-radius: var(--ds-radius-full);
   overflow: hidden;
 }
 
 .audio-app .loading-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
-  border-radius: 3px;
-  transition: width 0.25s ease;
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-full);
+  transition: width var(--ds-duration-slow) var(--ds-ease);
 }
 
 .audio-app .loading-progress-fill--indeterminate {
@@ -688,9 +718,9 @@
 }
 
 .audio-app .loading-progress-pct {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text);
   font-variant-numeric: tabular-nums;
   min-width: 2.6rem;
   text-align: right;
@@ -714,13 +744,13 @@
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 640px) {
   .audio-app .container {
-    padding: 0.75rem;
+    padding: 0 var(--ds-space-3);
   }
 
   .audio-app .app-header {
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-2) var(--ds-space-3);
   }
 
   .audio-app .back-link,
@@ -744,12 +774,8 @@
     grid-template-columns: 1fr;
   }
 
-  .audio-app .toolbar {
-    gap: 0.375rem;
-  }
   .audio-app .toolbar .btn {
     flex: 1;
-    justify-content: center;
   }
 }
 
@@ -757,34 +783,23 @@
   .audio-app .app-subtitle {
     display: none;
   }
-  .audio-app .chip {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.6rem;
-  }
 }
 
-/* Touch devices: comfortable hit areas and no stuck hover-lift after a tap. */
+/* Touch devices: comfortable hit areas. */
 @media (pointer: coarse) {
   .audio-app .btn--sm,
   .audio-app .chip,
   .audio-app .btn--send {
-    min-height: 40px;
+    min-height: var(--ds-control-lg);
   }
+  .audio-app .btn,
   .audio-app .ctrl-input,
   .audio-app .ctrl-select,
-  .audio-app .btn--ebu,
-  .audio-app .btn--accent {
-    min-height: 44px;
+  .audio-app .back-link {
+    min-height: var(--ds-row-height);
   }
   .audio-app .select-all input {
     width: 22px;
     height: 22px;
-  }
-}
-
-@media (hover: none) {
-  .audio-app .btn--primary:hover,
-  .audio-app .btn--ghost:hover {
-    transform: none;
   }
 }

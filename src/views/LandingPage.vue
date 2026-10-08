@@ -124,41 +124,34 @@
   /* Layout */
   .landing-page {
     min-height: 100vh;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    background: var(--ds-surface-0);
+    color: var(--ds-text);
     position: relative;
     z-index: 1;
-    font-family:
-      'Supreme',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      sans-serif;
-    font-size: 0.875rem;
-    letter-spacing: -0.01em;
+    font-size: var(--ds-text-md);
+    line-height: var(--ds-leading);
   }
 
   .container {
-    max-width: 1100px;
+    max-width: var(--ds-container);
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 var(--ds-gutter);
   }
 
   /* Navigation */
   .nav {
     position: sticky;
     top: 0;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    padding: 0.75rem 0;
-    z-index: 10;
-    backdrop-filter: blur(12px);
+    background: var(--ds-surface-1);
+    border-bottom: var(--ds-border-width) solid var(--ds-border);
+    z-index: var(--ds-z-topbar);
   }
 
   .nav-container {
-    max-width: 1100px;
+    max-width: var(--ds-container);
+    min-height: var(--ds-topbar-height);
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 var(--ds-gutter);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -167,19 +160,20 @@
   .nav-controls {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--ds-space-2);
   }
 
   .nav-logo h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-semibold);
+    line-height: var(--ds-leading-tight);
     margin: 0;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--ds-tracking-tight);
   }
 
   /* Hero Section */
   .hero {
-    padding: 4rem 0 3rem;
+    padding: var(--ds-space-16) 0 var(--ds-space-12);
     text-align: center;
   }
 
@@ -189,271 +183,215 @@
   }
 
   .hero-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, var(--primary), var(--primary-secondary, #014f99));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    font-size: var(--ds-text-3xl);
+    font-weight: var(--ds-weight-bold);
+    line-height: var(--ds-leading-tight);
+    letter-spacing: var(--ds-tracking-tight);
+    color: var(--ds-text);
+    margin-bottom: var(--ds-space-3);
   }
 
   .hero-subtitle {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-medium);
+    color: var(--ds-text);
+    margin-bottom: var(--ds-space-3);
   }
 
   .hero-description {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
-    opacity: 0.85;
+    font-size: var(--ds-text-md);
+    color: var(--ds-text-2);
+    margin-bottom: var(--ds-space-6);
   }
 
   .btn-hero {
-    display: inline-block;
-    padding: 0.65rem 1.75rem;
-    background: var(--primary);
-    color: var(--bg-primary);
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--ds-control-lg);
+    padding: 0 var(--ds-space-5);
+    background: var(--ds-accent);
+    color: var(--ds-on-accent);
+    border-radius: var(--ds-radius-md);
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-semibold);
     text-decoration: none;
-    transition: all 0.25s;
-    text-transform: none;
-    letter-spacing: 0.02em;
-    box-shadow: 0 2px 10px rgba(201, 152, 77, 0.25);
+    transition: background-color var(--ds-duration) var(--ds-ease);
   }
 
   .btn-hero:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(201, 152, 77, 0.35);
+    background: var(--ds-accent-hover);
+    color: var(--ds-on-accent);
   }
 
-  /* Features Section */
-  .features {
-    padding: 2.5rem 0;
-    background: var(--bg-secondary);
+  .btn-hero:focus-visible {
+    outline: none;
+    box-shadow: var(--ds-focus-ring);
+  }
+
+  /* Sections alternate between page and panel surface. */
+  .features,
+  .faq {
+    padding: var(--ds-space-12) 0;
+    background: var(--ds-surface-1);
+    border-top: var(--ds-border-width) solid var(--ds-border);
+    border-bottom: var(--ds-border-width) solid var(--ds-border);
+  }
+
+  .benefits {
+    padding: var(--ds-space-12) 0;
   }
 
   .section-title {
     text-align: center;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
-    letter-spacing: -0.02em;
+    font-size: var(--ds-text-2xl);
+    font-weight: var(--ds-weight-bold);
+    line-height: var(--ds-leading-tight);
+    letter-spacing: var(--ds-tracking-tight);
+    margin-bottom: var(--ds-space-8);
   }
 
-  .features-grid {
+  /* Cards: on a panel section they sit on the page surface, and vice versa. */
+  .features-grid,
+  .benefits-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
+    gap: var(--ds-gap);
+  }
+
+  .feature-card,
+  .benefit-card {
+    border: var(--ds-border-width) solid var(--ds-border);
+    border-radius: var(--ds-radius-lg);
+    padding: var(--ds-space-5);
+    transition: border-color var(--ds-duration) var(--ds-ease);
   }
 
   .feature-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    transition: all 0.25s;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  }
-
-  .feature-success {
-    border-left: 3px solid var(--success);
-  }
-
-  .feature-primary {
-    border-left: 3px solid var(--primary);
-  }
-
-  .feature-warning {
-    border-left: 3px solid var(--primary-secondary, #014f99);
-  }
-
-  .feature-icon {
-    font-size: 1.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .feature-card h3 {
-    font-size: 0.95rem;
-    margin-bottom: 0.35rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-
-  .feature-card p {
-    color: var(--text-secondary);
-    line-height: 1.5;
-    font-size: 0.8rem;
-  }
-
-  /* Benefits Section */
-  .benefits {
-    padding: 2.5rem 0;
-  }
-
-  .benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.25rem;
+    background: var(--ds-surface-0);
   }
 
   .benefit-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    transition: all 0.25s;
+    background: var(--ds-surface-1);
   }
 
+  .feature-card:hover,
   .benefit-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
+    border-color: var(--ds-border-strong);
   }
 
+  .feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ds-control-lg);
+    height: var(--ds-control-lg);
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface-2);
+    font-size: var(--ds-text-xl);
+    margin-bottom: var(--ds-space-3);
+  }
+
+  .feature-card h3,
   .benefit-card h3 {
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
-    color: var(--primary);
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-semibold);
+    line-height: var(--ds-leading-tight);
+    margin-bottom: var(--ds-space-2);
+    color: var(--ds-text);
   }
 
+  .feature-card p,
   .benefit-card p {
-    color: var(--text-secondary);
-    line-height: 1.5;
-    font-size: 0.8rem;
+    color: var(--ds-text-2);
+    font-size: var(--ds-text-md);
+    margin: 0;
   }
 
   /* FAQ Section */
-  .faq {
-    padding: 2.5rem 0;
-    background: var(--bg-secondary);
-  }
-
   .faq-list {
-    max-width: 700px;
+    max-width: 720px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--ds-space-3);
   }
 
   .faq-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    background: var(--ds-surface-0);
+    border: var(--ds-border-width) solid var(--ds-border);
+    border-radius: var(--ds-radius-md);
     overflow: hidden;
-    transition: all 0.25s;
+    transition: border-color var(--ds-duration) var(--ds-ease);
   }
 
-  .faq-item:hover {
-    border-color: var(--primary);
+  .faq-item:hover,
+  .faq-open {
+    border-color: var(--ds-border-strong);
   }
 
   .faq-question {
     width: 100%;
-    padding: 1rem 1.25rem;
+    min-height: var(--ds-row-height);
+    padding: var(--ds-space-3) var(--ds-space-5);
     background: none;
     border: none;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    font-weight: 500;
+    color: var(--ds-text);
+    font: inherit;
+    font-size: var(--ds-text-lg);
+    font-weight: var(--ds-weight-medium);
     text-align: left;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s;
-    letter-spacing: -0.01em;
+    gap: var(--ds-space-4);
+    transition: background-color var(--ds-duration) var(--ds-ease);
   }
 
   .faq-question:hover {
-    color: var(--primary);
+    background: var(--ds-surface-2);
+  }
+
+  .faq-question:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--ds-accent);
   }
 
   .faq-icon {
-    font-size: 1.1rem;
-    font-weight: 400;
-    transition: transform 0.25s;
-    opacity: 0.7;
-  }
-
-  .faq-open .faq-icon {
-    transform: rotate(180deg);
+    font-size: var(--ds-text-xl);
+    color: var(--ds-text-2);
+    flex-shrink: 0;
   }
 
   .faq-answer {
-    padding: 0 1.25rem 1rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    font-size: 0.8rem;
-    animation: fadeIn 0.25s;
+    padding: 0 var(--ds-space-5) var(--ds-space-4);
+    color: var(--ds-text-2);
+    font-size: var(--ds-text-md);
   }
 
   .faq-answer p {
     margin: 0;
   }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   /* Responsive - Tablet */
   @media (max-width: 768px) {
-    .container {
-      padding: 0 1rem;
-    }
-
+    .container,
     .nav-container {
-      padding: 0 1rem;
+      padding: 0 var(--ds-space-4);
     }
 
     .hero {
-      padding: 2.5rem 0 2rem;
+      padding: var(--ds-space-10) 0 var(--ds-space-8);
     }
 
     .hero-title {
-      font-size: 1.75rem;
-    }
-
-    .hero-subtitle {
-      font-size: 0.9rem;
-    }
-
-    .hero-description {
-      font-size: 0.8rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .btn-hero {
-      padding: 0.75rem 1.75rem;
-      min-height: 44px;
+      font-size: var(--ds-text-2xl);
     }
 
     .section-title {
-      font-size: 1.25rem;
-      margin-bottom: 1.5rem;
+      font-size: var(--ds-text-xl);
+      margin-bottom: var(--ds-space-6);
     }
 
     .features-grid,
@@ -464,102 +402,47 @@
     .features,
     .benefits,
     .faq {
-      padding: 2rem 0;
+      padding: var(--ds-space-8) 0;
     }
 
     .faq-question {
-      padding: 0.85rem 1rem;
-      min-height: 44px;
+      padding: var(--ds-space-3) var(--ds-space-4);
+      font-size: var(--ds-text-md);
     }
 
     .faq-answer {
-      padding: 0 1rem 0.85rem;
+      padding: 0 var(--ds-space-4) var(--ds-space-3);
     }
   }
 
   /* Responsive - Phone */
   @media (max-width: 480px) {
-    .container {
-      padding: 0 0.75rem;
-    }
-
+    .container,
     .nav-container {
-      padding: 0 0.75rem;
+      padding: 0 var(--ds-space-3);
     }
 
     .nav-logo h2 {
-      font-size: 0.9rem;
+      font-size: var(--ds-text-md);
     }
 
     .hero {
-      padding: 2rem 0 1.5rem;
-    }
-
-    .hero-title {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
+      padding: var(--ds-space-8) 0 var(--ds-space-6);
     }
 
     .hero-subtitle {
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .hero-description {
-      font-size: 0.75rem;
-      margin-bottom: 1rem;
+      font-size: var(--ds-text-md);
     }
 
     .btn-hero {
-      padding: 0.8rem 2rem;
-      font-size: 0.75rem;
-      min-height: 44px;
-    }
-
-    .section-title {
-      font-size: 1.1rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .features,
-    .benefits,
-    .faq {
-      padding: 1.5rem 0;
+      width: 100%;
+      max-width: 320px;
+      height: var(--ds-row-height);
     }
 
     .feature-card,
     .benefit-card {
-      padding: 1rem;
-    }
-
-    .feature-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-card h3,
-    .benefit-card h3 {
-      font-size: 0.875rem;
-    }
-
-    .feature-card p,
-    .benefit-card p {
-      font-size: 0.75rem;
-    }
-
-    .faq-question {
-      padding: 0.85rem 0.85rem;
-      font-size: 0.8rem;
-      min-height: 44px;
-    }
-
-    .faq-answer {
-      padding: 0 0.85rem 0.85rem;
-      font-size: 0.75rem;
-    }
-
-    .faq-icon {
-      font-size: 1rem;
+      padding: var(--ds-space-4);
     }
   }
 </style>

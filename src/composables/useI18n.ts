@@ -21,6 +21,8 @@ const translations = {
     'hero-description':
       'Kostenlos, sicher und ohne Upload – alle Verarbeitungen erfolgen lokal in Ihrem Browser.',
     'hero-cta': 'Jetzt starten',
+    'hero-image-alt':
+      'Audio Normalizer: unregelmäßige Wellenform wird zu einem gleichmäßigen, normalisierten Signal – „Perfekte Lautstärke. Ausgewogener Klang.“',
 
     // Guide Page (Wird von GuidePage.vue verwendet)
     'guide-back': 'Zurück',
@@ -443,6 +445,8 @@ const translations = {
     'hero-description':
       'Normalize your audio files quickly and easily – free, secure, and without uploads. All processing happens locally in your browser.',
     'hero-cta': 'Get Started',
+    'hero-image-alt':
+      'Audio Normalizer: an uneven waveform turns into an even, normalized signal – “Perfect volume. Balanced sound.”',
 
     // Guide Page
     'guide-back': 'Back',

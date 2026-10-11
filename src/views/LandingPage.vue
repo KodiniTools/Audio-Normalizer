@@ -21,6 +21,19 @@
           <p class="hero-description">{{ t('hero-description') }}</p>
           <router-link to="/app" class="btn-hero"> {{ t('hero-cta') }} → </router-link>
         </div>
+        <figure class="hero-media">
+          <img
+            :key="heroImageSrc"
+            :src="heroImageSrc"
+            :alt="t('hero-image-alt')"
+            :width="LANDING_IMAGE_WIDTH"
+            :height="LANDING_IMAGE_HEIGHT"
+            class="hero-image"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </figure>
       </div>
     </section>
 
@@ -82,11 +95,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { computed, ref } from 'vue'
   import { useI18n } from '../composables/useI18n'
   import HeaderControls from '../components/HeaderControls.vue'
+  import { LANDING_IMAGE_HEIGHT, LANDING_IMAGE_WIDTH, landingImageSrc } from '../utils/landingImage'
 
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+
+  /** Hero-Bild folgt der UI-Sprache (DE/EN). */
+  const heroImageSrc = computed(() => landingImageSrc(locale.value, import.meta.env.BASE_URL))
 
   const features = [
     { icon: '📊', type: 'success', titleKey: 'feature1-title', descKey: 'feature1-desc' },
@@ -227,6 +244,24 @@
   .btn-hero:focus-visible {
     outline: none;
     box-shadow: var(--ds-focus-ring);
+  }
+
+  /* Hero-Bild: nie größer als intrinsisch (800 px), skaliert mobil auf Containerbreite.
+     width/height-Attribute + aspect-ratio reservieren den Platz (kein Layout-Shift). */
+  .hero-media {
+    max-width: 800px;
+    margin: var(--ds-space-10) auto 0;
+    border: var(--ds-border-width) solid var(--ds-border);
+    border-radius: var(--ds-radius-lg);
+    overflow: hidden;
+    background: var(--ds-surface-2);
+  }
+
+  .hero-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 800 / 447;
   }
 
   /* Sections alternate between page and panel surface. */
@@ -389,6 +424,10 @@
       font-size: var(--ds-text-2xl);
     }
 
+    .hero-media {
+      margin-top: var(--ds-space-8);
+    }
+
     .section-title {
       font-size: var(--ds-text-xl);
       margin-bottom: var(--ds-space-6);
@@ -432,6 +471,11 @@
 
     .hero-subtitle {
       font-size: var(--ds-text-md);
+    }
+
+    .hero-media {
+      margin-top: var(--ds-space-6);
+      border-radius: var(--ds-radius-md);
     }
 
     .btn-hero {

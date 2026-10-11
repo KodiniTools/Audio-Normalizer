@@ -23,9 +23,6 @@
         >
           {{ t(tab.labelKey) }}
         </router-link>
-        <router-link to="/app" class="hero-nav-cta">
-          {{ t('hero-cta') }} <span aria-hidden="true">→</span>
-        </router-link>
       </nav>
     </div>
   </div>
@@ -182,32 +179,8 @@
     color: var(--ds-accent);
   }
 
-  /* Kompakte Variante des Hero-Buttons der Startseite */
-  .hero-nav-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--ds-space-1);
-    height: var(--ds-control-md);
-    margin-left: var(--ds-space-2);
-    padding: 0 var(--ds-space-4);
-    border-radius: var(--ds-radius-md);
-    background: var(--ds-accent);
-    color: var(--ds-on-accent);
-    font-size: var(--ds-text-md);
-    font-weight: var(--ds-weight-semibold);
-    white-space: nowrap;
-    text-decoration: none;
-    transition: background-color var(--ds-duration) var(--ds-ease);
-  }
-
-  .hero-nav-cta:hover {
-    background: var(--ds-accent-hover);
-    color: var(--ds-on-accent);
-  }
-
   .hero-nav-brand:focus-visible,
-  .hero-nav-link:focus-visible,
-  .hero-nav-cta:focus-visible {
+  .hero-nav-link:focus-visible {
     outline: none;
     box-shadow: var(--ds-focus-ring);
   }
@@ -240,15 +213,13 @@
   }
 
   @media (max-width: 600px) {
-    .hero-nav-brand-text,
-    .hero-nav-cta {
-      display: none; /* Platz für die Tabs; die Hero-CTA folgt direkt darunter */
+    .hero-nav-brand-text {
+      display: none; /* Platz für die Tabs */
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-nav-link,
-    .hero-nav-cta {
+    .hero-nav-link {
       transition: none;
     }
   }

@@ -14,6 +14,17 @@ const translations = {
     'nav-landing': 'Startseite',
     'nav-app': 'Zur Anwendung',
     'nav-guide': 'Anleitung',
+    'nav-label': 'Seitennavigation',
+    'nav-home': 'Start',
+    'nav-features': 'Funktionen',
+    'nav-blog': 'Blog',
+    'nav-faq': 'FAQ',
+
+    // Blog-Tab (BlogPage.vue)
+    'blog-title': 'Blog: Audio normalisieren',
+    'blog-intro': 'LUFS und dBFS verständlich erklärt – der Beitrag aus dem KodiniTools-Blog.',
+    'blog-open': 'Beitrag in neuem Tab öffnen',
+    'blog-frame-title': 'Blogbeitrag „Audio normalisieren“ auf kodinitools.com',
 
     // Hero Section
     'hero-title': 'Audio Normalizer',
@@ -438,6 +449,17 @@ const translations = {
     'nav-landing': 'Home',
     'nav-app': 'Go to App',
     'nav-guide': 'Guide',
+    'nav-label': 'Page navigation',
+    'nav-home': 'Home',
+    'nav-features': 'Features',
+    'nav-blog': 'Blog',
+    'nav-faq': 'FAQ',
+
+    // Blog tab (BlogPage.vue)
+    'blog-title': 'Blog: Normalizing audio',
+    'blog-intro': 'LUFS and dBFS explained – the article from the KodiniTools blog.',
+    'blog-open': 'Open article in a new tab',
+    'blog-frame-title': 'Blog article “Normalizing audio” on kodinitools.com',
 
     // Hero Section
     'hero-title': 'Audio Normalizer',

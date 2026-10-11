@@ -1,16 +1,6 @@
 <template>
   <div class="landing-page">
-    <!-- Navigation -->
-    <nav class="nav">
-      <div class="nav-container">
-        <div class="nav-logo">
-          <h2>🎵 Audio Normalizer</h2>
-        </div>
-        <div class="nav-controls">
-          <HeaderControls />
-        </div>
-      </div>
-    </nav>
+    <HeroNav />
 
     <!-- Hero Section -->
     <section class="hero">
@@ -38,7 +28,7 @@
     </section>
 
     <!-- Features Section -->
-    <section class="features">
+    <section id="features" class="features">
       <div class="container">
         <h2 class="section-title">{{ t('features-title') }}</h2>
         <div class="features-grid">
@@ -70,7 +60,7 @@
     </section>
 
     <!-- FAQ Section -->
-    <section class="faq">
+    <section id="faq" class="faq">
       <div class="container">
         <h2 class="section-title">{{ t('faq-title') }}</h2>
         <div class="faq-list">
@@ -97,7 +87,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
   import { useI18n } from '../composables/useI18n'
-  import HeaderControls from '../components/HeaderControls.vue'
+  import HeroNav from '../components/HeroNav.vue'
   import { LANDING_IMAGE_HEIGHT, LANDING_IMAGE_WIDTH, landingImageSrc } from '../utils/landingImage'
 
   const { t, locale } = useI18n()
@@ -153,39 +143,6 @@
     max-width: var(--ds-container);
     margin: 0 auto;
     padding: 0 var(--ds-gutter);
-  }
-
-  /* Navigation */
-  .nav {
-    position: sticky;
-    top: 0;
-    background: var(--ds-surface-1);
-    border-bottom: var(--ds-border-width) solid var(--ds-border);
-    z-index: var(--ds-z-topbar);
-  }
-
-  .nav-container {
-    max-width: var(--ds-container);
-    min-height: var(--ds-topbar-height);
-    margin: 0 auto;
-    padding: 0 var(--ds-gutter);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .nav-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--ds-space-2);
-  }
-
-  .nav-logo h2 {
-    font-size: var(--ds-text-lg);
-    font-weight: var(--ds-weight-semibold);
-    line-height: var(--ds-leading-tight);
-    margin: 0;
-    letter-spacing: var(--ds-tracking-tight);
   }
 
   /* Hero Section */
@@ -275,6 +232,13 @@
 
   .benefits {
     padding: var(--ds-space-12) 0;
+  }
+
+  /* Anker-Ziele müssen unter beiden Sticky-Leisten liegen:
+     globale Navigation (70 px) + HeroNav */
+  .features,
+  .faq {
+    scroll-margin-top: calc(70px + var(--ds-topbar-height));
   }
 
   .section-title {
@@ -411,9 +375,13 @@
 
   /* Responsive - Tablet */
   @media (max-width: 768px) {
-    .container,
-    .nav-container {
+    .container {
       padding: 0 var(--ds-space-4);
+    }
+
+    .features,
+    .faq {
+      scroll-margin-top: calc(60px + var(--ds-topbar-height));
     }
 
     .hero {
@@ -456,13 +424,8 @@
 
   /* Responsive - Phone */
   @media (max-width: 480px) {
-    .container,
-    .nav-container {
+    .container {
       padding: 0 var(--ds-space-3);
-    }
-
-    .nav-logo h2 {
-      font-size: var(--ds-text-md);
     }
 
     .hero {

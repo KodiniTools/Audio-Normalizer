@@ -21,16 +21,37 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/blog',
+    name: 'blog',
+    component: () => import('../views/BlogPage.vue'),
+    meta: {
+      title: 'Blog - Audio Normalisierung Pro',
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },
 ]
 
+// Abstand für Anker: jede Seite setzt `scroll-margin-top` auf ihren Zielen
+// (globale Navigation + HeroNav), CSS bleibt damit die einzige Quelle.
+// Fallback: Höhe beider Leisten (70 px + 56 px) plus Luft.
+const DEFAULT_HASH_OFFSET = 140
+function hashScrollOffset(hash: string): number {
+  const el = document.getElementById(hash.slice(1))
+  if (!el) return DEFAULT_HASH_OFFSET
+  const margin = parseFloat(getComputedStyle(el).scrollMarginTop)
+  return Number.isFinite(margin) && margin > 0 ? margin : DEFAULT_HASH_OFFSET
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior(_to, _from, savedPosition) {
-    return savedPosition ?? { top: 0 }
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, top: hashScrollOffset(to.hash), behavior: 'smooth' }
+    return { top: 0 }
   },
 })
 

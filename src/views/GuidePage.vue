@@ -1,18 +1,10 @@
 <template>
   <div class="guide-page">
-    <!-- Header -->
-    <header class="guide-header">
-      <div class="header-content">
-        <button class="back-btn" :aria-label="t('guide-back')" @click="router.push('/')">
-          <ArrowLeft :size="16" />
-          <span>{{ t('guide-back') }}</span>
-        </button>
-        <div class="header-title">
-          <HelpCircle :size="20" />
-          <h1>{{ t('guide-title') }}</h1>
-        </div>
-        <HeaderControls />
-      </div>
+    <HeroNav />
+
+    <header class="guide-intro">
+      <HelpCircle :size="20" class="guide-intro-icon" aria-hidden="true" />
+      <h1>{{ t('guide-title') }}</h1>
     </header>
 
     <main class="guide-main">
@@ -273,10 +265,8 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import { useRouter } from 'vue-router'
   import { useI18n } from '../composables/useI18n'
   import {
-    ArrowLeft,
     HelpCircle,
     List,
     FileAudio,
@@ -289,9 +279,8 @@
     CheckCircle,
     Lightbulb,
   } from 'lucide-vue-next'
-  import HeaderControls from '../components/HeaderControls.vue'
+  import HeroNav from '../components/HeroNav.vue'
 
-  const router = useRouter()
   const { t } = useI18n()
 
   const sections = computed(() => [
@@ -314,66 +303,32 @@
     line-height: var(--ds-leading);
   }
 
-  /* Header */
-  .guide-header {
-    background: var(--ds-surface-1);
-    border-bottom: var(--ds-border-width) solid var(--ds-border);
-    position: sticky;
-    top: 0;
-    z-index: var(--ds-z-topbar);
-  }
-
-  .header-content {
+  /* Seitentitel unter der HeroNav */
+  .guide-intro {
     max-width: 960px;
-    min-height: var(--ds-topbar-height);
     margin: 0 auto;
-    padding: 0 var(--ds-gutter);
+    padding: var(--ds-space-8) var(--ds-gutter) 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-3);
-  }
-
-  .back-btn {
-    display: inline-flex;
-    align-items: center;
     gap: var(--ds-space-2);
-    height: var(--ds-control-md);
-    padding: 0 var(--ds-space-3);
-    background: var(--ds-surface-2);
-    border: var(--ds-border-width) solid var(--ds-border-strong);
-    border-radius: var(--ds-radius-md);
-    color: var(--ds-text);
-    font: inherit;
-    font-size: var(--ds-text-sm);
-    font-weight: var(--ds-weight-medium);
-    cursor: pointer;
-    transition: background-color var(--ds-duration) var(--ds-ease);
   }
 
-  .back-btn:hover {
-    background: var(--ds-surface-3);
+  .guide-intro-icon {
+    color: var(--ds-accent);
+    flex-shrink: 0;
   }
 
-  .back-btn:focus-visible,
+  .guide-intro h1 {
+    font-size: var(--ds-text-2xl);
+    font-weight: var(--ds-weight-bold);
+    line-height: var(--ds-leading-tight);
+    letter-spacing: var(--ds-tracking-tight);
+    margin: 0;
+  }
+
   .toc-link:focus-visible {
     outline: none;
     box-shadow: var(--ds-focus-ring);
-  }
-
-  .header-title {
-    display: flex;
-    align-items: center;
-    gap: var(--ds-space-2);
-    color: var(--ds-text);
-    min-width: 0;
-  }
-
-  .header-title h1 {
-    font-size: var(--ds-text-lg);
-    font-weight: var(--ds-weight-semibold);
-    line-height: var(--ds-leading-tight);
-    margin: 0;
   }
 
   /* Main */
@@ -389,7 +344,9 @@
   /* Table of Contents */
   .toc {
     position: sticky;
-    top: calc(var(--ds-topbar-height) + var(--ds-space-4));
+    top: calc(
+      70px + var(--ds-topbar-height) + var(--ds-space-4)
+    ); /* globale Navigation + HeroNav */
     height: fit-content;
     background: var(--ds-surface-1);
     border: var(--ds-border-width) solid var(--ds-border);
@@ -449,7 +406,7 @@
     border: var(--ds-border-width) solid var(--ds-border);
     border-radius: var(--ds-radius-md);
     padding: var(--ds-space-5);
-    scroll-margin-top: calc(var(--ds-topbar-height) + var(--ds-space-4));
+    scroll-margin-top: calc(70px + var(--ds-topbar-height) + var(--ds-space-4));
   }
 
   .section-highlight {
@@ -727,16 +684,17 @@
       grid-template-columns: 1fr;
     }
 
-    .header-content {
-      padding: 0 var(--ds-space-4);
+    .guide-intro {
+      padding: var(--ds-space-6) var(--ds-space-4) 0;
+    }
+
+    .guide-intro h1 {
+      font-size: var(--ds-text-xl);
     }
 
     .section {
       padding: var(--ds-space-4);
-    }
-
-    .back-btn {
-      min-height: var(--ds-control-lg);
+      scroll-margin-top: calc(60px + var(--ds-topbar-height) + var(--ds-space-4));
     }
   }
 
@@ -747,16 +705,8 @@
       gap: var(--ds-space-3);
     }
 
-    .header-content {
-      padding: 0 var(--ds-space-3);
-    }
-
-    .header-title h1 {
-      font-size: var(--ds-text-md);
-    }
-
-    .back-btn span {
-      display: none;
+    .guide-intro {
+      padding: var(--ds-space-4) var(--ds-space-3) 0;
     }
 
     .section {

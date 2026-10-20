@@ -11,8 +11,6 @@ const currentLocale = ref(storedLocale || 'de')
 const translations = {
   de: {
     // Navigation
-    'nav-landing': 'Startseite',
-    'nav-app': 'Zur Anwendung',
     'nav-guide': 'Anleitung',
     'nav-label': 'Seitennavigation',
     'nav-home': 'Start',
@@ -36,7 +34,6 @@ const translations = {
       'Audio Normalizer: unregelmäßige Wellenform wird zu einem gleichmäßigen, normalisierten Signal – „Perfekte Lautstärke. Ausgewogener Klang.“',
 
     // Guide Page (Wird von GuidePage.vue verwendet)
-    'guide-back': 'Zurück',
     'guide-title': 'Detaillierte Anleitung',
     'guide-toc': 'Inhaltsverzeichnis',
 
@@ -66,12 +63,6 @@ const translations = {
 
     'guide-analyze-title': 'Audio analysieren',
     'guide-analyze-desc': 'Die Analysefunktion ermittelt wichtige Audio-Parameter:',
-    'guide-analyze-peak': 'Peak Level (dBFS): Höchster Lautstärkepegel der Audio-Datei',
-    'guide-analyze-rms': 'RMS Level (dBFS): Durchschnittliche Lautstärke',
-    'guide-analyze-lufs': 'LUFS: Loudness Units relative to Full Scale (Broadcast-Standard)',
-    'guide-analyze-dynamic': 'Dynamic Range: Unterschied zwischen lautesten und leisesten Stellen',
-    'guide-analyze-clipping': 'Clipping: Anzahl der übersteuerten Samples',
-    'guide-analyze-noise': 'Noise Floor: Grundrauschen der Aufnahme',
     'guide-analyze-peak-desc': 'Höchster Lautstärkepegel',
     'guide-analyze-rms-desc': 'Durchschnittliche Lautstärke',
     'guide-analyze-lufs-desc': 'Loudness Units (Broadcast-Standard)',
@@ -82,7 +73,6 @@ const translations = {
     // Normalization Methods
     'guide-rms-title': 'RMS-Normalisierung',
     'guide-rms-desc': 'Normalisiert die durchschnittliche Lautstärke auf einen Zielwert.',
-    'guide-rms-values': 'Empfohlene Werte:',
     'guide-rms-music': 'Musik: -18 dB bis -14 dB',
     'guide-rms-podcast': 'Podcasts/Sprache: -20 dB bis -16 dB',
     'guide-rms-mastering': 'Mastering: -12 dB bis -8 dB',
@@ -90,7 +80,6 @@ const translations = {
 
     'guide-peak-title': 'Peak/dB-Normalisierung',
     'guide-peak-desc': 'Normalisiert den höchsten Pegel (Peak) auf einen Zielwert.',
-    'guide-peak-values': 'Empfohlene Werte:',
     'guide-peak-standard': 'Standard: -1.0 dB (verhindert Clipping)',
     'guide-peak-conservative': 'Konservativ: -3.0 dB (mehr Headroom)',
     'guide-peak-streaming': 'Streaming: -2.0 dB',
@@ -98,7 +87,6 @@ const translations = {
     'guide-ebu-title': 'EBU R128 (LUFS)',
     'guide-ebu-desc':
       'Broadcast-Standard für konsistente Lautstärke über verschiedene Programme/Tracks.',
-    'guide-ebu-values': 'Standard-Werte:',
     'guide-ebu-tv': 'TV/Radio (Europa): -23 LUFS',
     'guide-ebu-streaming': 'Streaming (Spotify, Apple Music): -14 LUFS',
     'guide-ebu-youtube': 'YouTube: -14 LUFS',
@@ -118,11 +106,6 @@ const translations = {
     'guide-compression-title': 'Dynamikkompression',
     'guide-compression-desc':
       'Reduziert den Unterschied zwischen lauten und leisen Passagen für konsistentere Lautstärke.',
-    'guide-compression-params': 'Parameter:',
-    'guide-compression-threshold': 'Threshold: Ab welchem Pegel die Kompression einsetzt',
-    'guide-compression-ratio': 'Ratio: Stärke der Kompression (z. B. 4:1)',
-    'guide-compression-attack': 'Attack: Wie schnell der Kompressor reagiert',
-    'guide-compression-release': 'Release: Wie schnell der Kompressor wieder loslässt',
     'guide-compression-threshold-desc': 'Ab welchem Pegel komprimiert wird',
     'guide-compression-ratio-desc': 'Stärke der Kompression (z. B. 4:1)',
     'guide-compression-attack-desc': 'Reaktionsgeschwindigkeit',
@@ -169,8 +152,6 @@ const translations = {
     'guide-footer': 'Audio Normalisierung Pro - Professionelle Audio-Bearbeitung im Browser',
 
     // Theme
-    'theme-light': 'Hell',
-    'theme-dark': 'Dunkel',
     'nav.theme': 'Theme wechseln',
 
     // SSI Navigation (global nav.html) - data-i18n keys (camelCase, matching nav.html attributes)
@@ -255,22 +236,8 @@ const translations = {
     'faq6-a':
       'Ja, der Audio Normalizer ist komplett kostenlos und ohne Einschränkungen nutzbar. Es gibt keine versteckten Kosten, Premium-Features oder Abonnements.',
 
-    'footer-text': '© 2024 Audio Normalizer. Alle Rechte vorbehalten.',
-    'footer-privacy': 'Datenschutz',
-    'footer-terms': 'Nutzungsbedingungen',
-
     // App Page Keys (from src/i18n.js and AudioApp.vue)
     'app-title': 'Audio Normalisierung', // from src/i18n.js
-    'app-back': 'Zurück zur Startseite', // from src/i18n.js
-    'app-upload': 'Dateien hochladen', // from src/i18n.js
-    'app-target-level': 'Zielpegel (dB)', // from src/i18n.js
-    'app-silence-threshold': 'Stille-Schwellwert (dB)', // from src/i18n.js
-    'app-remove-silence': 'Stille entfernen', // from src/i18n.js
-    'app-normalize': 'Normalisieren', // from src/i18n.js
-    'app-processing': 'Verarbeite...', // from src/i18n.js
-    'app-download': 'Herunterladen', // from src/i18n.js
-    'app-no-files': 'Keine Dateien ausgewählt', // from src/i18n.js
-    'app-drag-drop': 'Dateien hier ablegen oder klicken zum Auswählen', // from src/i18n.js
 
     'nav.backToHome': 'Zurück zur Startseite',
     'app.title': 'Audio Normalisierung Pro',
@@ -279,7 +246,6 @@ const translations = {
     'app.selectFilesBtn': 'Dateien auswählen',
     'app.selectFolderBtn': 'Ordner auswählen',
     'app.pasteHint': 'Strg+V zum Einfügen aus Zwischenablage',
-    'app.exportAll': 'Alle exportieren (ZIP)',
     'app.exportProcessed': 'Bearbeitete exportieren (ZIP)',
     'app.exportHint': 'Erst nach der Bearbeitung verfügbar',
     'app.deleteAll': 'Alle löschen',
@@ -297,9 +263,6 @@ const translations = {
     // Player bar
     'app.noTrackSelected': 'Kein Titel geladen',
     'app.playerHint': 'Wählen Sie einen Titel in der Playliste',
-    'app.playbackSource': 'Wiedergabequelle',
-    'app.original': 'Original',
-    'app.normalized': 'Bearbeitet',
     'app.normalizedUnavailable': 'Noch nicht bearbeitet',
     'app.playingOriginal': 'Original wird wiedergegeben – zu Bearbeitet wechseln',
     'app.playingProcessed': 'Bearbeitet wird wiedergegeben – zu Original wechseln',
@@ -340,21 +303,17 @@ const translations = {
     'app.dynamicCompression': 'Dynamikkompression',
     'app.downloadFormat': 'Exportformat',
     'app.noFiles': 'Keine Dateien geladen',
-    'app.fileCount': '{count} Datei(en) geladen',
     'app.rms': 'RMS',
     'app.peak': 'Peak',
     'app.apply': 'Anwenden',
     'app.format': 'Format',
     'app.reset': 'Zurücksetzen',
     'app.resetFile': 'Bearbeitung auf Originalwerte zurücksetzen',
-    'app.playOriginal': 'Original abspielen',
-    'app.playNormalized': 'Normalisiert abspielen',
     'app.export': 'Exportieren',
     'app.confirmDeleteAll':
       'Möchten Sie wirklich alle Dateien löschen? Sie können dies mit „Rückgängig“ (Strg+Z) widerrufen.',
     'app.confirmResetAll':
       'Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt. Sie können dies mit „Rückgängig“ (Strg+Z) widerrufen.',
-    'app.emptyStateHint': 'Ziehen Sie Audio-Dateien hierher oder klicken Sie oben zum Hochladen',
     'app.r128Warning':
       'EBU R128 wurde bereits angewendet. RMS-/dB-Skalierung überschreibt den Broadcast-Standard und kann den True-Peak-Schutz aufheben.',
     'app.sharedFilesLoading': '{count} Datei(en) vom Audio Konverter werden importiert…',
@@ -446,8 +405,6 @@ const translations = {
 
   en: {
     // Navigation
-    'nav-landing': 'Home',
-    'nav-app': 'Go to App',
     'nav-guide': 'Guide',
     'nav-label': 'Page navigation',
     'nav-home': 'Home',
@@ -471,7 +428,6 @@ const translations = {
       'Audio Normalizer: an uneven waveform turns into an even, normalized signal – “Perfect volume. Balanced sound.”',
 
     // Guide Page
-    'guide-back': 'Back',
     'guide-title': 'Detailed Guide',
     'guide-toc': 'Table of Contents',
 
@@ -499,12 +455,6 @@ const translations = {
 
     'guide-analyze-title': 'Analyze Audio',
     'guide-analyze-desc': 'The analysis function determines important audio parameters:',
-    'guide-analyze-peak': 'Peak Level (dBFS): Highest volume level of the audio file',
-    'guide-analyze-rms': 'RMS Level (dBFS): Average loudness',
-    'guide-analyze-lufs': 'LUFS: Loudness Units relative to Full Scale (Broadcast Standard)',
-    'guide-analyze-dynamic': 'Dynamic Range: Difference between loudest and quietest parts',
-    'guide-analyze-clipping': 'Clipping: Number of overdriven samples',
-    'guide-analyze-noise': 'Noise Floor: Background noise of the recording',
     'guide-analyze-peak-desc': 'Highest volume level',
     'guide-analyze-rms-desc': 'Average loudness',
     'guide-analyze-lufs-desc': 'Loudness Units (Broadcast Standard)',
@@ -515,7 +465,6 @@ const translations = {
     // Normalization Methods
     'guide-rms-title': 'RMS Normalization',
     'guide-rms-desc': 'Normalizes the average loudness to a target value.',
-    'guide-rms-values': 'Recommended Values:',
     'guide-rms-music': 'Music: -18 dB to -14 dB',
     'guide-rms-podcast': 'Podcasts/Speech: -20 dB to -16 dB',
     'guide-rms-mastering': 'Mastering: -12 dB to -8 dB',
@@ -523,7 +472,6 @@ const translations = {
 
     'guide-peak-title': 'Peak/dB Normalization',
     'guide-peak-desc': 'Normalizes the highest level (peak) to a target value.',
-    'guide-peak-values': 'Recommended Values:',
     'guide-peak-standard': 'Standard: -1.0 dB (prevents clipping)',
     'guide-peak-conservative': 'Conservative: -3.0 dB (more headroom)',
     'guide-peak-streaming': 'Streaming: -2.0 dB',
@@ -531,7 +479,6 @@ const translations = {
     'guide-ebu-title': 'EBU R128 (LUFS)',
     'guide-ebu-desc':
       'Broadcast standard for consistent loudness across different programs/tracks.',
-    'guide-ebu-values': 'Standard Values:',
     'guide-ebu-tv': 'TV/Radio (Europe): -23 LUFS',
     'guide-ebu-streaming': 'Streaming (Spotify, Apple Music): -14 LUFS',
     'guide-ebu-youtube': 'YouTube: -14 LUFS',
@@ -549,11 +496,6 @@ const translations = {
     'guide-compression-title': 'Dynamic Compression',
     'guide-compression-desc':
       'Reduces the difference between loud and quiet passages for more consistent loudness.',
-    'guide-compression-params': 'Parameters:',
-    'guide-compression-threshold': 'Threshold: Level at which compression starts',
-    'guide-compression-ratio': 'Ratio: Strength of compression (e.g. 4:1)',
-    'guide-compression-attack': 'Attack: How quickly the compressor responds',
-    'guide-compression-release': 'Release: How quickly the compressor releases',
     'guide-compression-threshold-desc': 'Level at which compression starts',
     'guide-compression-ratio-desc': 'Strength of compression (e.g. 4:1)',
     'guide-compression-attack-desc': 'Response speed',
@@ -599,8 +541,6 @@ const translations = {
     'guide-footer': 'Audio Normalization Pro - Professional Audio Processing in Browser',
 
     // Theme
-    'theme-light': 'Light',
-    'theme-dark': 'Dark',
     'nav.theme': 'Toggle theme',
 
     // SSI Navigation (global nav.html) - data-i18n keys (camelCase, matching nav.html attributes)
@@ -681,22 +621,8 @@ const translations = {
     'faq6-a':
       'Yes, Audio Normalizer is completely free and usable without restrictions. There are no hidden costs, premium features, or subscriptions.',
 
-    'footer-text': '© 2024 Audio Normalizer. All rights reserved.',
-    'footer-privacy': 'Privacy Policy',
-    'footer-terms': 'Terms of Service',
-
     // App Page Keys (from src/i18n.js and AudioApp.vue)
     'app-title': 'Audio Normalization',
-    'app-back': 'Back to Home',
-    'app-upload': 'Upload Files',
-    'app-target-level': 'Target Level (dB)',
-    'app-silence-threshold': 'Silence Threshold (dB)',
-    'app-remove-silence': 'Remove Silence',
-    'app-normalize': 'Normalize',
-    'app-processing': 'Processing...',
-    'app-download': 'Download',
-    'app-no-files': 'No files selected',
-    'app-drag-drop': 'Drop files here or click to select',
 
     'nav.backToHome': 'Back to Home',
     'app.title': 'Audio Normalization Pro',
@@ -705,7 +631,6 @@ const translations = {
     'app.selectFilesBtn': 'Select Files',
     'app.selectFolderBtn': 'Select Folder',
     'app.pasteHint': 'Ctrl+V to paste from clipboard',
-    'app.exportAll': 'Export All (ZIP)',
     'app.exportProcessed': 'Export Processed (ZIP)',
     'app.exportHint': 'Available after processing',
     'app.deleteAll': 'Delete All',
@@ -723,9 +648,6 @@ const translations = {
     // Player bar
     'app.noTrackSelected': 'No track loaded',
     'app.playerHint': 'Pick a track from the playlist',
-    'app.playbackSource': 'Playback source',
-    'app.original': 'Original',
-    'app.normalized': 'Processed',
     'app.normalizedUnavailable': 'Not processed yet',
     'app.playingOriginal': 'Playing original – switch to processed',
     'app.playingProcessed': 'Playing processed – switch to original',
@@ -766,21 +688,17 @@ const translations = {
     'app.dynamicCompression': 'Dynamic Compression',
     'app.downloadFormat': 'Export Format',
     'app.noFiles': 'No files loaded',
-    'app.fileCount': '{count} file(s) loaded',
     'app.rms': 'RMS',
     'app.peak': 'Peak',
     'app.apply': 'Apply',
     'app.format': 'Format',
     'app.reset': 'Reset',
     'app.resetFile': 'Reset editing to original values',
-    'app.playOriginal': 'Play Original',
-    'app.playNormalized': 'Play Normalized',
     'app.export': 'Export',
     'app.confirmDeleteAll':
       'Are you sure you want to delete all files? You can revert this with Undo (Ctrl+Z).',
     'app.confirmResetAll':
       'Are you sure you want to reset all changes? Files will be restored to their original state. You can revert this with Undo (Ctrl+Z).',
-    'app.emptyStateHint': 'Drag audio files here or click above to upload',
     'app.r128Warning':
       'EBU R128 has already been applied. RMS/dB scaling will override the broadcast standard and may break the True Peak protection.',
     'app.sharedFilesLoading': 'Importing {count} file(s) from Audio Converter…',

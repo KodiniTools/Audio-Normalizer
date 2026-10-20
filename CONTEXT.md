@@ -1,233 +1,61 @@
 # CONTEXT.md - Audio Normalizer
 
-Dieses Dokument bietet einen umfassenden Überblick über die technische Struktur des Audio-Normalizer-Projekts.
-
----
+Technischer Überblick über den aktuellen Stand. Die App arbeitet zu 100 % clientseitig: kein Backend, kein Upload, keine Datenbank.
 
 ## Tech-Stack
 
-### Frontend-Framework & Build-Tools
-
-| Technologie | Version | Beschreibung |
-|-------------|---------|--------------|
-| **Vue 3** | 3.4.0 | Progressive JavaScript Framework mit Composition API |
-| **Vite** | 5.0.0 | Modernes Build-Tool und Development Server |
-| **@vitejs/plugin-vue** | 5.0.0 | Vue-Plugin für Vite |
-
-### Routing & Internationalisierung
-
-| Technologie | Version | Beschreibung |
-|-------------|---------|--------------|
-| **Vue Router** | 4.2.0 | Offizielle Vue-Routing-Bibliothek |
-| **Vue i18n** | 9.14.5 | Internationalisierung (Deutsch & Englisch) |
-
-### Audio-Verarbeitung & Utilities
-
-| Technologie | Version | Beschreibung |
-|-------------|---------|--------------|
-| **Web Audio API** | Browser-nativ | Audio-Verarbeitung im Browser |
-| **LameJS** | 1.2.0 | MP3-Encoding via Web Worker |
-| **JSZip** | 3.10.1 | ZIP-Dateiverwaltung für Batch-Operationen |
-| **Lucide Vue Next** | 0.546.0 | SVG-Icon-Bibliothek |
-
-### Analytics & Monitoring
-
-| Technologie | Beschreibung |
-|-------------|--------------|
-| **Google Tag Manager** | GTM-T7NS656K |
-| **Kodini Tools Analytics** | Custom Analytics Tracking |
-
----
+| Bereich | Technologie |
+|---|---|
+| Framework | Vue 3 (Composition API, `<script setup>`), TypeScript strict |
+| Build | Vite, Basis-URL `/audionormalisierer/` |
+| State | Pinia (`src/stores/audioStore.ts`) |
+| Routing | Vue Router (`/`, `/app`, `/anleitung`, `/blog`) |
+| i18n | Eigenes Composable `useI18n` (DE/EN, Übersetzungen inline) |
+| Styling | Design-Tokens v2 (`--ds-*`, siehe `src/design-system/README.md`), Schrift Supreme |
+| Audio | Web Audio API (Decoding/Wiedergabe), DSP-Worker-Pool, LameJS (MP3), WebCodecs + webm-muxer (WebM/Opus), JSZip |
+| Tests | Vitest + jsdom |
+| Qualität | ESLint (Flat Config) + Prettier, `vue-tsc` |
 
 ## Ordnerstruktur
 
 ```
-Audio-Normalizer/
-├── src/
-│   ├── components/
-│   │   ├── AppHeader.vue              # Header-Komponente mit Navigation
-│   │   └── AudioFileItem.vue          # Einzelne Audio-Datei Komponente
-│   │
-│   ├── views/
-│   │   ├── LandingPage.vue            # Marketing-/Landing-Page mit Features & FAQ
-│   │   ├── LandingPage-v2.vue         # Alternative Landing-Page Version
-│   │   ├── AudioApp.vue               # Haupt-Anwendung (780 Zeilen)
-│   │   ├── AppPage.vue                # Alternatives App-Layout
-│   │   └── GuidePage.vue              # Detaillierte Benutzeranleitung
-│   │
-│   ├── composables/
-│   │   ├── useAudioProcessor.js       # Kern-Audio-Verarbeitungslogik (886 Zeilen)
-│   │   │                              # → RMS/Peak/EBU R128 Normalisierung
-│   │   │                              # → Effekte, WAV/MP3 Export
-│   │   ├── useI18n.js                 # i18n Composable (508 Zeilen)
-│   │   │                              # → Deutsch/Englisch Übersetzungen
-│   │   └── useTheme.js                # Dark/Light Theme Management
-│   │
-│   ├── router/
-│   │   └── index.js                   # Vue Router Konfiguration
-│   │                                  # → Routes: /, /app, /anleitung
-│   │
-│   ├── lokales/
-│   │   ├── de.json                    # Deutsche Sprachdateien
-│   │   └── en.json                    # Englische Sprachdateien
-│   │
-│   ├── assets/
-│   │   └── styles.css                 # Globale CSS mit CSS-Variablen
-│   │
-│   ├── App.vue                        # Root-Komponente
-│   └── main.js                        # Entry Point
-│
-├── Documentation/
-│   ├── README.md                      # Haupt-Projektdokumentation
-│   ├── CHANGES.md                     # Changelog (Vanilla JS → Vue 3)
-│   ├── DEPLOYMENT.md                  # Deployment-Optionen
-│   ├── BACKEND_INTEGRATION.md         # Backend API Integration Guide
-│   ├── SCHNELLSTART.md                # Schnellstart-Anleitung
-│   └── LICENSE                        # ISC Lizenz
-│
-├── Configuration/
-│   └── .env.example                   # Umgebungsvariablen-Template
-│
-├── backup/
-│   └── App.vue                        # Backup der Root-Komponente
-│
-├── index.html                         # HTML Entry Point (GTM & Analytics)
-├── vite.config.js                     # Vite-Konfiguration
-├── package.json                       # Projektabhängigkeiten
-└── package-lock.json                  # Lock-Datei
+src/
+├── App.vue, main.ts
+├── assets/            # styles.css (global), audio-app.css (App), Supreme-Fonts
+├── components/        # UI-Bausteine der App und HeroNav
+├── composables/       # useI18n, useTheme, useSeo, useAudioExport, useFileDrop,
+│                      # useSharedFiles, useSendToTool, useUndoRedoShortcuts
+├── data/presets.ts    # Plattform-Presets (Ziel-LUFS / True Peak)
+├── design-system/     # Tokens v2 (CSS, JSON, TS-Zugriff)
+├── router/index.ts
+├── stores/audioStore.ts
+├── types.ts
+├── utils/             # audioUtils, dspPool, history, sharedFileRepository, ...
+├── views/             # LandingPage, AudioApp, GuidePage, BlogPage
+└── workers/           # dspCore.ts (reine DSP-Mathematik), dspWorker.ts, mp3Worker.js
+public/lame.min.js     # wird vom MP3-Worker per importScripts geladen
+tests/                 # Vitest-Specs
 ```
 
-### Verzeichnis-Beschreibungen
+## Datenhaltung
 
-| Verzeichnis | Zweck |
-|-------------|-------|
-| `src/components/` | Wiederverwendbare Vue-Komponenten für UI |
-| `src/views/` | Vollständige Seiten-Komponenten (Vue Router) |
-| `src/composables/` | Composition API Logik-Module |
-| `src/router/` | Vue Router Konfiguration |
-| `src/lokales/` | Übersetzungsdateien (DE/EN) |
-| `src/assets/` | Globale Styles und Assets |
-| `Documentation/` | Projektdokumentation |
-| `Configuration/` | Konfigurationsdateien |
-| `backup/` | Backup-Dateien |
+- **localStorage:** `theme` (`dark`/`light`), `locale` (`de`/`en`).
+- **IndexedDB:** geteilte Dateien anderer KodiniTools (`sharedFileRepository.ts`).
+- **Speicher:** Audio-Dateien, Verlauf (Undo/Redo, max. 50 Schritte bzw. 512 MiB) im Pinia-Store.
 
----
+## Audio-Verarbeitung
 
-## Datenbankschema
+Die Bearbeitung läuft im DSP-Worker-Pool (`dspCore.ts`), parallel und abseits des Main-Threads.
 
-### Status: Keine Datenbank vorhanden
+| Funktion | Umsetzung |
+|---|---|
+| EBU R128 / Presets | ITU-R BS.1770-4 Gated Loudness, True-Peak-Limit (4× Polyphase-FIR) |
+| RMS / dB | Fenster-RMS (lauteste 50 % der 400-ms-Blöcke) |
+| Rauschunterdrückung | Spektrale Subtraktion (STFT) |
+| Clipping-Reduktion | Abrunden von Spitzen über 0.9 |
+| Dynamikkompression | Kompressor (Threshold −24 dB, Ratio 12:1, Attack 3 ms, Release 250 ms) |
+| Export | WAV, MP3 (320 kbps), WebM/Opus (128 kbps), mehrere Dateien als ZIP |
 
-Dies ist eine **100% clientseitige Anwendung**. Es existiert kein persistentes Datenbankschema.
+## Skripte
 
-### Datenspeicherung
-
-#### LocalStorage (Browser)
-
-| Schlüssel | Typ | Beschreibung |
-|-----------|-----|--------------|
-| `theme` | string | Theme-Präferenz (`dark` / `light`) |
-| `language` | string | Sprachauswahl (`de` / `en`) |
-
-#### In-Memory State (Vue Reactive Refs)
-
-Alle Audio-Daten werden während der Session im Speicher gehalten:
-
-```javascript
-// Hauptzustandsvariablen in useAudioProcessor.js
-audioFiles        // Array - Hochgeladene Audio-Dateien mit Metadaten
-globalRmsValue    // Number - Globaler RMS-Normalisierungswert
-globalDbValue     // Number - Globaler dB-Normalisierungswert
-downloadFormat    // String - Export-Format (WAV/MP3)
-```
-
-### Optionale Backend-Integration
-
-Das Projekt enthält dokumentierte API-Endpunkte für optionale Backend-Integration (siehe `BACKEND_INTEGRATION.md`):
-
-| Endpunkt | Methode | Beschreibung |
-|----------|---------|--------------|
-| `/api/upload` | POST | Datei-Upload |
-| `/api/normalize/rms` | POST | RMS-Normalisierung |
-| `/api/normalize/ebu` | POST | EBU R128 Normalisierung |
-| `/api/effects/noise-reduction` | POST | Rauschunterdrückung |
-| `/api/effects/compression` | POST | Dynamik-Kompression |
-| `/api/download/{fileId}` | GET | Datei-Download |
-| `/api/files/{fileId}` | DELETE | Datei löschen |
-
----
-
-## Audio-Verarbeitungsfunktionen
-
-### Normalisierungsarten
-
-| Funktion | Beschreibung | Parameter |
-|----------|--------------|-----------|
-| **EBU R128** | Professioneller Broadcast-Standard | Ziel: -23 LUFS |
-| **RMS** | Root Mean Square Lautstärke | Bereich: 0.0-1.0 |
-| **Peak/dB** | Spitzenpegel-Anpassung | Bereich: -60 bis 0 dB |
-
-### Effekte
-
-| Effekt | Beschreibung | Parameter |
-|--------|--------------|-----------|
-| **Rauschunterdrückung** | Tiefpassfilter | Grenzfrequenz: 8000 Hz |
-| **Clipping-Reduktion** | Soft Clipping via tanh | Waveshaping |
-| **Dynamik-Kompression** | Professioneller Kompressor | Threshold: -24 dB, Ratio: 12:1, Attack: 3ms, Release: 250ms |
-
-### Export-Formate
-
-| Format | Qualität | Beschreibung |
-|--------|----------|--------------|
-| **WAV** | Unkomprimiert | PCM Audio |
-| **MP3** | 320 kbps | Via LameJS Web Worker |
-
-### Audio-Analyse
-
-- Peak Level (dBFS)
-- RMS Level (dBFS)
-- LUFS (Loudness Units relative to Full Scale)
-- Dynamikbereich
-- Clipping-Erkennung
-- Rauschpegel-Messung
-
----
-
-## Projektkonfiguration
-
-| Einstellung | Wert |
-|-------------|------|
-| Build-Output | `dist/` |
-| Dev Server Port | 3000 |
-| Base URL | `/audionormalisierer/` |
-| Entry Point | `index.html` → `src/main.js` |
-| Module Type | ES Modules |
-
----
-
-## Metriken
-
-| Metrik | Wert |
-|--------|------|
-| Hauptcode-Zeilen | ~2.174 |
-| Quelldateien | 16 |
-| Dokumentationsdateien | 6 |
-| NPM-Abhängigkeiten | 6 |
-| Vue-Komponenten | 6 |
-| Routes | 3 |
-| Unterstützte Sprachen | 2 (DE, EN) |
-| Theme-Modi | 2 (Dark, Light) |
-
----
-
-## Browser-Unterstützung
-
-| Browser | Status |
-|---------|--------|
-| Chrome/Edge | Vollständig unterstützt |
-| Firefox | Vollständig unterstützt |
-| Safari | Vollständig unterstützt |
-| Opera | Vollständig unterstützt |
-
----
-
-*Zuletzt aktualisiert: Januar 2026*
+`npm run dev | build | preview | test | typecheck | lint | format`

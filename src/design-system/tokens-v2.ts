@@ -11,9 +11,6 @@ export type EffectTokenV2Name = keyof typeof tokens.effect.dark
 export type SpacingTokenV2Name = keyof typeof tokens.spacing
 export type RadiusTokenV2Name = keyof typeof tokens.radius
 
-/** Die kompletten v2-Tokens, Struktur siehe tokens-v2.json. */
-export const designTokensV2 = tokens
-
 /** Farbwert eines v2-Tokens für ein Theme, z. B. colorTokenV2('dark', 'accent') → '#d4a257'. */
 export function colorTokenV2(theme: ThemeName, name: ColorTokenV2Name): string {
   return tokens.color[theme][name].$value

@@ -108,8 +108,8 @@ export const calcRMS = (channels: Float32Array[]): number => {
   return count === 0 ? 0 : Math.sqrt(sum / count)
 }
 
-// Windowed RMS: loudest 50 % of 400 ms blocks (75 % overlap). Matches
-// calculateWindowedRMS in audioUtils so RMS scaling aims at the same level.
+// Windowed RMS: loudest 50 % of 400 ms blocks (75 % overlap), so RMS scaling
+// aims at the musically active level, not at fades or silent gaps.
 const calcWindowedRMS = (channels: Float32Array[], fs: number): number => {
   const numChannels = channels.length
   const totalSamples = channels[0]?.length ?? 0

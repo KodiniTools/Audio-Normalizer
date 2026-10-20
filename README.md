@@ -9,36 +9,14 @@ Eine moderne Audio-Normalisierungs-Anwendung, die mit Vue 3 und der Composition 
 - ⚡ **Dynamikkompression** - Professionelle Audio-Kompression
 - 📋 **Batch-Verarbeitung** - Mehrere Dateien gleichzeitig bearbeiten
 - ↩️ **Undo/Redo** - Jede Bearbeitung, jedes Zurücksetzen sowie Hinzufügen/Entfernen von Dateien lässt sich rückgängig machen (Strg+Z / Strg+Shift+Z) und wiederherstellen; Verlaufsmenü zum Springen zwischen Schritten
-- 💾 **Flexible Exporte** - WAV oder MP3 (320 kbps)
+- 💾 **Flexible Exporte** - WAV, MP3 (320 kbps) oder WebM/Opus
 - 🔒 **100% Privat** - Alle Verarbeitung erfolgt lokal im Browser
 - 🌓 **Dark/Light Mode** - Umschaltbares Farbschema
 - 🌍 **Zweisprachig** - Deutsch und Englisch
 
 ## Projektstruktur
 
-```
-audio-normalizer-vue/
-├── src/
-│   ├── assets/
-│   │   └── styles.css          # Globale Styles
-│   ├── components/
-│   │   └── AudioFileItem.vue   # Einzelne Audiodatei-Komponente
-│   ├── composables/
-│   │   ├── useTheme.js         # Theme-Management
-│   │   ├── useI18n.js          # Internationalisierung
-│   │   └── useAudioProcessor.js # Audio-Verarbeitungslogik
-│   ├── router/
-│   │   └── index.js            # Vue Router Konfiguration
-│   ├── views/
-│   │   ├── LandingPage.vue     # Landing Page mit Features & FAQ
-│   │   └── AudioApp.vue        # Haupt-Anwendung
-│   ├── App.vue                 # Root-Komponente
-│   └── main.js                 # Entry Point
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-```
+Aufbau, Datenhaltung und Audio-Verarbeitung im Detail: siehe [CONTEXT.md](CONTEXT.md).
 
 ## Installation
 
@@ -58,7 +36,8 @@ npm run preview
 
 ## Technologie-Stack
 
-- **Vue 3** - Progressive JavaScript Framework
+- **Vue 3** + **TypeScript** - Composition API
+- **Pinia** - State-Management
 - **Vue Router 4** - Offizieller Router für Vue.js
 - **Vite** - Schnelles Build-Tool und Dev-Server
 - **Web Audio API** - Browser-native Audio-Verarbeitung
@@ -75,13 +54,13 @@ Die Landing Page zeigt alle Features, Vorteile und FAQs. Benutzer können über 
 3. **Einzelne Anpassungen**: Jede Datei individuell bearbeiten
 4. **Effekte anwenden**: Rauschunterdrückung, Clipping-Reduktion, Kompression
 5. **Rückgängig/Wiederherstellen**: Strg+Z bzw. Strg+Shift+Z (oder Strg+Y), Toolbar-Buttons oder das Verlaufsmenü. Der Verlauf hält bis zu 50 Schritte bzw. 512 MiB an zurückgehaltenen Audiodaten.
-6. **Exportieren**: Als WAV oder MP3 herunterladen
+6. **Exportieren**: Als WAV, MP3 oder WebM herunterladen
 
 ## Audio-Verarbeitung
 
 ### Unterstützte Formate
 - **Input**: WAV, MP3, OGG, FLAC, AAC (alle vom Browser unterstützten Formate)
-- **Output**: WAV (unkomprimiert) oder MP3 (320 kbps)
+- **Output**: WAV (unkomprimiert), MP3 (320 kbps) oder WebM/Opus (128 kbps)
 
 ### Verarbeitungsfunktionen
 
@@ -93,7 +72,7 @@ Die Landing Page zeigt alle Features, Vorteile und FAQs. Benutzer können über 
 #### RMS-Normalisierung
 - Root Mean Square Normalisierung
 - Werte von 0.0 bis 1.0
-- Peak-Normalisierung inklusive
+- Fenster-RMS: misst die lautesten 50 % der Passagen, Fades und Pausen zählen nicht
 
 #### dB-Normalisierung
 - Dezibel-basierte Anpassung
@@ -101,12 +80,11 @@ Die Landing Page zeigt alle Features, Vorteile und FAQs. Benutzer können über 
 - Automatische Peak-Limitierung
 
 #### Rauschunterdrückung
-- Lowpass-Filter bei 8000 Hz
-- Reduziert Hochfrequenz-Rauschen
+- Spektrale Subtraktion (STFT)
+- Rauschprofil aus den leisesten Passagen, reduziert stationäres Breitbandrauschen
 
 #### Clipping-Reduktion
-- Waveshaping mit Tanh-Funktion
-- Soft-Clipping für natürlicheren Sound
+- Rundet nur Spitzen oberhalb von 0.9 ab, darunter bleibt das Signal unverändert
 
 #### Dynamikkompression
 - Threshold: -24 dB
@@ -115,7 +93,7 @@ Die Landing Page zeigt alle Features, Vorteile und FAQs. Benutzer können über 
 
 ## Datenschutz
 
-Alle Audio-Verarbeitung erfolgt **100% lokal im Browser**. Keine Dateien werden zu einem Server hochgeladen. Die gesamte Verarbeitung nutzt die Web Audio API und läuft clientseitig.
+Alle Audio-Verarbeitung erfolgt **100% lokal im Browser**. Keine Dateien werden zu einem Server hochgeladen. Die Verarbeitung läuft clientseitig in Web Workern.
 
 ## Browser-Kompatibilität
 
@@ -126,42 +104,15 @@ Alle Audio-Verarbeitung erfolgt **100% lokal im Browser**. Keine Dateien werden 
 
 ## Entwicklung
 
-### Composables
-
-**useTheme.js**: Verwaltet Dark/Light Mode
-```javascript
-const { theme, toggleTheme, isDark } = useTheme()
-```
-
-**useI18n.js**: Internationalisierung
-```javascript
-const { locale, t, setLocale, toggleLocale } = useI18n()
-```
-
-**useAudioProcessor.js**: Audio-Verarbeitung
-```javascript
-const { 
-  audioFiles, 
-  applyGlobalRms, 
-  applyEBUR128,
-  exportFile 
-} = useAudioProcessor()
+```bash
+npm run typecheck
+npm run lint
+npm test
 ```
 
 ## Lizenz
 
 ISC
-
-## Änderungen von der Original-Version
-
-1. ✅ Umgewandelt in Vue 3 mit Composition API
-2. ✅ Vue Router für Navigation zwischen Landing Page und App
-3. ✅ Testimonials-Sektion entfernt (waren nicht von echten Nutzern)
-4. ✅ Vollständige Zweisprachigkeit (DE/EN)
-5. ✅ Dark/Light Theme mit LocalStorage-Persistenz
-6. ✅ Moderne Komponentenarchitektur
-7. ✅ Drag & Drop Datei-Upload
-8. ✅ Verbesserte Benutzerführung mit Zurück-Navigation
 
 ## Bekannte Einschränkungen
 

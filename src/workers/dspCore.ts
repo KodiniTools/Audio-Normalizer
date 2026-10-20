@@ -549,6 +549,12 @@ const analyze = (channels: Float32Array[], fs: number): DspOutput => ({
   lufs: measureLoudnessR128(channels, fs),
 })
 
+// Sample peak and RMS only — the cheap measurement taken when a file is loaded.
+const meter = (channels: Float32Array[]): DspOutput => ({
+  peak: calcPeak(channels),
+  rms: calcRMS(channels),
+})
+
 export const runOp = (
   op: DspOp,
   channels: Float32Array[],
@@ -568,6 +574,8 @@ export const runOp = (
       return dynamicCompression(channels, fs, params)
     case 'analyze':
       return analyze(channels, fs)
+    case 'meter':
+      return meter(channels)
     default:
       throw new Error(`Unknown DSP op: ${op}`)
   }

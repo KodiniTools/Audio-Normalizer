@@ -63,6 +63,7 @@ export type DspOp =
   | 'reduceClipping'
   | 'dynamicCompression'
   | 'analyze'
+  | 'meter'
 
 export interface DspParams {
   targetRms?: number

@@ -10,7 +10,7 @@ Technischer Überblick über den aktuellen Stand. Die App arbeitet zu 100 % clie
 | Build | Vite, Basis-URL `/audionormalisierer/` |
 | State | Pinia (`src/stores/audioStore.ts`) |
 | Routing | Vue Router (`/`, `/app`, `/anleitung`, `/blog`) |
-| i18n | Eigenes Composable `useI18n` (DE/EN, Übersetzungen inline) |
+| i18n | Eigenes Composable `useI18n`; Übersetzungen in `src/locales/{de,en}.json`, EN wird bei Bedarf nachgeladen |
 | Styling | Design-Tokens v2 (`--ds-*`, siehe `src/design-system/README.md`), Schrift Supreme |
 | Audio | Web Audio API (Decoding/Wiedergabe), DSP-Worker-Pool, @breezystack/lamejs (MP3, ESM), WebCodecs + webm-muxer (WebM/Opus), JSZip |
 | Tests | Vitest + jsdom |
@@ -27,6 +27,7 @@ src/
 │                      # useSharedFiles, useSendToTool, useUndoRedoShortcuts
 ├── data/presets.ts    # Plattform-Presets (Ziel-LUFS / True Peak)
 ├── design-system/     # Tokens v2 (CSS, JSON, TS-Zugriff)
+├── locales/           # de.json, en.json (gleiche Schlüssel, per Test geprüft)
 ├── router/index.ts
 ├── stores/audioStore.ts
 ├── types.ts

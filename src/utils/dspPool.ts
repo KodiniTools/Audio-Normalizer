@@ -24,6 +24,9 @@ const POOL_SIZE = Math.max(1, Math.min(navigator.hardwareConcurrency || 2, 4))
 
 class DspPool {
   private workers: Worker[] = []
+  // Job ids are unique across runs, so concurrent run() calls sharing a worker
+  // never pick up each other's responses.
+  private nextJobId = 0
 
   private ensureWorkers(count: number): void {
     while (this.workers.length < count) {
@@ -54,14 +57,15 @@ class DspPool {
 
       const dispatch = (worker: Worker): void => {
         if (nextIndex >= total) return
-        const jobId = nextIndex++
-        const job = jobs[jobId]
+        const index = nextIndex++
+        const jobId = this.nextJobId++
+        const job = jobs[index]
 
         const handleMessage = (e: MessageEvent<DspResponse>): void => {
           if (e.data.jobId !== jobId) return
           worker.removeEventListener('message', handleMessage)
           worker.removeEventListener('error', handleError)
-          results[jobId] = e.data.ok
+          results[index] = e.data.ok
             ? {
                 ok: true,
                 channels: e.data.channels,
@@ -79,7 +83,7 @@ class DspPool {
         const handleError = (err: ErrorEvent): void => {
           worker.removeEventListener('message', handleMessage)
           worker.removeEventListener('error', handleError)
-          results[jobId] = { ok: false, error: err.message || 'worker error' }
+          results[index] = { ok: false, error: err.message || 'worker error' }
           done++
           onProgress?.(done, total)
           if (done === total) resolve(results)

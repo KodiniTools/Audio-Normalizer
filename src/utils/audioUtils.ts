@@ -18,7 +18,7 @@ export const CONSTANTS = {
   CLIP_THRESHOLD: 0.9,
 } as const
 
-export const generateId = (): string => '_' + Math.random().toString(36).substr(2, 9)
+export const generateId = (): string => '_' + Math.random().toString(36).slice(2, 11)
 
 export const calculateRMS = (buffer: AudioBuffer): number => {
   let rmsSum = 0

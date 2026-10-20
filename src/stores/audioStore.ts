@@ -439,23 +439,52 @@ export const useAudioStore = defineStore('audio', () => {
 
   // ── File Analysis ──────────────────────────────────────────────────────────
 
-  const buildFileData = (buffer: AudioBuffer, name: string, originalRef: File): AudioFileData => ({
-    id: generateId(),
-    name,
-    file: originalRef,
-    originalBuffer: buffer,
-    processedBuffer: buffer,
-    peak: calculatePeak(buffer),
-    rms: calculateRMS(buffer),
-    originalPeak: calculatePeak(buffer),
-    originalRms: calculateRMS(buffer),
-    processedBlobUrl: null,
-    originalBlobUrl: URL.createObjectURL(originalRef),
-    duration: buffer.duration,
-    // Newly added files start selected, so batch edits apply to them by default.
-    selected: true,
-    processed: false,
-  })
+  // Copy channel data so the source AudioBuffer isn't detached when the arrays
+  // are transferred to a worker.
+  const copyChannels = (buffer: AudioBuffer): Float32Array[] =>
+    Array.from(
+      { length: buffer.numberOfChannels },
+      (_, c) => new Float32Array(buffer.getChannelData(c)),
+    )
+
+  // Peak/RMS of a freshly decoded buffer, measured in the DSP pool so long files
+  // don't block the UI. Falls back to the main thread if no worker is available.
+  const measureLevels = async (buffer: AudioBuffer): Promise<{ peak: number; rms: number }> => {
+    try {
+      const [res] = await dspPool.run([
+        { op: 'meter', channels: copyChannels(buffer), sampleRate: buffer.sampleRate, params: {} },
+      ])
+      if (res?.ok) return { peak: res.peak, rms: res.rms }
+    } catch {
+      // Worker unavailable — measure below.
+    }
+    return { peak: calculatePeak(buffer), rms: calculateRMS(buffer) }
+  }
+
+  const buildFileData = async (
+    buffer: AudioBuffer,
+    name: string,
+    originalRef: File,
+  ): Promise<AudioFileData> => {
+    const { peak, rms } = await measureLevels(buffer)
+    return {
+      id: generateId(),
+      name,
+      file: originalRef,
+      originalBuffer: buffer,
+      processedBuffer: buffer,
+      peak,
+      rms,
+      originalPeak: peak,
+      originalRms: rms,
+      processedBlobUrl: null,
+      originalBlobUrl: URL.createObjectURL(originalRef),
+      duration: buffer.duration,
+      // Newly added files start selected, so batch edits apply to them by default.
+      selected: true,
+      processed: false,
+    }
+  }
 
   const decodeAudio = async (arrayBuffer: ArrayBuffer): Promise<AudioBuffer> => {
     const audioContext = new AudioContext()
@@ -588,14 +617,6 @@ export const useAudioStore = defineStore('audio', () => {
   }
 
   // ── Global Operations (DSP worker pool) ─────────────────────────────────────
-
-  // Copy channel data so the source AudioBuffer isn't detached when the arrays
-  // are transferred to a worker.
-  const copyChannels = (buffer: AudioBuffer): Float32Array[] =>
-    Array.from(
-      { length: buffer.numberOfChannels },
-      (_, c) => new Float32Array(buffer.getChannelData(c)),
-    )
 
   // Rebuild an AudioBuffer from worker-returned channels and refresh the file's
   // meters and preview URL.

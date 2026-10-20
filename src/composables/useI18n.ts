@@ -1,4 +1,17 @@
-import { ref, computed } from 'vue'
+import { ref, computed, shallowRef } from 'vue'
+import de from '../locales/de.json'
+
+type Locale = 'de' | 'en'
+type Messages = Record<string, string>
+
+// Deutsch ist im Haupt-Bundle; Englisch wird erst bei Bedarf als eigener Chunk geladen.
+const loaders: Record<Locale, () => Promise<Messages>> = {
+  de: () => Promise.resolve(de),
+  en: () => import('../locales/en.json').then((m) => m.default),
+}
+const messages = shallowRef<Partial<Record<Locale, Messages>>>({ de })
+
+const isLocale = (value: string | null): value is Locale => value === 'de' || value === 'en'
 
 // Standardsprache ist immer Deutsch - localStorage wird nur gesetzt wenn explizit gewechselt
 const storedLocale = localStorage.getItem('locale')
@@ -8,805 +21,29 @@ if (!storedLocale) {
 }
 const currentLocale = ref(storedLocale || 'de')
 
-const translations = {
-  de: {
-    // Navigation
-    'nav-guide': 'Anleitung',
-    'nav-label': 'Seitennavigation',
-    'nav-home': 'Start',
-    'nav-features': 'Funktionen',
-    'nav-blog': 'Blog',
-    'nav-faq': 'FAQ',
+const loadMessages = async (locale: string): Promise<void> => {
+  if (!isLocale(locale) || messages.value[locale]) return
+  try {
+    const loaded = await loaders[locale]()
+    messages.value = { ...messages.value, [locale]: loaded }
+  } catch (err) {
+    console.error(`Übersetzungen für "${locale}" konnten nicht geladen werden`, err)
+  }
+}
 
-    // Blog-Tab (BlogPage.vue)
-    'blog-title': 'Blog: Audio normalisieren',
-    'blog-intro': 'LUFS und dBFS verständlich erklärt – der Beitrag aus dem KodiniTools-Blog.',
-    'blog-open': 'Beitrag in neuem Tab öffnen',
-    'blog-frame-title': 'Blogbeitrag „Audio normalisieren“ auf kodinitools.com',
+/** Lädt die Übersetzungen der aktiven Sprache; vor dem Mounten der App abwarten. */
+export const loadActiveLocale = (): Promise<void> => loadMessages(currentLocale.value)
 
-    // Hero Section
-    'hero-title': 'Audio Normalizer',
-    'hero-subtitle': 'Professionelle Audio-Normalisierung direkt im Browser',
-    'hero-description':
-      'Kostenlos, sicher und ohne Upload – alle Verarbeitungen erfolgen lokal in Ihrem Browser.',
-    'hero-cta': 'Jetzt starten',
-    'hero-image-alt':
-      'Audio Normalizer: unregelmäßige Wellenform wird zu einem gleichmäßigen, normalisierten Signal – „Perfekte Lautstärke. Ausgewogener Klang.“',
-
-    // Guide Page (Wird von GuidePage.vue verwendet)
-    'guide-title': 'Detaillierte Anleitung',
-    'guide-toc': 'Inhaltsverzeichnis',
-
-    // Guide Sections
-    'guide-section-main': 'Hauptfunktionen',
-    'guide-section-normalization': 'Normalisierungsmethoden',
-    'guide-section-enhancement': 'Audio-Verbesserung',
-    'guide-section-batch': 'Batch-Operationen',
-    'guide-section-export': 'Export',
-    'guide-section-tips': 'Tipps & Best Practices',
-
-    // Guide Labels
-    'guide-tip-label': 'Tipp:',
-    'guide-note-label': 'Hinweis:',
-    'guide-important-label': 'Wichtig:',
-    'guide-ideal-for': 'Ideal für:',
-    'guide-recommended-values': 'Empfohlene Werte:',
-    'guide-standard-values': 'Standard-Werte:',
-    'guide-parameters': 'Parameter:',
-
-    // Main Functions
-    'guide-upload-title': 'Audio-Dateien hochladen',
-    'guide-upload-desc':
-      'Laden Sie Audio-Dateien in den unterstützten Formaten hoch: MP3, WAV, FLAC, OGG, M4A, AAC.',
-    'guide-upload-tip':
-      'Sie können mehrere Dateien gleichzeitig hochladen oder per Drag & Drop hinzufügen.',
-
-    'guide-analyze-title': 'Audio analysieren',
-    'guide-analyze-desc': 'Die Analysefunktion ermittelt wichtige Audio-Parameter:',
-    'guide-analyze-peak-desc': 'Höchster Lautstärkepegel',
-    'guide-analyze-rms-desc': 'Durchschnittliche Lautstärke',
-    'guide-analyze-lufs-desc': 'Loudness Units (Broadcast-Standard)',
-    'guide-analyze-dynamic-desc': 'Lautstärkeunterschied',
-    'guide-analyze-clipping-desc': 'Übersteuerte Samples',
-    'guide-analyze-noise-desc': 'Grundrauschen',
-
-    // Normalization Methods
-    'guide-rms-title': 'RMS-Normalisierung',
-    'guide-rms-desc': 'Normalisiert die durchschnittliche Lautstärke auf einen Zielwert.',
-    'guide-rms-music': 'Musik: -18 dB bis -14 dB',
-    'guide-rms-podcast': 'Podcasts/Sprache: -20 dB bis -16 dB',
-    'guide-rms-mastering': 'Mastering: -12 dB bis -8 dB',
-    'guide-rms-note': 'Niedrigere dB-Werte bedeuten leisere Audio-Signale.',
-
-    'guide-peak-title': 'Peak/dB-Normalisierung',
-    'guide-peak-desc': 'Normalisiert den höchsten Pegel (Peak) auf einen Zielwert.',
-    'guide-peak-standard': 'Standard: -1.0 dB (verhindert Clipping)',
-    'guide-peak-conservative': 'Konservativ: -3.0 dB (mehr Headroom)',
-    'guide-peak-streaming': 'Streaming: -2.0 dB',
-
-    'guide-ebu-title': 'EBU R128 (LUFS)',
-    'guide-ebu-desc':
-      'Broadcast-Standard für konsistente Lautstärke über verschiedene Programme/Tracks.',
-    'guide-ebu-tv': 'TV/Radio (Europa): -23 LUFS',
-    'guide-ebu-streaming': 'Streaming (Spotify, Apple Music): -14 LUFS',
-    'guide-ebu-youtube': 'YouTube: -14 LUFS',
-    'guide-ebu-film': 'Film: -24 LUFS',
-
-    // Enhancement
-    'guide-noise-title': 'Rauschunterdrückung',
-    'guide-noise-desc': 'Reduziert Hintergrundrauschen und verbessert die Sprachverständlichkeit.',
-    'guide-noise-ideal': 'Podcasts, Voice-Overs, Interview-Aufnahmen',
-
-    'guide-clipping-title': 'Clipping reduzieren',
-    'guide-clipping-desc':
-      'Korrigiert übersteuerte Signale und stellt Details in verzerrten Bereichen wieder her.',
-    'guide-clipping-note':
-      'Diese Funktion kann Verzerrungen reduzieren, aber nicht vollständig entfernen.',
-
-    'guide-compression-title': 'Dynamikkompression',
-    'guide-compression-desc':
-      'Reduziert den Unterschied zwischen lauten und leisen Passagen für konsistentere Lautstärke.',
-    'guide-compression-threshold-desc': 'Ab welchem Pegel komprimiert wird',
-    'guide-compression-ratio-desc': 'Stärke der Kompression (z. B. 4:1)',
-    'guide-compression-attack-desc': 'Reaktionsgeschwindigkeit',
-    'guide-compression-release-desc': 'Abklingzeit',
-
-    // Batch Operations
-    'guide-batch-desc': 'Führen Sie Operationen an allen geladenen Dateien gleichzeitig aus:',
-    'guide-batch-analyze': 'Alle analysieren',
-    'guide-batch-analyze-desc': 'Analysiert alle Dateien auf einmal',
-    'guide-batch-normalize': 'RMS/dB/EBU R128 anwenden',
-    'guide-batch-normalize-desc': 'Normalisiert alle Dateien mit der gewählten Methode',
-    'guide-batch-enhance': 'Verbesserung anwenden',
-    'guide-batch-enhance-desc':
-      'Wendet Rauschunterdrückung, Clipping-Reduktion oder Kompression auf alle Dateien an',
-    'guide-batch-export': 'Alle exportieren',
-    'guide-batch-export-desc': 'Exportiert alle verarbeiteten Dateien als ZIP',
-    'guide-batch-reset': 'Alle zurücksetzen',
-    'guide-batch-reset-desc': 'Setzt alle Dateien auf Original zurück',
-    'guide-batch-delete': 'Alle löschen',
-    'guide-batch-delete-desc': 'Entfernt alle Dateien aus der Liste',
-
-    // Export
-    'guide-export-desc': 'Exportieren Sie Ihre verarbeiteten Audio-Dateien:',
-    'guide-export-single': 'Einzelexport: Klicken Sie auf "Exportieren" bei einer Datei',
-    'guide-export-batch': 'Batch-Export: Nutzen Sie "Alle exportieren" für ZIP-Download',
-    'guide-export-format': 'Format: Exportiert im Original-Format oder als WAV',
-    'guide-export-single-label': 'Einzelexport:',
-    'guide-export-batch-label': 'Batch-Export:',
-    'guide-export-format-label': 'Format:',
-
-    // Tips
-    'guide-tip1-title': 'Immer zuerst analysieren',
-    'guide-tip1-desc':
-      'Analysieren Sie Ihre Dateien vor der Normalisierung, um die optimalen Parameter zu bestimmen.',
-    'guide-tip2-title': 'Headroom beachten',
-    'guide-tip2-desc': 'Lassen Sie immer etwas Headroom (z. B. -1 dB), um Clipping zu vermeiden.',
-    'guide-tip3-title': 'Vorschau nutzen',
-    'guide-tip3-desc': 'Hören Sie sich das Ergebnis an, bevor Sie exportieren.',
-    'guide-tip4-title': 'Richtige Methode wählen',
-    'guide-tip4-desc': 'RMS für Musik, Peak für maximale Lautstärke, EBU R128 für Streaming.',
-    'guide-tip5-title': 'Nicht überkomprimieren',
-    'guide-tip5-desc': 'Zu starke Kompression macht Audio flach und leblos.',
-
-    'guide-footer': 'Audio Normalisierung Pro - Professionelle Audio-Bearbeitung im Browser',
-
-    // Theme
-    'nav.theme': 'Theme wechseln',
-
-    // SSI Navigation (global nav.html) - data-i18n keys (camelCase, matching nav.html attributes)
-    'nav.audioTools': 'Audiotools',
-    'nav.imageTools': 'Bildtools',
-    'nav.tools': 'Tools',
-    'nav.contact': 'Kontakt',
-    'nav.mp3Converter': 'MP3 Konverter',
-    'nav.audioEqualizer': 'Interaktiver Audio Equalizer',
-    'nav.modernPlayer': 'Moderner Musikplayer',
-    'nav.ultimatePlayer': 'Ultimativer Musikplayer',
-    'nav.playlistGenerator': 'Audioplaylist Generator',
-    'nav.playlistConverter': 'Playlist zu WebM Konverter',
-    'nav.alarmTool': 'Alarmtool',
-    'nav.audioNormalizer': 'Audio Normalizer',
-    'nav.visualizer': 'Visualizer',
-    'nav.equalizer19': '19-Band Equalizer',
-    'nav.audioConverter': 'Audio Konverter',
-    'nav.imageConverter': 'Bildkonverter',
-    'nav.batchImageEditor': 'Bildserie bearbeiten',
-    'nav.photoCollage': 'Fotocollage',
-    'nav.colorExtractor': 'Kodini Farbextraktor',
-    'nav.videoConverter': 'Videokonverter',
-    'aria.toggleTheme': 'Theme wechseln',
-    'aria.selectLanguage': 'Sprache wählen',
-    'aria.mainNav': 'Hauptnavigation',
-    'aria.menuOpen': 'Menü öffnen',
-    'aria.menuClose': 'Menü schliessen',
-
-    // Landing Page Keys (Features, Benefits, FAQ)
-    'features-title': 'Leistungsstarke Funktionen',
-    'feature1-title': 'Echtzeit-Analyse',
-    'feature1-desc':
-      'Visualisieren Sie Ihre Audio-Wellenformen und -Pegel in Echtzeit während der Verarbeitung.',
-    'feature2-title': 'Stille-Erkennung',
-    'feature2-desc':
-      'Automatische Erkennung und Entfernung von stillen Abschnitten am Anfang und Ende Ihrer Dateien.',
-    'feature3-title': 'Schnelle Verarbeitung',
-    'feature3-desc':
-      'Nutzen Sie die Power Ihres Browsers für blitzschnelle Audio-Normalisierung ohne Wartezeiten.',
-    'feature4-title': 'Batch-Verarbeitung',
-    'feature4-desc':
-      'Laden Sie mehrere Dateien gleichzeitig hoch und verarbeiten Sie diese in einem Durchgang.',
-    'feature5-title': 'Lokale Verarbeitung',
-    'feature5-desc':
-      'Ihre Dateien bleiben auf Ihrem Gerät. Keine Uploads, keine Cloud – maximale Privatsphäre.',
-    'feature6-title': 'Kostenlos & Sicher',
-    'feature6-desc': 'Komplett kostenfrei nutzbar. Ihre Daten verlassen niemals Ihren Browser.',
-
-    'benefits-title': 'Warum Audio Normalizer?',
-    'benefit1-title': 'Keine Installation nötig',
-    'benefit1-desc': 'Arbeiten Sie direkt im Browser ohne komplizierte Software-Installation.',
-    'benefit2-title': 'Datenschutz garantiert',
-    'benefit2-desc':
-      'Ihre Audio-Dateien werden ausschließlich lokal verarbeitet und nie hochgeladen.',
-    'benefit3-title': 'Professionelle Qualität',
-    'benefit3-desc': 'Erhalten Sie Ergebnisse in Studioqualität mit präziser Peak-Normalisierung.',
-    'benefit4-title': 'Zeitersparnis',
-    'benefit4-desc': 'Verarbeiten Sie mehrere Dateien gleichzeitig und sparen Sie wertvolle Zeit.',
-    'benefit5-title': 'Intuitive Bedienung',
-    'benefit5-desc': 'Einfache und übersichtliche Benutzeroberfläche für schnelle Ergebnisse.',
-    'benefit6-title': 'Plattformunabhängig',
-    'benefit6-desc': 'Funktioniert auf Windows, Mac, Linux und sogar auf mobilen Geräten.',
-
-    'faq-title': 'Häufig gestellte Fragen',
-    'faq1-q': 'Was ist Audio-Normalisierung?',
-    'faq1-a':
-      'Audio-Normalisierung ist der Prozess, bei dem die Lautstärke einer Audio-Datei angepasst wird, um einen bestimmten Zielpegel zu erreichen. Dies sorgt für eine konstante Lautstärke über mehrere Tracks hinweg.',
-    'faq2-q': 'Welche Dateiformate werden unterstützt?',
-    'faq2-a':
-      'Der Audio Normalizer unterstützt alle gängigen Audio-Formate, die von modernen Browsern verarbeitet werden können, einschließlich MP3, WAV, OGG, M4A und FLAC.',
-    'faq3-q': 'Werden meine Dateien hochgeladen?',
-    'faq3-a':
-      'Nein! Alle Verarbeitungen erfolgen vollständig lokal in Ihrem Browser. Ihre Audio-Dateien verlassen niemals Ihr Gerät, was maximale Privatsphäre und Sicherheit garantiert.',
-    'faq4-q': 'Wie funktioniert die Stille-Erkennung?',
-    'faq4-a':
-      'Die Stille-Erkennung analysiert Ihre Audio-Datei und identifiziert Bereiche mit sehr geringer Lautstärke am Anfang und Ende. Diese können automatisch entfernt werden, um saubere Audio-Dateien zu erhalten.',
-    'faq5-q': 'Kann ich mehrere Dateien gleichzeitig verarbeiten?',
-    'faq5-a':
-      'Ja! Der Audio Normalizer unterstützt Batch-Verarbeitung. Sie können mehrere Audio-Dateien gleichzeitig hochladen und verarbeiten lassen.',
-    'faq6-q': 'Ist die Nutzung wirklich kostenlos?',
-    'faq6-a':
-      'Ja, der Audio Normalizer ist komplett kostenlos und ohne Einschränkungen nutzbar. Es gibt keine versteckten Kosten, Premium-Features oder Abonnements.',
-
-    // App Page Keys (from src/i18n.js and AudioApp.vue)
-    'app-title': 'Audio Normalisierung', // from src/i18n.js
-
-    'nav.backToHome': 'Zurück zur Startseite',
-    'app.title': 'Audio Normalisierung Pro',
-    'app.subtitle': 'Lokal, schnell und professionell',
-    'app.selectFiles': 'Dateien oder Ordner hier ablegen',
-    'app.selectFilesBtn': 'Dateien auswählen',
-    'app.selectFolderBtn': 'Ordner auswählen',
-    'app.pasteHint': 'Strg+V zum Einfügen aus Zwischenablage',
-    'app.exportProcessed': 'Bearbeitete exportieren (ZIP)',
-    'app.exportHint': 'Erst nach der Bearbeitung verfügbar',
-    'app.deleteAll': 'Alle löschen',
-    'app.resetAll': 'Alle zurücksetzen',
-    // Interactive playlist
-    'app.selectAll': 'Alle auswählen',
-    'app.deselectAll': 'Auswahl aufheben',
-    'app.selectFile': 'Datei auswählen',
-    'app.removeFile': 'Entfernen',
-    'app.selectedCount': '{count} von {total} markiert',
-    'app.processedBadge': 'Bearbeitet',
-    'app.play': 'Abspielen',
-    'app.noSelectionHint':
-      'Keine Datei zur Bearbeitung markiert. Wählen Sie mindestens eine Datei in der Playliste aus, um sie zu bearbeiten.',
-    // Player bar
-    'app.noTrackSelected': 'Kein Titel geladen',
-    'app.playerHint': 'Wählen Sie einen Titel in der Playliste',
-    'app.normalizedUnavailable': 'Noch nicht bearbeitet',
-    'app.playingOriginal': 'Original wird wiedergegeben – zu Bearbeitet wechseln',
-    'app.playingProcessed': 'Bearbeitet wird wiedergegeben – zu Original wechseln',
-    'app.prev': 'Vorheriger Titel',
-    'app.next': 'Nächster Titel',
-    'app.playAction': 'Abspielen',
-    'app.pause': 'Pause',
-    'app.stop': 'Stopp',
-    'app.seek': 'Position',
-    'app.loop': 'Titel wiederholen',
-    'app.mute': 'Stummschalten',
-    'app.unmute': 'Ton einschalten',
-    'app.volume': 'Lautstärke',
-    'app.sendTo': 'Weiterleiten an',
-    'app.sendToMusikplayer': 'Musik-Player',
-    'app.sendToPlaylistGenerator': 'Playlist Generator',
-    'app.sendToPlaylistKonverter': 'Playlist Konverter',
-    'app.sendToSending': 'Wird gesendet…',
-    'app.sendToSent': 'Geöffnet!',
-    'app.sendToHint': 'Erst nach der Normalisierung verfügbar',
-    'app.globalRms': 'Globaler RMS-Zielwert',
-    'app.applyRms': 'RMS anwenden',
-    'app.globalDb': 'Globaler dB-Zielwert',
-    'app.applyDb': 'dB anwenden',
-    'app.applyEBU': 'EBU R128 (-23 LUFS)',
-    'app.analyzeAll': 'Alle analysieren',
-    'app.waveformLabel': 'Wellenform',
-    'app.waveformOriginal': 'Original',
-    'app.waveformProcessed': 'Bearbeitet',
-    'app.truePeakTitle': 'True Peak (4× überabgetastet)',
-    'app.lraTitle': 'Loudness Range nach EBU Tech 3342',
-    'app.reportCsv': 'Report CSV',
-    'app.reportJson': 'Report JSON',
-    'app.reportHint':
-      'Loudness-Report: LUFS, True Peak, LRA und PLR aller Dateien herunterladen; nicht analysierte Dateien werden vorher analysiert',
-    'status.reportExported': 'Loudness-Report für {count} Datei(en) exportiert',
-    'presets.title': 'Plattform-Presets',
-    'presets.spotify': 'Spotify',
-    'presets.youtube': 'YouTube',
-    'presets.apple': 'Apple Music',
-    'presets.amazon': 'Amazon Music',
-    'presets.tiktok': 'TikTok',
-    'presets.podcast': 'Podcast',
-    'presets.audiobook': 'Hörbuch (ACX)',
-    'presets.broadcast': 'Broadcast',
-    'app.noiseReduction': 'Rauschunterdrückung',
-    'app.reduceClipping': 'Clipping reduzieren',
-    'app.dynamicCompression': 'Dynamikkompression',
-    'app.downloadFormat': 'Exportformat',
-    'app.noFiles': 'Keine Dateien geladen',
-    'app.rms': 'RMS',
-    'app.peak': 'Peak',
-    'app.apply': 'Anwenden',
-    'app.format': 'Format',
-    'app.reset': 'Zurücksetzen',
-    'app.resetFile': 'Bearbeitung auf Originalwerte zurücksetzen',
-    'app.export': 'Exportieren',
-    'app.confirmDeleteAll':
-      'Möchten Sie wirklich alle Dateien löschen? Sie können dies mit „Rückgängig“ (Strg+Z) widerrufen.',
-    'app.confirmResetAll':
-      'Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt. Sie können dies mit „Rückgängig“ (Strg+Z) widerrufen.',
-    'app.r128Warning':
-      'EBU R128 wurde bereits angewendet. RMS-/dB-Skalierung überschreibt den Broadcast-Standard und kann den True-Peak-Schutz aufheben.',
-    'app.sharedFilesLoading': '{count} Datei(en) vom Audio Konverter werden importiert…',
-    'app.sharedFilesLoaded': '{count} Datei(en) vom Audio Konverter erfolgreich importiert',
-    'app.sharedFilesEmpty': 'Keine Dateien vom Audio Konverter gefunden',
-    'app.sharedFilesError': 'Fehler beim Importieren der Dateien vom Audio Konverter',
-    // ── Processing / loading overlay labels ──
-    'dsp.processing': 'Verarbeite...',
-    'dsp.upload': 'Upload',
-    'dsp.rmsScaling': 'RMS Skalierung',
-    'dsp.dbScaling': 'dB Skalierung',
-    'dsp.ebu': 'EBU R128',
-    'dsp.noise': 'Rauschunterdrückung',
-    'dsp.clipping': 'Clipping Reduktion',
-    'dsp.compression': 'Dynamikkompression',
-    'dsp.analysis': 'Analyse',
-    'dsp.export': 'Export',
-    'dsp.zip': 'ZIP',
-    'dsp.editingFile': '{name} wird bearbeitet...',
-    'dsp.exportingFile': 'Exportiere {name}...',
-    'dsp.zipCreating': 'ZIP wird erstellt...',
-    'dsp.zipFinalizing': 'ZIP wird finalisiert...',
-    'dsp.zipProgress': 'ZIP wird erstellt: {pct}%',
-    'dsp.processingFile': 'Verarbeite {name} ({index}/{total})...',
-    'dsp.mp3Progress': 'MP3-Konvertierung: {pct}%',
-    'dsp.webmProgress': 'WebM-Konvertierung: {pct}%',
-    'dsp.mp3ProgressFile': 'MP3-Konvertierung {name}: {pct}%',
-    'dsp.webmProgressFile': 'WebM-Konvertierung {name}: {pct}%',
-    // ── Status toasts ──
-    'status.invalidFile': '{name} ist keine gültige Audiodatei',
-    'status.noValidFiles': 'Keine gültigen Audio-Dateien gefunden',
-    'status.fileError': 'Fehler bei {name}',
-    'status.uploaded': '{count} Datei(en) erfolgreich hochgeladen',
-    'status.imported': '{count} Datei(en) importiert',
-    'status.selectAtLeastOne': 'Bitte markieren Sie mindestens eine Datei in der Playliste',
-    'status.tooQuiet': '{name}: Datei ist zu leise zum Skalieren',
-    'status.rmsDone': 'RMS Skalierung abgeschlossen',
-    'status.dbDone': 'dB Skalierung abgeschlossen',
-    'status.ebuDone': 'EBU R128 Normalisierung abgeschlossen',
-    'status.presetDone': 'Preset „{preset}“ angewendet ({lufs} LUFS, {dbtp} dBTP)',
-    'status.noiseDone': 'Rauschunterdrückung abgeschlossen',
-    'status.clippingDone': 'Clipping Reduktion abgeschlossen',
-    'status.compressionDone': 'Dynamikkompression abgeschlossen',
-    'status.analyzed': '{count} Datei(en) analysiert',
-    'status.updated': '{name} aktualisiert',
-    'status.fileReset': '{name} zurückgesetzt',
-    'status.fileRemoved': '{name} entfernt',
-    'status.allDeleted': 'Alle Dateien gelöscht',
-    'status.allReset': 'Alle Änderungen zurückgesetzt',
-    'status.noProcessedFiles': 'Keine bearbeiteten Dateien zum Exportieren',
-    'status.exportCancelled': 'Export von {name} abgebrochen',
-    'status.saved': '{name} gespeichert',
-    'status.downloaded': '{name} heruntergeladen',
-    'status.exportError': 'Fehler beim Exportieren von {name}',
-    'status.zipCancelled': 'ZIP-Export abgebrochen',
-    'status.zipSaved': '{count} Datei(en) als ZIP gespeichert',
-    'status.zipDownloaded': '{count} Datei(en) als ZIP heruntergeladen',
-    'status.zipError': 'Fehler beim Erstellen der ZIP-Datei',
-    'status.sentTo': 'An {tool} weitergeleitet',
-    'status.sendError': 'Weiterleiten an {tool} fehlgeschlagen',
-    'toast.dismiss': 'Ausblenden',
-    // ── Undo / redo history ──
-    'history.undo': 'Rückgängig',
-    'history.redo': 'Wiederherstellen',
-    'history.undoTitle': 'Rückgängig: {action} (Strg+Z)',
-    'history.redoTitle': 'Wiederherstellen: {action} (Strg+Shift+Z)',
-    'history.nothingToUndo': 'Nichts rückgängig zu machen',
-    'history.nothingToRedo': 'Nichts wiederherzustellen',
-    'history.undone': 'Rückgängig: {action}',
-    'history.redone': 'Wiederhergestellt: {action}',
-    'history.title': 'Verlauf',
-    'history.menuTitle': 'Verlauf anzeigen',
-    'history.empty': 'Noch keine Aktionen',
-    'history.initial': 'Ausgangszustand',
-    'history.current': 'Aktuell',
-    'history.undoneBadge': 'rückgängig',
-    'history.jumpHint': 'Klicken, um zu diesem Schritt zu springen',
-    'history.shortcuts': 'Strg+Z rückgängig · Strg+Shift+Z / Strg+Y wiederherstellen',
-    'history.addFiles': '{count} Datei(en) hinzugefügt',
-    'history.importFiles': '{count} Datei(en) importiert',
-    'history.removeFile': '„{name}“ entfernt',
-    'history.deleteAll': 'Alle Dateien gelöscht ({count})',
-    'history.resetFile': '„{name}“ zurückgesetzt',
-    'history.resetAll': 'Alle zurückgesetzt ({count})',
-    'history.editFile': '„{name}“ auf RMS {rms} skaliert',
-    'history.batch': '{action} · {count} Datei(en)',
-    'history.preset': 'Preset „{preset}“',
-  },
-
-  en: {
-    // Navigation
-    'nav-guide': 'Guide',
-    'nav-label': 'Page navigation',
-    'nav-home': 'Home',
-    'nav-features': 'Features',
-    'nav-blog': 'Blog',
-    'nav-faq': 'FAQ',
-
-    // Blog tab (BlogPage.vue)
-    'blog-title': 'Blog: Normalizing audio',
-    'blog-intro': 'LUFS and dBFS explained – the article from the KodiniTools blog.',
-    'blog-open': 'Open article in a new tab',
-    'blog-frame-title': 'Blog article “Normalizing audio” on kodinitools.com',
-
-    // Hero Section
-    'hero-title': 'Audio Normalizer',
-    'hero-subtitle': 'Professional Audio Normalization Directly in Your Browser',
-    'hero-description':
-      'Normalize your audio files quickly and easily – free, secure, and without uploads. All processing happens locally in your browser.',
-    'hero-cta': 'Get Started',
-    'hero-image-alt':
-      'Audio Normalizer: an uneven waveform turns into an even, normalized signal – “Perfect volume. Balanced sound.”',
-
-    // Guide Page
-    'guide-title': 'Detailed Guide',
-    'guide-toc': 'Table of Contents',
-
-    // Guide Sections
-    'guide-section-main': 'Main Functions',
-    'guide-section-normalization': 'Normalization Methods',
-    'guide-section-enhancement': 'Audio Enhancement',
-    'guide-section-batch': 'Batch Operations',
-    'guide-section-export': 'Export',
-    'guide-section-tips': 'Tips & Best Practices',
-
-    // Guide Labels
-    'guide-tip-label': 'Tip:',
-    'guide-note-label': 'Note:',
-    'guide-important-label': 'Important:',
-    'guide-ideal-for': 'Ideal for:',
-    'guide-recommended-values': 'Recommended values:',
-    'guide-standard-values': 'Standard values:',
-    'guide-parameters': 'Parameters:',
-
-    // Main Functions
-    'guide-upload-title': 'Upload Audio Files',
-    'guide-upload-desc': 'Upload audio files in supported formats: MP3, WAV, FLAC, OGG, M4A, AAC.',
-    'guide-upload-tip': 'You can upload multiple files at once or add them via drag & drop.',
-
-    'guide-analyze-title': 'Analyze Audio',
-    'guide-analyze-desc': 'The analysis function determines important audio parameters:',
-    'guide-analyze-peak-desc': 'Highest volume level',
-    'guide-analyze-rms-desc': 'Average loudness',
-    'guide-analyze-lufs-desc': 'Loudness Units (Broadcast Standard)',
-    'guide-analyze-dynamic-desc': 'Volume difference',
-    'guide-analyze-clipping-desc': 'Overdriven samples',
-    'guide-analyze-noise-desc': 'Background noise',
-
-    // Normalization Methods
-    'guide-rms-title': 'RMS Normalization',
-    'guide-rms-desc': 'Normalizes the average loudness to a target value.',
-    'guide-rms-music': 'Music: -18 dB to -14 dB',
-    'guide-rms-podcast': 'Podcasts/Speech: -20 dB to -16 dB',
-    'guide-rms-mastering': 'Mastering: -12 dB to -8 dB',
-    'guide-rms-note': 'Lower dB values mean quieter audio signals.',
-
-    'guide-peak-title': 'Peak/dB Normalization',
-    'guide-peak-desc': 'Normalizes the highest level (peak) to a target value.',
-    'guide-peak-standard': 'Standard: -1.0 dB (prevents clipping)',
-    'guide-peak-conservative': 'Conservative: -3.0 dB (more headroom)',
-    'guide-peak-streaming': 'Streaming: -2.0 dB',
-
-    'guide-ebu-title': 'EBU R128 (LUFS)',
-    'guide-ebu-desc':
-      'Broadcast standard for consistent loudness across different programs/tracks.',
-    'guide-ebu-tv': 'TV/Radio (Europe): -23 LUFS',
-    'guide-ebu-streaming': 'Streaming (Spotify, Apple Music): -14 LUFS',
-    'guide-ebu-youtube': 'YouTube: -14 LUFS',
-    'guide-ebu-film': 'Film: -24 LUFS',
-
-    // Enhancement
-    'guide-noise-title': 'Noise Reduction',
-    'guide-noise-desc': 'Reduces background noise and improves speech intelligibility.',
-    'guide-noise-ideal': 'Podcasts, Voice-Overs, Interview recordings',
-
-    'guide-clipping-title': 'Reduce Clipping',
-    'guide-clipping-desc': 'Corrects overdriven signals and restores details in distorted areas.',
-    'guide-clipping-note': 'This function can reduce distortion but not completely remove it.',
-
-    'guide-compression-title': 'Dynamic Compression',
-    'guide-compression-desc':
-      'Reduces the difference between loud and quiet passages for more consistent loudness.',
-    'guide-compression-threshold-desc': 'Level at which compression starts',
-    'guide-compression-ratio-desc': 'Strength of compression (e.g. 4:1)',
-    'guide-compression-attack-desc': 'Response speed',
-    'guide-compression-release-desc': 'Release time',
-
-    // Batch Operations
-    'guide-batch-desc': 'Perform operations on all loaded files simultaneously:',
-    'guide-batch-analyze': 'Analyze All',
-    'guide-batch-analyze-desc': 'Analyzes all files at once',
-    'guide-batch-normalize': 'Apply RMS/dB/EBU R128',
-    'guide-batch-normalize-desc': 'Normalizes all files with the selected method',
-    'guide-batch-enhance': 'Apply Enhancement',
-    'guide-batch-enhance-desc':
-      'Applies noise reduction, clipping reduction, or compression to all files',
-    'guide-batch-export': 'Export All',
-    'guide-batch-export-desc': 'Exports all processed files as ZIP',
-    'guide-batch-reset': 'Reset All',
-    'guide-batch-reset-desc': 'Resets all files to original',
-    'guide-batch-delete': 'Delete All',
-    'guide-batch-delete-desc': 'Removes all files from the list',
-
-    // Export
-    'guide-export-desc': 'Export your processed audio files:',
-    'guide-export-single': 'Single Export: Click "Export" on a file',
-    'guide-export-batch': 'Batch Export: Use "Export All" for ZIP download',
-    'guide-export-format': 'Format: Exports in original format or as WAV',
-    'guide-export-single-label': 'Single Export:',
-    'guide-export-batch-label': 'Batch Export:',
-    'guide-export-format-label': 'Format:',
-
-    // Tips
-    'guide-tip1-title': 'Always analyze first',
-    'guide-tip1-desc': 'Analyze your files before normalization to determine optimal parameters.',
-    'guide-tip2-title': 'Watch headroom',
-    'guide-tip2-desc': 'Always leave some headroom (e.g. -1 dB) to avoid clipping.',
-    'guide-tip3-title': 'Use preview',
-    'guide-tip3-desc': 'Listen to the result before exporting.',
-    'guide-tip4-title': 'Choose the right method',
-    'guide-tip4-desc': 'RMS for music, Peak for maximum loudness, EBU R128 for streaming.',
-    'guide-tip5-title': "Don't over-compress",
-    'guide-tip5-desc': 'Too much compression makes audio flat and lifeless.',
-
-    'guide-footer': 'Audio Normalization Pro - Professional Audio Processing in Browser',
-
-    // Theme
-    'nav.theme': 'Toggle theme',
-
-    // SSI Navigation (global nav.html) - data-i18n keys (camelCase, matching nav.html attributes)
-    'nav.audioTools': 'Audio Tools',
-    'nav.imageTools': 'Image Tools',
-    'nav.tools': 'Tools',
-    'nav.contact': 'Contact',
-    'nav.mp3Converter': 'MP3 Converter',
-    'nav.audioEqualizer': 'Interactive Audio Equalizer',
-    'nav.modernPlayer': 'Modern Music Player',
-    'nav.ultimatePlayer': 'Ultimate Music Player',
-    'nav.playlistGenerator': 'Audio Playlist Generator',
-    'nav.playlistConverter': 'Playlist to WebM Converter',
-    'nav.alarmTool': 'Alarm Tool',
-    'nav.audioNormalizer': 'Audio Normalizer',
-    'nav.visualizer': 'Visualizer',
-    'nav.equalizer19': '19-Band Equalizer',
-    'nav.audioConverter': 'Audio Converter',
-    'nav.imageConverter': 'Image Converter',
-    'nav.batchImageEditor': 'Batch Image Editor',
-    'nav.photoCollage': 'Photo Collage',
-    'nav.colorExtractor': 'Kodini Color Extractor',
-    'nav.videoConverter': 'Video Converter',
-    'aria.toggleTheme': 'Toggle theme',
-    'aria.selectLanguage': 'Select language',
-    'aria.mainNav': 'Main navigation',
-    'aria.menuOpen': 'Open menu',
-    'aria.menuClose': 'Close menu',
-
-    // Landing Page Keys (Features, Benefits, FAQ)
-    'features-title': 'Powerful Features',
-    'feature1-title': 'Real-time Analysis',
-    'feature1-desc': 'Visualize your audio waveforms and levels in real-time during processing.',
-    'feature2-title': 'Silence Detection',
-    'feature2-desc':
-      'Automatic detection and removal of silent sections at the beginning and end of your files.',
-    'feature3-title': 'Fast Processing',
-    'feature3-desc':
-      "Leverage your browser's power for lightning-fast audio normalization without wait times.",
-    'feature4-title': 'Batch Processing',
-    'feature4-desc': 'Upload multiple files at once and process them in one go.',
-    'feature5-title': 'Local Processing',
-    'feature5-desc': 'Your files stay on your device. No uploads, no cloud – maximum privacy.',
-    'feature6-title': 'Free & Secure',
-    'feature6-desc': 'Completely free to use. Your data never leaves your browser.',
-
-    'benefits-title': 'Why Audio Normalizer?',
-    'benefit1-title': 'No Installation Required',
-    'benefit1-desc': 'Work directly in your browser without complicated software installation.',
-    'benefit2-title': 'Privacy Guaranteed',
-    'benefit2-desc': 'Your audio files are processed exclusively locally and never uploaded.',
-    'benefit3-title': 'Professional Quality',
-    'benefit3-desc': 'Get studio-quality results with precise peak normalization.',
-    'benefit4-title': 'Time Savings',
-    'benefit4-desc': 'Process multiple files simultaneously and save valuable time.',
-    'benefit5-title': 'Intuitive Operation',
-    'benefit5-desc': 'Simple and clear user interface for quick results.',
-    'benefit6-title': 'Cross-platform',
-    'benefit6-desc': 'Works on Windows, Mac, Linux, and even mobile devices.',
-
-    'faq-title': 'Frequently Asked Questions',
-    'faq1-q': 'What is audio normalization?',
-    'faq1-a':
-      'Audio normalization is the process of adjusting the volume of an audio file to reach a specific target level. This ensures consistent volume across multiple tracks.',
-    'faq2-q': 'Which file formats are supported?',
-    'faq2-a':
-      'Audio Normalizer supports all common audio formats that can be processed by modern browsers, including MP3, WAV, OGG, M4A, and FLAC.',
-    'faq3-q': 'Are my files uploaded?',
-    'faq3-a':
-      'No! All processing happens completely locally in your browser. Your audio files never leave your device, guaranteeing maximum privacy and security.',
-    'faq4-q': 'How does silence detection work?',
-    'faq4-a':
-      'Silence detection analyzes your audio file and identifies areas with very low volume at the beginning and end. These can be automatically removed to obtain clean audio files.',
-    'faq5-q': 'Can I process multiple files at once?',
-    'faq5-a':
-      'Yes! Audio Normalizer supports batch processing. You can upload and process multiple audio files simultaneously.',
-    'faq6-q': 'Is it really free to use?',
-    'faq6-a':
-      'Yes, Audio Normalizer is completely free and usable without restrictions. There are no hidden costs, premium features, or subscriptions.',
-
-    // App Page Keys (from src/i18n.js and AudioApp.vue)
-    'app-title': 'Audio Normalization',
-
-    'nav.backToHome': 'Back to Home',
-    'app.title': 'Audio Normalization Pro',
-    'app.subtitle': 'Local, fast and professional',
-    'app.selectFiles': 'Drop files or folders here',
-    'app.selectFilesBtn': 'Select Files',
-    'app.selectFolderBtn': 'Select Folder',
-    'app.pasteHint': 'Ctrl+V to paste from clipboard',
-    'app.exportProcessed': 'Export Processed (ZIP)',
-    'app.exportHint': 'Available after processing',
-    'app.deleteAll': 'Delete All',
-    'app.resetAll': 'Reset All',
-    // Interactive playlist
-    'app.selectAll': 'Select All',
-    'app.deselectAll': 'Deselect All',
-    'app.selectFile': 'Select file',
-    'app.removeFile': 'Remove',
-    'app.selectedCount': '{count} of {total} selected',
-    'app.processedBadge': 'Processed',
-    'app.play': 'Play',
-    'app.noSelectionHint':
-      'No file marked for editing. Select at least one file in the playlist to edit it.',
-    // Player bar
-    'app.noTrackSelected': 'No track loaded',
-    'app.playerHint': 'Pick a track from the playlist',
-    'app.normalizedUnavailable': 'Not processed yet',
-    'app.playingOriginal': 'Playing original – switch to processed',
-    'app.playingProcessed': 'Playing processed – switch to original',
-    'app.prev': 'Previous track',
-    'app.next': 'Next track',
-    'app.playAction': 'Play',
-    'app.pause': 'Pause',
-    'app.stop': 'Stop',
-    'app.seek': 'Seek',
-    'app.loop': 'Repeat track',
-    'app.mute': 'Mute',
-    'app.unmute': 'Unmute',
-    'app.volume': 'Volume',
-    'app.sendTo': 'Send to',
-    'app.sendToMusikplayer': 'Music Player',
-    'app.sendToPlaylistGenerator': 'Playlist Generator',
-    'app.sendToPlaylistKonverter': 'Playlist Converter',
-    'app.sendToSending': 'Sending…',
-    'app.sendToSent': 'Opened!',
-    'app.sendToHint': 'Available after normalization',
-    'app.globalRms': 'Global RMS Target',
-    'app.applyRms': 'Apply RMS',
-    'app.globalDb': 'Global dB Target',
-    'app.applyDb': 'Apply dB',
-    'app.applyEBU': 'EBU R128 (-23 LUFS)',
-    'app.analyzeAll': 'Analyze All',
-    'app.waveformLabel': 'Waveform',
-    'app.waveformOriginal': 'Original',
-    'app.waveformProcessed': 'Processed',
-    'app.truePeakTitle': 'True peak (4× oversampled)',
-    'app.lraTitle': 'Loudness range per EBU Tech 3342',
-    'app.reportCsv': 'Report CSV',
-    'app.reportJson': 'Report JSON',
-    'app.reportHint':
-      'Loudness report: download LUFS, true peak, LRA and PLR for all files; files not yet analyzed are analyzed first',
-    'status.reportExported': 'Loudness report exported for {count} file(s)',
-    'presets.title': 'Platform Presets',
-    'presets.spotify': 'Spotify',
-    'presets.youtube': 'YouTube',
-    'presets.apple': 'Apple Music',
-    'presets.amazon': 'Amazon Music',
-    'presets.tiktok': 'TikTok',
-    'presets.podcast': 'Podcast',
-    'presets.audiobook': 'Audiobook (ACX)',
-    'presets.broadcast': 'Broadcast',
-    'app.noiseReduction': 'Noise Reduction',
-    'app.reduceClipping': 'Reduce Clipping',
-    'app.dynamicCompression': 'Dynamic Compression',
-    'app.downloadFormat': 'Export Format',
-    'app.noFiles': 'No files loaded',
-    'app.rms': 'RMS',
-    'app.peak': 'Peak',
-    'app.apply': 'Apply',
-    'app.format': 'Format',
-    'app.reset': 'Reset',
-    'app.resetFile': 'Reset editing to original values',
-    'app.export': 'Export',
-    'app.confirmDeleteAll':
-      'Are you sure you want to delete all files? You can revert this with Undo (Ctrl+Z).',
-    'app.confirmResetAll':
-      'Are you sure you want to reset all changes? Files will be restored to their original state. You can revert this with Undo (Ctrl+Z).',
-    'app.r128Warning':
-      'EBU R128 has already been applied. RMS/dB scaling will override the broadcast standard and may break the True Peak protection.',
-    'app.sharedFilesLoading': 'Importing {count} file(s) from Audio Converter…',
-    'app.sharedFilesLoaded': '{count} file(s) successfully imported from Audio Converter',
-    'app.sharedFilesEmpty': 'No files found from Audio Converter',
-    'app.sharedFilesError': 'Error importing files from Audio Converter',
-    // ── Processing / loading overlay labels ──
-    'dsp.processing': 'Processing...',
-    'dsp.upload': 'Upload',
-    'dsp.rmsScaling': 'RMS scaling',
-    'dsp.dbScaling': 'dB scaling',
-    'dsp.ebu': 'EBU R128',
-    'dsp.noise': 'Noise reduction',
-    'dsp.clipping': 'Clipping reduction',
-    'dsp.compression': 'Dynamic compression',
-    'dsp.analysis': 'Analysis',
-    'dsp.export': 'Export',
-    'dsp.zip': 'ZIP',
-    'dsp.editingFile': 'Editing {name}...',
-    'dsp.exportingFile': 'Exporting {name}...',
-    'dsp.zipCreating': 'Creating ZIP...',
-    'dsp.zipFinalizing': 'Finalizing ZIP...',
-    'dsp.zipProgress': 'Creating ZIP: {pct}%',
-    'dsp.processingFile': 'Processing {name} ({index}/{total})...',
-    'dsp.mp3Progress': 'MP3 conversion: {pct}%',
-    'dsp.webmProgress': 'WebM conversion: {pct}%',
-    'dsp.mp3ProgressFile': 'MP3 conversion {name}: {pct}%',
-    'dsp.webmProgressFile': 'WebM conversion {name}: {pct}%',
-    // ── Status toasts ──
-    'status.invalidFile': '{name} is not a valid audio file',
-    'status.noValidFiles': 'No valid audio files found',
-    'status.fileError': 'Error with {name}',
-    'status.uploaded': '{count} file(s) uploaded successfully',
-    'status.imported': '{count} file(s) imported',
-    'status.selectAtLeastOne': 'Please select at least one file in the playlist',
-    'status.tooQuiet': '{name}: file is too quiet to scale',
-    'status.rmsDone': 'RMS scaling complete',
-    'status.dbDone': 'dB scaling complete',
-    'status.ebuDone': 'EBU R128 normalization complete',
-    'status.presetDone': 'Preset “{preset}” applied ({lufs} LUFS, {dbtp} dBTP)',
-    'status.noiseDone': 'Noise reduction complete',
-    'status.clippingDone': 'Clipping reduction complete',
-    'status.compressionDone': 'Dynamic compression complete',
-    'status.analyzed': '{count} file(s) analyzed',
-    'status.updated': '{name} updated',
-    'status.fileReset': '{name} reset',
-    'status.fileRemoved': '{name} removed',
-    'status.allDeleted': 'All files deleted',
-    'status.allReset': 'All changes reset',
-    'status.noProcessedFiles': 'No processed files to export',
-    'status.exportCancelled': 'Export of {name} cancelled',
-    'status.saved': '{name} saved',
-    'status.downloaded': '{name} downloaded',
-    'status.exportError': 'Error exporting {name}',
-    'status.zipCancelled': 'ZIP export cancelled',
-    'status.zipSaved': '{count} file(s) saved as ZIP',
-    'status.zipDownloaded': '{count} file(s) downloaded as ZIP',
-    'status.zipError': 'Error creating ZIP file',
-    'status.sentTo': 'Sent to {tool}',
-    'status.sendError': 'Could not send to {tool}',
-    'toast.dismiss': 'Dismiss',
-    // ── Undo / redo history ──
-    'history.undo': 'Undo',
-    'history.redo': 'Redo',
-    'history.undoTitle': 'Undo: {action} (Ctrl+Z)',
-    'history.redoTitle': 'Redo: {action} (Ctrl+Shift+Z)',
-    'history.nothingToUndo': 'Nothing to undo',
-    'history.nothingToRedo': 'Nothing to redo',
-    'history.undone': 'Undone: {action}',
-    'history.redone': 'Redone: {action}',
-    'history.title': 'History',
-    'history.menuTitle': 'Show history',
-    'history.empty': 'No actions yet',
-    'history.initial': 'Initial state',
-    'history.current': 'Current',
-    'history.undoneBadge': 'undone',
-    'history.jumpHint': 'Click to jump to this step',
-    'history.shortcuts': 'Ctrl+Z undo · Ctrl+Shift+Z / Ctrl+Y redo',
-    'history.addFiles': '{count} file(s) added',
-    'history.importFiles': '{count} file(s) imported',
-    'history.removeFile': '“{name}” removed',
-    'history.deleteAll': 'All files deleted ({count})',
-    'history.resetFile': '“{name}” reset',
-    'history.resetAll': 'All reset ({count})',
-    'history.editFile': '“{name}” scaled to RMS {rms}',
-    'history.batch': '{action} · {count} file(s)',
-    'history.preset': 'Preset “{preset}”',
-  },
+// Bei schnellen Wechseln gewinnt der zuletzt angeforderte, nicht der zuletzt geladene.
+let switchSeq = 0
+let requestedLocale = currentLocale.value
+const switchLocale = async (newLocale: string): Promise<boolean> => {
+  const seq = ++switchSeq
+  requestedLocale = newLocale
+  await loadMessages(newLocale)
+  if (seq !== switchSeq) return false
+  currentLocale.value = newLocale
+  return true
 }
 
 export function useI18n() {
@@ -814,8 +51,9 @@ export function useI18n() {
 
   // Verbesserte t-Funktion für dynamische Platzhalter wie {count}
   const t = (key: string, replacements: Record<string, unknown> = {}): string => {
-    const lang = translations[currentLocale.value as keyof typeof translations]
-    let message: string = (lang as Record<string, string>)[key] ?? key
+    const loaded = messages.value
+    const lang = isLocale(currentLocale.value) ? loaded[currentLocale.value] : undefined
+    let message: string = lang?.[key] ?? loaded.de?.[key] ?? key
 
     for (const [placeholder, value] of Object.entries(replacements)) {
       const regex = new RegExp(`{\\s*${placeholder}\\s*}`, 'g')
@@ -882,19 +120,14 @@ export function useI18n() {
     window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang } }))
   }
 
-  const toggleLocale = () => {
-    currentLocale.value = currentLocale.value === 'de' ? 'en' : 'de'
-    localStorage.setItem('locale', currentLocale.value)
-    document.documentElement.setAttribute('lang', currentLocale.value)
-    translateSsiIncludes()
-  }
-
-  const setLocale = (newLocale: string) => {
-    currentLocale.value = newLocale
+  const setLocale = async (newLocale: string): Promise<void> => {
+    if (!(await switchLocale(newLocale))) return
     localStorage.setItem('locale', newLocale)
     document.documentElement.setAttribute('lang', newLocale)
     translateSsiIncludes()
   }
+
+  const toggleLocale = (): Promise<void> => setLocale(requestedLocale === 'de' ? 'en' : 'de')
 
   /**
    * Intercepts clicks on SSI navigation language buttons (.global-nav-lang-btn)
@@ -918,15 +151,10 @@ export function useI18n() {
         e.preventDefault()
 
         const targetLang = langBtn.getAttribute('data-lang')
-        if (!targetLang || targetLang === currentLocale.value) return
+        if (!targetLang || targetLang === requestedLocale) return
 
-        // Update Vue reactive locale (no page reload)
-        currentLocale.value = targetLang
-        localStorage.setItem('locale', targetLang)
-        document.documentElement.setAttribute('lang', targetLang)
-
-        // Translate all SSI includes using Vue i18n translations
-        translateSsiIncludes()
+        // Update Vue reactive locale (no page reload) and translate all SSI includes
+        void setLocale(targetLang)
       },
       true,
     ) // ← capturing phase
@@ -935,9 +163,10 @@ export function useI18n() {
     window.addEventListener('locale-changed', (e) => {
       const detail = (e as CustomEvent<{ locale?: string }>).detail
       const newLocale = detail?.locale
-      if (newLocale && newLocale !== currentLocale.value) {
-        currentLocale.value = newLocale
-        translateSsiIncludes()
+      if (newLocale && newLocale !== requestedLocale) {
+        void switchLocale(newLocale).then((switched) => {
+          if (switched) translateSsiIncludes()
+        })
       }
     })
 

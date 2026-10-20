@@ -166,7 +166,9 @@ const getFileBlob = async (
     const right = exportBuffer.numberOfChannels > 1 ? exportBuffer.getChannelData(1) : left
 
     const mp3Blob = await new Promise<Blob>((resolve, reject) => {
-      const worker = new Worker(new URL('../workers/mp3Worker.js', import.meta.url))
+      const worker = new Worker(new URL('../workers/mp3Worker.ts', import.meta.url), {
+        type: 'module',
+      })
       worker.onmessage = (e: MessageEvent<Mp3WorkerOutput>) => {
         if (e.data.progress !== undefined && onProgress) onProgress(e.data.progress)
         if (e.data.done && e.data.result) {
@@ -179,7 +181,6 @@ const getFileBlob = async (
       const rightBuf = new Float32Array(right)
       worker.postMessage(
         {
-          baseUrl: import.meta.env.BASE_URL,
           left: leftBuf,
           right: rightBuf,
           sampleRate: exportBuffer.sampleRate,

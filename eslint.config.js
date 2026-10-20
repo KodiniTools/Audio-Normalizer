@@ -93,13 +93,11 @@ export default [
     },
   },
   {
-    // Web Worker global scope (classic .js worker and module .ts workers)
-    files: ['src/workers/**/*.js', 'src/workers/**/*.ts'],
+    // Web Worker global scope (module workers)
+    files: ['src/workers/**/*.ts'],
     languageOptions: {
       globals: {
         self: 'readonly',
-        importScripts: 'readonly',
-        lamejs: 'readonly',
         postMessage: 'readonly',
         addEventListener: 'readonly',
       },

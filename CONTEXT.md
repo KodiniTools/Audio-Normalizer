@@ -10,9 +10,9 @@ Technischer Überblick über den aktuellen Stand. Die App arbeitet zu 100 % clie
 | Build | Vite, Basis-URL `/audionormalisierer/` |
 | State | Pinia (`src/stores/audioStore.ts`) |
 | Routing | Vue Router (`/`, `/app`, `/anleitung`, `/blog`) |
-| i18n | Eigenes Composable `useI18n` (DE/EN, Übersetzungen inline) |
+| i18n | Eigenes Composable `useI18n`; Übersetzungen in `src/locales/{de,en}.json`, EN wird bei Bedarf nachgeladen |
 | Styling | Design-Tokens v2 (`--ds-*`, siehe `src/design-system/README.md`), Schrift Supreme |
-| Audio | Web Audio API (Decoding/Wiedergabe), DSP-Worker-Pool, LameJS (MP3), WebCodecs + webm-muxer (WebM/Opus), JSZip |
+| Audio | Web Audio API (Decoding/Wiedergabe), DSP-Worker-Pool, @breezystack/lamejs (MP3, ESM), WebCodecs + webm-muxer (WebM/Opus), JSZip |
 | Tests | Vitest + jsdom |
 | Qualität | ESLint (Flat Config) + Prettier, `vue-tsc` |
 
@@ -27,13 +27,13 @@ src/
 │                      # useSharedFiles, useSendToTool, useUndoRedoShortcuts
 ├── data/presets.ts    # Plattform-Presets (Ziel-LUFS / True Peak)
 ├── design-system/     # Tokens v2 (CSS, JSON, TS-Zugriff)
+├── locales/           # de.json, en.json (gleiche Schlüssel, per Test geprüft)
 ├── router/index.ts
 ├── stores/audioStore.ts
 ├── types.ts
 ├── utils/             # audioUtils, dspPool, history, sharedFileRepository, ...
 ├── views/             # LandingPage, AudioApp, GuidePage, BlogPage
-└── workers/           # dspCore.ts (reine DSP-Mathematik), dspWorker.ts, mp3Worker.js
-public/lame.min.js     # wird vom MP3-Worker per importScripts geladen
+└── workers/           # dspCore.ts (reine DSP-Mathematik), dspWorker.ts, mp3Worker.ts
 tests/                 # Vitest-Specs
 ```
 

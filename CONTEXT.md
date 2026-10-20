@@ -12,7 +12,7 @@ Technischer Überblick über den aktuellen Stand. Die App arbeitet zu 100 % clie
 | Routing | Vue Router (`/`, `/app`, `/anleitung`, `/blog`) |
 | i18n | Eigenes Composable `useI18n` (DE/EN, Übersetzungen inline) |
 | Styling | Design-Tokens v2 (`--ds-*`, siehe `src/design-system/README.md`), Schrift Supreme |
-| Audio | Web Audio API (Decoding/Wiedergabe), DSP-Worker-Pool, LameJS (MP3), WebCodecs + webm-muxer (WebM/Opus), JSZip |
+| Audio | Web Audio API (Decoding/Wiedergabe), DSP-Worker-Pool, @breezystack/lamejs (MP3, ESM), WebCodecs + webm-muxer (WebM/Opus), JSZip |
 | Tests | Vitest + jsdom |
 | Qualität | ESLint (Flat Config) + Prettier, `vue-tsc` |
 
@@ -32,8 +32,7 @@ src/
 ├── types.ts
 ├── utils/             # audioUtils, dspPool, history, sharedFileRepository, ...
 ├── views/             # LandingPage, AudioApp, GuidePage, BlogPage
-└── workers/           # dspCore.ts (reine DSP-Mathematik), dspWorker.ts, mp3Worker.js
-public/lame.min.js     # wird vom MP3-Worker per importScripts geladen
+└── workers/           # dspCore.ts (reine DSP-Mathematik), dspWorker.ts, mp3Worker.ts
 tests/                 # Vitest-Specs
 ```
 

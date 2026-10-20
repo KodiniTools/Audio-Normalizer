@@ -112,7 +112,6 @@ export type DspResponse =
   | { jobId: number; ok: false; error: string }
 
 export interface Mp3WorkerInput {
-  baseUrl: string
   left: Float32Array
   right: Float32Array
   sampleRate: number

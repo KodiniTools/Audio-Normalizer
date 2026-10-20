@@ -18,6 +18,7 @@ import {
 import { shareFiles } from '../utils/sharedFileRepository'
 import { dspPool } from '../utils/dspPool'
 import { computeEnvelope } from '../utils/waveform'
+import { albumGain } from '../utils/loudnessMath'
 import type { DspJobResult } from '../utils/dspPool'
 import {
   DEFAULT_HISTORY_LIMITS,
@@ -60,6 +61,8 @@ export const useAudioStore = defineStore('audio', () => {
   // Overlay progress: 0–100 for a determinate bar, null for an indeterminate spinner.
   const loadingProgress = ref<number | null>(null)
   const r128Applied = ref(false)
+  // Album mode: EBU R128 and presets apply one shared gain to all selected files.
+  const albumMode = ref(false)
 
   // ── Playlist / player-bar state ──────────────────────────────────────────────
   const currentTrackId = ref<string | null>(null)
@@ -688,11 +691,15 @@ export const useAudioStore = defineStore('audio', () => {
     successMsg: string,
     op: DspOp,
     params: DspParams,
-    { fromOriginal = false, markR128 = false }: { fromOriginal?: boolean; markR128?: boolean } = {},
+    {
+      fromOriginal = false,
+      markR128 = false,
+      only,
+    }: { fromOriginal?: boolean; markR128?: boolean; only?: AudioFileData[] } = {},
   ): Promise<void> => {
     if (audioFiles.value.length === 0) return
     // Only the marked (selected) files in the interactive playlist are edited.
-    const files = selectedFiles.value.slice()
+    const files = (only ?? selectedFiles.value).slice()
     if (files.length === 0) {
       setStatus(t('status.selectAtLeastOne'), 'warning')
       return
@@ -754,30 +761,101 @@ export const useAudioStore = defineStore('audio', () => {
       maxRmsGain: 10,
     })
 
-  const applyEBUR128 = (): Promise<void> =>
-    runDspBatch(
-      t('dsp.ebu'),
-      t('status.ebuDone'),
-      'ebur128',
-      {
-        targetLufs: CONSTANTS.EBU_R128_TARGET_LUFS,
-        targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
-      },
-      { fromOriginal: true, markR128: true },
+  // Album mode: step 1 measures the loudness blocks and true peak of every
+  // selected file (from the original), step 2 applies one gain to all of them.
+  // The gain targets the pooled album loudness and is lowered as a whole when
+  // the loudest true peak would pass the limit, so the relations stay intact.
+  const applyAlbumLoudness = async (
+    label: string,
+    targetLufs: number,
+    targetDbtp: number,
+  ): Promise<void> => {
+    if (audioFiles.value.length === 0) return
+    const files = selectedFiles.value.slice()
+    if (files.length === 0) {
+      setStatus(t('status.selectAtLeastOne'), 'warning')
+      return
+    }
+    isProcessing.value = true
+    setProgress(t('dsp.albumMeasure'), 0)
+
+    const jobs = files.map((file) => ({
+      op: 'albumMeasure' as DspOp,
+      channels: copyChannels(file.originalBuffer),
+      sampleRate: file.originalBuffer.sampleRate,
+      params: {},
+    }))
+    const measured: DspJobResult[] = await dspPool.run(jobs, (done, total) =>
+      setProgress(t('dsp.albumMeasure'), (done / total) * 100),
     )
 
-  const applyPreset = (preset: Preset): Promise<void> =>
-    runDspBatch(
-      t('history.preset', { preset: t(`presets.${preset.id}`) }),
-      t('status.presetDone', {
-        preset: preset.id,
-        lufs: preset.lufs,
-        dbtp: preset.truePeakDbtp,
-      }),
-      'ebur128',
-      { targetLufs: preset.lufs, targetDbtp: preset.truePeakDbtp },
-      { fromOriginal: true, markR128: true },
+    const tracks = measured.flatMap((res) =>
+      res.ok && res.blocks ? [{ blocks: res.blocks, truePeak: res.truePeak ?? res.peak }] : [],
     )
+    const failed = tracks.length !== files.length
+    const album = failed ? null : albumGain(tracks, targetLufs, targetDbtp)
+    if (!album) {
+      isProcessing.value = false
+      endLoading()
+      if (failed) {
+        measured.forEach((res, i) => {
+          if (!res.ok) console.error(`[${label}] ${files[i].name}:`, res.error)
+        })
+      }
+      setStatus(t(failed ? 'status.albumFailed' : 'status.albumTooQuiet'), 'warning')
+      return
+    }
+
+    const gainDb = 20 * Math.log10(album.gain)
+    await runDspBatch(
+      t('history.album', { action: label }),
+      t('status.albumDone', {
+        count: files.length,
+        gain: `${gainDb >= 0 ? '+' : ''}${gainDb.toFixed(1)}`,
+        lufs: album.lufs.toFixed(1),
+      }),
+      'gain',
+      { gain: album.gain },
+      { fromOriginal: true, markR128: true, only: files },
+    )
+  }
+
+  const applyEBUR128 = (): Promise<void> =>
+    albumMode.value
+      ? applyAlbumLoudness(
+          t('dsp.ebu'),
+          CONSTANTS.EBU_R128_TARGET_LUFS,
+          CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+        )
+      : runDspBatch(
+          t('dsp.ebu'),
+          t('status.ebuDone'),
+          'ebur128',
+          {
+            targetLufs: CONSTANTS.EBU_R128_TARGET_LUFS,
+            targetDbtp: CONSTANTS.TRUE_PEAK_LIMIT_DBTP,
+          },
+          { fromOriginal: true, markR128: true },
+        )
+
+  const applyPreset = (preset: Preset): Promise<void> =>
+    albumMode.value
+      ? applyAlbumLoudness(
+          t('history.preset', { preset: t(`presets.${preset.id}`) }),
+          preset.lufs,
+          preset.truePeakDbtp,
+        )
+      : runDspBatch(
+          t('history.preset', { preset: t(`presets.${preset.id}`) }),
+          t('status.presetDone', {
+            preset: preset.id,
+            lufs: preset.lufs,
+            dbtp: preset.truePeakDbtp,
+          }),
+          'ebur128',
+          { targetLufs: preset.lufs, targetDbtp: preset.truePeakDbtp },
+          { fromOriginal: true, markR128: true },
+        )
 
   const applyNoiseReductionAll = (): Promise<void> =>
     runDspBatch(t('dsp.noise'), t('status.noiseDone'), 'noiseReduction', {
@@ -1054,6 +1132,7 @@ export const useAudioStore = defineStore('audio', () => {
     loadingMessage,
     loadingProgress,
     r128Applied,
+    albumMode,
     // Playlist / player-bar state
     currentTrackId,
     playbackMode,

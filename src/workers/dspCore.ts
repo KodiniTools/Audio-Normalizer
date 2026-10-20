@@ -15,6 +15,7 @@
 
 import type { DspOp, DspParams } from '../types'
 import { computeEnvelope } from '../utils/waveform'
+import { gatedLoudness, lufsToPower, meanOf, powerToLufs } from '../utils/loudnessMath'
 
 export interface DspOutput {
   peak: number
@@ -26,6 +27,8 @@ export interface DspOutput {
   lra?: number
   /** Waveform overview, see computeEnvelope. */
   envelope?: Float32Array
+  /** 400 ms loudness block powers (album mode). */
+  blocks?: number[]
 }
 
 interface Biquad {
@@ -173,26 +176,13 @@ const blockPowers = (filtered: Float32Array[], blockSize: number, hopSize: numbe
   return powers
 }
 
-const powerToLufs = (ms: number): number => -0.691 + 10 * Math.log10(ms)
-const lufsToPower = (lufs: number): number => Math.pow(10, (lufs + 0.691) / 10)
-const meanOf = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length
+// 400 ms blocks with 75 % overlap, the basis of integrated loudness.
+const loudnessBlocks = (filtered: Float32Array[], fs: number): number[] =>
+  blockPowers(filtered, Math.round(0.4 * fs), Math.round(0.1 * fs))
 
-// Integrated loudness from K-weighted channels: 400 ms blocks, 75 % overlap,
-// absolute gate −70 LUFS, relative gate −10 LU.
-const integratedLoudness = (filtered: Float32Array[], fs: number): number => {
-  const blockMs = blockPowers(filtered, Math.round(0.4 * fs), Math.round(0.1 * fs))
-  if (blockMs.length === 0) return -70.0
-
-  const afterAbs = blockMs.filter((ms) => ms > lufsToPower(-70))
-  if (afterAbs.length === 0) return -70.0
-
-  const ungatedLufs = powerToLufs(meanOf(afterAbs))
-  const afterRel = afterAbs.filter((ms) => ms > lufsToPower(ungatedLufs - 10))
-  if (afterRel.length === 0) return -70.0
-
-  const lufs = powerToLufs(meanOf(afterRel))
-  return isFinite(lufs) ? lufs : -70.0
-}
+// Integrated loudness from K-weighted channels (gating in utils/loudnessMath).
+const integratedLoudness = (filtered: Float32Array[], fs: number): number =>
+  gatedLoudness(loudnessBlocks(filtered, fs))
 
 export const measureLoudnessR128 = (channels: Float32Array[], fs: number): number =>
   integratedLoudness(kWeight(channels, fs), fs)
@@ -591,6 +581,20 @@ const analyze = (channels: Float32Array[], fs: number): DspOutput => {
   }
 }
 
+// Album mode, step 1: loudness blocks and true peak of one track, read-only.
+const albumMeasure = (channels: Float32Array[], fs: number): DspOutput => ({
+  peak: calcPeak(channels),
+  rms: calcRMS(channels),
+  truePeak: measureTruePeak(channels),
+  blocks: loudnessBlocks(kWeight(channels, fs), fs),
+})
+
+// Album mode, step 2: the shared album gain.
+const gainOp = (channels: Float32Array[], params: DspParams): DspOutput => {
+  applyGain(channels, params.gain ?? 1)
+  return finalize(channels)
+}
+
 // Sample peak, RMS and waveform only — the cheap measurement taken on load.
 const meter = (channels: Float32Array[]): DspOutput => finalize(channels)
 
@@ -615,6 +619,10 @@ export const runOp = (
       return analyze(channels, fs)
     case 'meter':
       return meter(channels)
+    case 'albumMeasure':
+      return albumMeasure(channels, fs)
+    case 'gain':
+      return gainOp(channels, params)
     default:
       throw new Error(`Unknown DSP op: ${op}`)
   }

@@ -26,6 +26,7 @@ export type DspJobResult =
       truePeak?: number
       lra?: number
       envelope?: Float32Array
+      blocks?: number[]
     }
   | { ok: false; error: string }
 
@@ -84,6 +85,7 @@ class DspPool {
                 truePeak: e.data.truePeak,
                 lra: e.data.lra,
                 envelope: e.data.envelope,
+                blocks: e.data.blocks,
               }
             : { ok: false, error: e.data.error }
           done++

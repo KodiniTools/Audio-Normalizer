@@ -72,12 +72,16 @@ export type DspOp =
   | 'dynamicCompression'
   | 'analyze'
   | 'meter'
+  | 'albumMeasure'
+  | 'gain'
 
 export interface DspParams {
   targetRms?: number
   targetLufs?: number
   targetDbtp?: number
   maxRmsGain?: number
+  /** Linear gain for the 'gain' op (album mode). */
+  gain?: number
   nrOverSubtraction?: number
   nrFloorGain?: number
   nrNoiseQuantile?: number
@@ -108,6 +112,7 @@ export type DspResponse =
       truePeak?: number
       lra?: number
       envelope?: Float32Array
+      blocks?: number[]
     }
   | { jobId: number; ok: false; error: string }
 

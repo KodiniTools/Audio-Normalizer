@@ -426,6 +426,39 @@
   white-space: nowrap;
 }
 
+.audio-app .album-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  cursor: pointer;
+}
+
+.audio-app .album-toggle input {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--ds-accent);
+  cursor: pointer;
+}
+
+.audio-app .album-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audio-app .album-toggle-label {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text);
+}
+
+.audio-app .album-toggle-hint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-2);
+}
+
 /* ── Effects strip ───────────────────────────────────── */
 .audio-app .effects-strip {
   display: flex;
@@ -798,7 +831,8 @@
   .audio-app .back-link {
     min-height: var(--ds-row-height);
   }
-  .audio-app .select-all input {
+  .audio-app .select-all input,
+  .audio-app .album-toggle input {
     width: 22px;
     height: 22px;
   }

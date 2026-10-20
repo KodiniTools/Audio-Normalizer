@@ -246,6 +246,8 @@
   "app.confirmDeleteAll": "Möchten Sie wirklich alle Dateien löschen? Sie können dies mit „Rückgängig“ (Strg+Z) widerrufen.",
   "app.confirmResetAll": "Möchten Sie wirklich alle Änderungen zurücksetzen? Die Dateien werden auf den Originalzustand zurückgesetzt. Sie können dies mit „Rückgängig“ (Strg+Z) widerrufen.",
   "app.r128Warning": "EBU R128 wurde bereits angewendet. RMS-/dB-Skalierung überschreibt den Broadcast-Standard und kann den True-Peak-Schutz aufheben.",
+  "app.albumMode": "Album-Modus",
+  "app.albumModeHint": "Gleicher Gain für alle markierten Titel bei EBU R128 und Presets – die Lautstärkeverhältnisse bleiben erhalten.",
   "app.sharedFilesLoading": "{count} Datei(en) vom Audio Konverter werden importiert…",
   "app.sharedFilesLoaded": "{count} Datei(en) vom Audio Konverter erfolgreich importiert",
   "app.sharedFilesEmpty": "Keine Dateien vom Audio Konverter gefunden",
@@ -255,6 +257,7 @@
   "dsp.rmsScaling": "RMS Skalierung",
   "dsp.dbScaling": "dB Skalierung",
   "dsp.ebu": "EBU R128",
+  "dsp.albumMeasure": "Album-Lautheit messen",
   "dsp.noise": "Rauschunterdrückung",
   "dsp.clipping": "Clipping Reduktion",
   "dsp.compression": "Dynamikkompression",
@@ -282,6 +285,9 @@
   "status.dbDone": "dB Skalierung abgeschlossen",
   "status.ebuDone": "EBU R128 Normalisierung abgeschlossen",
   "status.presetDone": "Preset „{preset}“ angewendet ({lufs} LUFS, {dbtp} dBTP)",
+  "status.albumDone": "Album normalisiert: {count} Titel, gemeinsamer Gain {gain} dB (vorher {lufs} LUFS)",
+  "status.albumTooQuiet": "Die markierten Titel sind zu leise für den Album-Modus",
+  "status.albumFailed": "Die Album-Lautheit konnte nicht gemessen werden",
   "status.noiseDone": "Rauschunterdrückung abgeschlossen",
   "status.clippingDone": "Clipping Reduktion abgeschlossen",
   "status.compressionDone": "Dynamikkompression abgeschlossen",
@@ -327,5 +333,6 @@
   "history.resetAll": "Alle zurückgesetzt ({count})",
   "history.editFile": "„{name}“ auf RMS {rms} skaliert",
   "history.batch": "{action} · {count} Datei(en)",
-  "history.preset": "Preset „{preset}“"
+  "history.preset": "Preset „{preset}“",
+  "history.album": "Album · {action}"
 }

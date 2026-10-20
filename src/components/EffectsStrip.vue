@@ -24,6 +24,22 @@
     >
       {{ t('app.dynamicCompression') }}
     </button>
+    <button
+      class="chip"
+      :disabled="isProcessing || audioFiles.length === 0"
+      :title="t('app.reportHint')"
+      @click="exportLoudnessReport('csv')"
+    >
+      {{ t('app.reportCsv') }}
+    </button>
+    <button
+      class="chip"
+      :disabled="isProcessing || audioFiles.length === 0"
+      :title="t('app.reportHint')"
+      @click="exportLoudnessReport('json')"
+    >
+      {{ t('app.reportJson') }}
+    </button>
   </div>
 </template>
 
@@ -35,6 +51,11 @@
   const { t } = useI18n()
   const store = useAudioStore()
   const { audioFiles, isProcessing } = storeToRefs(store)
-  const { analyzeAll, applyNoiseReductionAll, reduceClippingAll, applyDynamicCompressionAll } =
-    store
+  const {
+    analyzeAll,
+    applyNoiseReductionAll,
+    reduceClippingAll,
+    applyDynamicCompressionAll,
+    exportLoudnessReport,
+  } = store
 </script>

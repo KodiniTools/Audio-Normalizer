@@ -7,10 +7,17 @@ import {
   dbToRms,
   isAudioFile,
   bufferToWave,
+  triggerDownload,
   CONSTANTS,
 } from '../utils/audioUtils'
+import {
+  buildLoudnessReport,
+  loudnessReportToCsv,
+  loudnessReportToJson,
+} from '../utils/loudnessReport'
 import { shareFiles } from '../utils/sharedFileRepository'
 import { dspPool } from '../utils/dspPool'
+import { computeEnvelope } from '../utils/waveform'
 import type { DspJobResult } from '../utils/dspPool'
 import {
   DEFAULT_HISTORY_LIMITS,
@@ -144,6 +151,9 @@ export const useAudioStore = defineStore('audio', () => {
     peak: file.peak,
     rms: file.rms,
     lufs: file.lufs,
+    truePeak: file.truePeak,
+    lra: file.lra,
+    processedWaveform: file.processedWaveform,
     targetRms: file.targetRms,
     processed: file.processed,
   })
@@ -153,6 +163,9 @@ export const useAudioStore = defineStore('audio', () => {
     a.peak === b.peak &&
     a.rms === b.rms &&
     a.lufs === b.lufs &&
+    a.truePeak === b.truePeak &&
+    a.lra === b.lra &&
+    a.processedWaveform === b.processedWaveform &&
     a.targetRms === b.targetRms &&
     a.processed === b.processed
 
@@ -162,6 +175,9 @@ export const useAudioStore = defineStore('audio', () => {
     file.peak = take.peak
     file.rms = take.rms
     file.lufs = take.lufs
+    file.truePeak = take.truePeak
+    file.lra = take.lra
+    file.processedWaveform = take.processedWaveform
     file.targetRms = take.targetRms
     file.processed = take.processed
     if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
@@ -447,18 +463,34 @@ export const useAudioStore = defineStore('audio', () => {
       (_, c) => new Float32Array(buffer.getChannelData(c)),
     )
 
-  // Peak/RMS of a freshly decoded buffer, measured in the DSP pool so long files
-  // don't block the UI. Falls back to the main thread if no worker is available.
-  const measureLevels = async (buffer: AudioBuffer): Promise<{ peak: number; rms: number }> => {
+  const channelsOf = (buffer: AudioBuffer): Float32Array[] =>
+    Array.from({ length: buffer.numberOfChannels }, (_, c) => buffer.getChannelData(c))
+
+  // Peak/RMS and waveform of a freshly decoded buffer, measured in the DSP pool
+  // so long files don't block the UI. Falls back to the main thread if no worker
+  // is available.
+  const measureLevels = async (
+    buffer: AudioBuffer,
+  ): Promise<{ peak: number; rms: number; waveform: Float32Array }> => {
     try {
       const [res] = await dspPool.run([
         { op: 'meter', channels: copyChannels(buffer), sampleRate: buffer.sampleRate, params: {} },
       ])
-      if (res?.ok) return { peak: res.peak, rms: res.rms }
+      if (res?.ok) {
+        return {
+          peak: res.peak,
+          rms: res.rms,
+          waveform: res.envelope ?? computeEnvelope(channelsOf(buffer)),
+        }
+      }
     } catch {
       // Worker unavailable — measure below.
     }
-    return { peak: calculatePeak(buffer), rms: calculateRMS(buffer) }
+    return {
+      peak: calculatePeak(buffer),
+      rms: calculateRMS(buffer),
+      waveform: computeEnvelope(channelsOf(buffer)),
+    }
   }
 
   const buildFileData = async (
@@ -466,7 +498,7 @@ export const useAudioStore = defineStore('audio', () => {
     name: string,
     originalRef: File,
   ): Promise<AudioFileData> => {
-    const { peak, rms } = await measureLevels(buffer)
+    const { peak, rms, waveform } = await measureLevels(buffer)
     return {
       id: generateId(),
       name,
@@ -477,6 +509,7 @@ export const useAudioStore = defineStore('audio', () => {
       rms,
       originalPeak: peak,
       originalRms: rms,
+      waveform,
       processedBlobUrl: null,
       originalBlobUrl: URL.createObjectURL(originalRef),
       duration: buffer.duration,
@@ -618,13 +651,18 @@ export const useAudioStore = defineStore('audio', () => {
 
   // ── Global Operations (DSP worker pool) ─────────────────────────────────────
 
+  // Loudness readings describe one take; once the take changes they are stale.
+  const clearLoudness = (file: AudioFileData): void => {
+    file.lufs = undefined
+    file.truePeak = undefined
+    file.lra = undefined
+  }
+
   // Rebuild an AudioBuffer from worker-returned channels and refresh the file's
-  // meters and preview URL.
+  // meters, waveform and preview URL.
   const applyDspResult = (
     file: AudioFileData,
-    channels: Float32Array[],
-    peak: number,
-    rms: number,
+    { channels, peak, rms, envelope }: Extract<DspJobResult, { ok: true }>,
   ): void => {
     const sampleRate = file.originalBuffer.sampleRate
     const out = new AudioBuffer({
@@ -636,6 +674,8 @@ export const useAudioStore = defineStore('audio', () => {
     file.processedBuffer = out
     file.peak = peak
     file.rms = rms
+    file.processedWaveform = envelope ?? computeEnvelope(channels)
+    clearLoudness(file)
     file.processed = true
     if (file.processedBlobUrl) URL.revokeObjectURL(file.processedBlobUrl)
     file.processedBlobUrl = URL.createObjectURL(bufferToWave(out, 0, out.length))
@@ -683,7 +723,7 @@ export const useAudioStore = defineStore('audio', () => {
         return
       }
       const before = takeOf(file)
-      applyDspResult(file, res.channels, res.peak, res.rms)
+      applyDspResult(file, res)
       changes.push({ id: file.id, before, after: takeOf(file) })
     })
 
@@ -789,13 +829,30 @@ export const useAudioStore = defineStore('audio', () => {
       const file = files[i]
       file.peak = res.peak
       file.rms = res.rms
-      if (res.lufs !== undefined) file.lufs = res.lufs
+      file.lufs = res.lufs
+      file.truePeak = res.truePeak
+      file.lra = res.lra
       analyzed++
     })
 
     isProcessing.value = false
     endLoading()
     setStatus(t('status.analyzed', { count: analyzed }), 'success')
+  }
+
+  // Loudness report for all loaded files (CSV or JSON download). Files without
+  // a current measurement are analyzed first, so the report is always complete.
+  const exportLoudnessReport = async (format: 'csv' | 'json'): Promise<void> => {
+    if (audioFiles.value.length === 0) return
+    if (audioFiles.value.some((f) => f.lufs === undefined)) await analyzeAll()
+    const rows = buildLoudnessReport(audioFiles.value)
+    const blob =
+      format === 'csv'
+        ? new Blob([loudnessReportToCsv(rows)], { type: 'text/csv;charset=utf-8' })
+        : new Blob([loudnessReportToJson(rows)], { type: 'application/json' })
+    const stamp = new Date().toISOString().slice(0, 10)
+    triggerDownload(blob, `loudness-report-${stamp}.${format}`)
+    setStatus(t('status.reportExported', { count: rows.length }), 'success')
   }
 
   // ── Individual File Operations ─────────────────────────────────────────────
@@ -820,7 +877,7 @@ export const useAudioStore = defineStore('audio', () => {
     ])
     if (res.ok) {
       const before = takeOf(file)
-      applyDspResult(file, res.channels, res.peak, res.rms)
+      applyDspResult(file, res)
       recordEdit(
         {
           key: 'history.editFile',
@@ -849,6 +906,8 @@ export const useAudioStore = defineStore('audio', () => {
     target.processedBuffer = target.originalBuffer
     target.peak = target.originalPeak
     target.rms = target.originalRms
+    target.processedWaveform = undefined
+    clearLoudness(target)
     target.targetRms = undefined
     target.processed = false
     if (target.processedBlobUrl) {
@@ -911,6 +970,10 @@ export const useAudioStore = defineStore('audio', () => {
       file.processedBuffer = file.originalBuffer
       file.peak = file.originalPeak
       file.rms = file.originalRms
+      if (file.processed) {
+        file.processedWaveform = undefined
+        clearLoudness(file)
+      }
       file.targetRms = undefined
       file.processed = false
       if (file.processedBlobUrl) {
@@ -1017,6 +1080,7 @@ export const useAudioStore = defineStore('audio', () => {
     applyEBUR128,
     applyPreset,
     analyzeAll,
+    exportLoudnessReport,
     applyNoiseReductionAll,
     reduceClippingAll,
     applyDynamicCompressionAll,

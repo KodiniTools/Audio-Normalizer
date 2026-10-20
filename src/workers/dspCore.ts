@@ -14,11 +14,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { DspOp, DspParams } from '../types'
+import { computeEnvelope } from '../utils/waveform'
 
 export interface DspOutput {
   peak: number
   rms: number
   lufs?: number
+  /** True peak (linear, 4× oversampled). */
+  truePeak?: number
+  /** Loudness range in LU (EBU Tech 3342). */
+  lra?: number
+  /** Waveform overview, see computeEnvelope. */
+  envelope?: Float32Array
 }
 
 interface Biquad {
@@ -138,22 +145,22 @@ const calcWindowedRMS = (channels: Float32Array[], fs: number): number => {
 
 // ── ITU-R BS.1770-4 gated loudness (K-weighting via the biquads above) ───────
 
-export const measureLoudnessR128 = (channels: Float32Array[], fs: number): number => {
-  // Work on K-weighted copies so the source is untouched.
+// K-weighted copies of the channels, so the source stays untouched.
+const kWeight = (channels: Float32Array[], fs: number): Float32Array[] => {
   const highshelf = makeHighshelf(1500, fs, 4)
   const highpass = makeHighpass(80, fs, Math.SQRT1_2)
-  const filtered = channels.map((ch) => {
+  return channels.map((ch) => {
     const copy = new Float32Array(ch)
     applyBiquad(copy, highshelf)
     applyBiquad(copy, highpass)
     return copy
   })
+}
 
+// Mean-square power (summed over channels) of overlapping blocks.
+const blockPowers = (filtered: Float32Array[], blockSize: number, hopSize: number): number[] => {
   const totalSamples = filtered[0]?.length ?? 0
-  const blockSize = Math.round(0.4 * fs)
-  const hopSize = Math.round(0.1 * fs)
-
-  const blockMs: number[] = []
+  const powers: number[] = []
   for (let start = 0; start + blockSize <= totalSamples; start += hopSize) {
     let sum = 0
     for (const ch of filtered) {
@@ -161,26 +168,54 @@ export const measureLoudnessR128 = (channels: Float32Array[], fs: number): numbe
       for (let i = start; i < start + blockSize; i++) chSum += ch[i] * ch[i]
       sum += chSum / blockSize
     }
-    blockMs.push(sum)
+    powers.push(sum)
   }
+  return powers
+}
 
+const powerToLufs = (ms: number): number => -0.691 + 10 * Math.log10(ms)
+const lufsToPower = (lufs: number): number => Math.pow(10, (lufs + 0.691) / 10)
+const meanOf = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length
+
+// Integrated loudness from K-weighted channels: 400 ms blocks, 75 % overlap,
+// absolute gate −70 LUFS, relative gate −10 LU.
+const integratedLoudness = (filtered: Float32Array[], fs: number): number => {
+  const blockMs = blockPowers(filtered, Math.round(0.4 * fs), Math.round(0.1 * fs))
   if (blockMs.length === 0) return -70.0
 
-  const absThreshold = Math.pow(10, (-70 + 0.691) / 10)
-  const afterAbs = blockMs.filter((ms) => ms > absThreshold)
+  const afterAbs = blockMs.filter((ms) => ms > lufsToPower(-70))
   if (afterAbs.length === 0) return -70.0
 
-  const ungatedMs = afterAbs.reduce((a, b) => a + b, 0) / afterAbs.length
-  const ungatedLufs = -0.691 + 10 * Math.log10(ungatedMs)
-
-  const relThreshold = Math.pow(10, (ungatedLufs - 10 + 0.691) / 10)
-  const afterRel = afterAbs.filter((ms) => ms > relThreshold)
+  const ungatedLufs = powerToLufs(meanOf(afterAbs))
+  const afterRel = afterAbs.filter((ms) => ms > lufsToPower(ungatedLufs - 10))
   if (afterRel.length === 0) return -70.0
 
-  const integratedMs = afterRel.reduce((a, b) => a + b, 0) / afterRel.length
-  const lufs = -0.691 + 10 * Math.log10(integratedMs)
+  const lufs = powerToLufs(meanOf(afterRel))
   return isFinite(lufs) ? lufs : -70.0
 }
+
+export const measureLoudnessR128 = (channels: Float32Array[], fs: number): number =>
+  integratedLoudness(kWeight(channels, fs), fs)
+
+// Loudness range (EBU Tech 3342): short-term loudness of 3 s blocks (10 Hz
+// rate), absolute gate −70 LUFS, relative gate −20 LU, then the spread between
+// the 10th and 95th percentile. Returns 0 for material shorter than 3 s.
+const loudnessRange = (filtered: Float32Array[], fs: number): number => {
+  const shortTermMs = blockPowers(filtered, Math.round(3 * fs), Math.round(0.1 * fs))
+  const afterAbs = shortTermMs.filter((ms) => ms > lufsToPower(-70))
+  if (afterAbs.length === 0) return 0
+  const relGate = lufsToPower(powerToLufs(meanOf(afterAbs)) - 20)
+  const levels = afterAbs
+    .filter((ms) => ms > relGate)
+    .map(powerToLufs)
+    .sort((a, b) => a - b)
+  if (levels.length === 0) return 0
+  const at = (p: number): number => levels[Math.round((levels.length - 1) * p)]
+  return Math.max(0, at(0.95) - at(0.1))
+}
+
+export const measureLoudnessRange = (channels: Float32Array[], fs: number): number =>
+  loudnessRange(kWeight(channels, fs), fs)
 
 // ── True Peak via 4× polyphase FIR (replaces the 4× OfflineAudioContext render) ─
 //
@@ -256,6 +291,7 @@ const limitTruePeak = (channels: Float32Array[], targetDbtp: number): void => {
 const finalize = (channels: Float32Array[]): DspOutput => ({
   peak: calcPeak(channels),
   rms: calcRMS(channels),
+  envelope: computeEnvelope(channels),
 })
 
 // ── Operations ───────────────────────────────────────────────────────────────
@@ -541,19 +577,22 @@ const dynamicCompression = (channels: Float32Array[], fs: number, params: DspPar
   return finalize(channels)
 }
 
-// Read-only measurement: sample peak, RMS and integrated loudness (LUFS).
-// Leaves the channel data untouched — used by the "Analyze" action.
-const analyze = (channels: Float32Array[], fs: number): DspOutput => ({
-  peak: calcPeak(channels),
-  rms: calcRMS(channels),
-  lufs: measureLoudnessR128(channels, fs),
-})
+// Read-only measurement: sample peak, RMS, integrated loudness (LUFS), true
+// peak and loudness range. Leaves the channel data untouched — used by the
+// "Analyze" action and the loudness report.
+const analyze = (channels: Float32Array[], fs: number): DspOutput => {
+  const filtered = kWeight(channels, fs)
+  return {
+    peak: calcPeak(channels),
+    rms: calcRMS(channels),
+    lufs: integratedLoudness(filtered, fs),
+    truePeak: measureTruePeak(channels),
+    lra: loudnessRange(filtered, fs),
+  }
+}
 
-// Sample peak and RMS only — the cheap measurement taken when a file is loaded.
-const meter = (channels: Float32Array[]): DspOutput => ({
-  peak: calcPeak(channels),
-  rms: calcRMS(channels),
-})
+// Sample peak, RMS and waveform only — the cheap measurement taken on load.
+const meter = (channels: Float32Array[]): DspOutput => finalize(channels)
 
 export const runOp = (
   op: DspOp,

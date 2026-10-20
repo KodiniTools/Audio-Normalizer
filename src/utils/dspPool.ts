@@ -17,7 +17,16 @@ export interface DspJob {
 }
 
 export type DspJobResult =
-  | { ok: true; channels: Float32Array[]; peak: number; rms: number; lufs?: number }
+  | {
+      ok: true
+      channels: Float32Array[]
+      peak: number
+      rms: number
+      lufs?: number
+      truePeak?: number
+      lra?: number
+      envelope?: Float32Array
+    }
   | { ok: false; error: string }
 
 const POOL_SIZE = Math.max(1, Math.min(navigator.hardwareConcurrency || 2, 4))
@@ -72,6 +81,9 @@ class DspPool {
                 peak: e.data.peak,
                 rms: e.data.rms,
                 lufs: e.data.lufs,
+                truePeak: e.data.truePeak,
+                lra: e.data.lra,
+                envelope: e.data.envelope,
               }
             : { ok: false, error: e.data.error }
           done++

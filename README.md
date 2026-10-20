@@ -8,6 +8,8 @@ Eine moderne Audio-Normalisierungs-Anwendung, die mit Vue 3 und der Composition 
 - 🔇 **Rauschunterdrückung** - Intelligente Filterung von Hintergrundgeräuschen
 - ⚡ **Dynamikkompression** - Professionelle Audio-Kompression
 - 📋 **Batch-Verarbeitung** - Mehrere Dateien gleichzeitig bearbeiten
+- 〰️ **Wellenform** - Original und bearbeitete Fassung pro Datei im Vergleich
+- 📊 **Loudness-Report** - LUFS, True Peak, LRA und PLR aller Dateien als CSV oder JSON
 - ↩️ **Undo/Redo** - Jede Bearbeitung, jedes Zurücksetzen sowie Hinzufügen/Entfernen von Dateien lässt sich rückgängig machen (Strg+Z / Strg+Shift+Z) und wiederherstellen; Verlaufsmenü zum Springen zwischen Schritten
 - 💾 **Flexible Exporte** - WAV, MP3 (320 kbps) oder WebM/Opus
 - 🔒 **100% Privat** - Alle Verarbeitung erfolgt lokal im Browser

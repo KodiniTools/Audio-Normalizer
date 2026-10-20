@@ -10,6 +10,14 @@ export interface AudioFileData {
   originalRms: number
   /** Integrated loudness (LUFS, ITU-R BS.1770) from the last "Analyze" run. */
   lufs?: number
+  /** True peak (linear) from the last "Analyze" run. */
+  truePeak?: number
+  /** Loudness range (LU, EBU Tech 3342) from the last "Analyze" run. */
+  lra?: number
+  /** Waveform overview of the original (max |sample| per bucket). */
+  waveform: Float32Array
+  /** Waveform overview of the processed take; undefined while unprocessed. */
+  processedWaveform?: Float32Array
   processedBlobUrl: string | null
   originalBlobUrl: string
   targetRms?: number
@@ -90,7 +98,17 @@ export interface DspRequest {
 }
 
 export type DspResponse =
-  | { jobId: number; ok: true; channels: Float32Array[]; peak: number; rms: number; lufs?: number }
+  | {
+      jobId: number
+      ok: true
+      channels: Float32Array[]
+      peak: number
+      rms: number
+      lufs?: number
+      truePeak?: number
+      lra?: number
+      envelope?: Float32Array
+    }
   | { jobId: number; ok: false; error: string }
 
 export interface Mp3WorkerInput {
@@ -126,6 +144,9 @@ export interface FileTake {
   peak: number
   rms: number
   lufs: number | undefined
+  truePeak: number | undefined
+  lra: number | undefined
+  processedWaveform: Float32Array | undefined
   targetRms: number | undefined
   processed: boolean
 }

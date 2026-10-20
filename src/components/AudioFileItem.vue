@@ -55,6 +55,22 @@
           <span class="meter-tag">LUFS</span>
           <span class="meter-val meter-val--lufs">{{ file.lufs.toFixed(1) }}</span>
         </div>
+        <div
+          v-if="file.truePeak != null"
+          class="meter-group meter-group--lufs"
+          :title="t('app.truePeakTitle')"
+        >
+          <span class="meter-tag">TP</span>
+          <span class="meter-val meter-val--lufs">{{ formatDb(file.truePeak) }} dBTP</span>
+        </div>
+        <div
+          v-if="file.lra != null"
+          class="meter-group meter-group--lufs"
+          :title="t('app.lraTitle')"
+        >
+          <span class="meter-tag">LRA</span>
+          <span class="meter-val meter-val--lufs">{{ file.lra.toFixed(1) }} LU</span>
+        </div>
       </div>
 
       <button class="remove-btn" :title="t('app.removeFile')" @click="$emit('remove', file)">
@@ -62,7 +78,20 @@
       </button>
     </div>
 
-    <!-- Row 2: controls -->
+    <WaveformView
+      v-if="file.waveform"
+      :original="file.waveform"
+      :processed="file.processed ? file.processedWaveform : undefined"
+    />
+
+    <!-- Loudness summary for narrow screens, where the meter column is hidden. -->
+    <p v-if="file.lufs != null" class="loudness-line">
+      {{ file.lufs.toFixed(1) }} LUFS
+      <template v-if="file.truePeak != null"> · TP {{ formatDb(file.truePeak) }} dBTP</template>
+      <template v-if="file.lra != null"> · LRA {{ file.lra.toFixed(1) }} LU</template>
+    </p>
+
+    <!-- Row 3: controls -->
     <div class="item-controls">
       <div class="input-pair">
         <label class="input-label">{{ t('app.rms') }}</label>
@@ -112,6 +141,7 @@
   import { ref, watch } from 'vue'
   import { X, Download, Play, Volume2, RotateCcw } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
+  import WaveformView from './WaveformView.vue'
 
   const props = defineProps({
     file: { type: Object, required: true },
@@ -140,6 +170,9 @@
     const s = Math.floor(seconds % 60)
     return `${m}:${s.toString().padStart(2, '0')}`
   }
+
+  const formatDb = (linear: number): string =>
+    linear > 0 ? (20 * Math.log10(linear)).toFixed(1) : '−∞'
 
   const applyValues = () => {
     emit('update', { ...props.file, targetRms: localRms.value })
@@ -441,8 +474,20 @@
     color: var(--ds-success);
   }
 
+  .loudness-line {
+    display: none;
+    margin: 0;
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ── Responsive ──────────────────────────────────────── */
   @media (max-width: 640px) {
+    .loudness-line {
+      display: block;
+    }
     .item-header {
       grid-template-columns: auto auto 1fr auto;
     }

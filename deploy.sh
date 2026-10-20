@@ -45,6 +45,9 @@ die()  { printf '\033[1;31m[deploy]\033[0m %s\n' "$*" >&2; exit 1; }
 command -v git   >/dev/null || die "git ist nicht installiert."
 command -v node  >/dev/null || die "node ist nicht installiert."
 command -v npm   >/dev/null || die "npm ist nicht installiert."
+# Vite 8 braucht Node ^20.19 oder >= 22.12 (siehe "engines" in package.json).
+node -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit((a === 20 && b >= 19) || (a === 22 && b >= 12) || a > 22 ? 0 : 1)' \
+  || die "Node $(node -v) ist zu alt – benötigt wird ^20.19 oder >= 22.12."
 [ -f package.json ] || die "package.json nicht gefunden – Script aus dem Repo-Verzeichnis starten."
 
 # ── 1. Aktuellen main-Stand holen ────────────────────────────────────────────

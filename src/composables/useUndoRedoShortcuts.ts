@@ -7,7 +7,7 @@ const TEXT_INPUT_TYPES = new Set(['text', 'number', 'search', 'email', 'url', 'p
  * native undo (text fields, textareas, contentEditable). In that case the
  * browser's text undo must win over the app-level history.
  */
-export const isTextEditingTarget = (target: EventTarget | null): boolean => {
+const isTextEditingTarget = (target: EventTarget | null): boolean => {
   if (!(target instanceof HTMLElement)) return false
   if (target.isContentEditable) return true
   if (target instanceof HTMLTextAreaElement) return true

@@ -113,4 +113,3 @@ class DspPool {
 }
 
 export const dspPool = new DspPool()
-export const DSP_POOL_SIZE = POOL_SIZE

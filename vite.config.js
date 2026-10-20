@@ -13,9 +13,7 @@ export default defineConfig({
     assetsDir: 'assets',
     // Löscht den Output-Ordner vor dem Build
     emptyOutDir: true,
-    // CSS-Minifying temporär deaktivieren zum Testen
     minify: 'esbuild',
-    cssMinify: false,
   },
   
   // Development Server (bleibt für lokale Entwicklung)

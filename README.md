@@ -8,6 +8,7 @@ Eine moderne Audio-Normalisierungs-Anwendung, die mit Vue 3 und der Composition 
 - 🔇 **Rauschunterdrückung** - Intelligente Filterung von Hintergrundgeräuschen
 - ⚡ **Dynamikkompression** - Professionelle Audio-Kompression
 - 📋 **Batch-Verarbeitung** - Mehrere Dateien gleichzeitig bearbeiten
+- 💿 **Album-Modus** - Ein gemeinsamer Gain für alle markierten Titel bei EBU R128 und Presets, die Lautstärkeverhältnisse bleiben erhalten
 - 〰️ **Wellenform** - Original und bearbeitete Fassung pro Datei im Vergleich
 - 📊 **Loudness-Report** - LUFS, True Peak, LRA und PLR aller Dateien als CSV oder JSON
 - ↩️ **Undo/Redo** - Jede Bearbeitung, jedes Zurücksetzen sowie Hinzufügen/Entfernen von Dateien lässt sich rückgängig machen (Strg+Z / Strg+Shift+Z) und wiederherstellen; Verlaufsmenü zum Springen zwischen Schritten
@@ -53,6 +54,7 @@ Die Landing Page zeigt alle Features, Vorteile und FAQs. Benutzer können über 
 ### Audio-Anwendung
 1. **Dateien hochladen**: Drag & Drop oder Dateiauswahl
 2. **Globale Einstellungen**: RMS, dB oder EBU R128 auf alle Dateien anwenden
+   - Mit **Album-Modus** erhalten EBU R128 und Presets einen gemeinsamen Gain für alle markierten Titel (Album-Lautheit aufs Ziel, True-Peak-Grenze für das ganze Album)
 3. **Einzelne Anpassungen**: Jede Datei individuell bearbeiten
 4. **Effekte anwenden**: Rauschunterdrückung, Clipping-Reduktion, Kompression
 5. **Rückgängig/Wiederherstellen**: Strg+Z bzw. Strg+Shift+Z (oder Strg+Y), Toolbar-Buttons oder das Verlaufsmenü. Der Verlauf hält bis zu 50 Schritte bzw. 512 MiB an zurückgehaltenen Audiodaten.

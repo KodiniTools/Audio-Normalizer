@@ -54,6 +54,7 @@ Die Bearbeitung läuft im DSP-Worker-Pool (`dspCore.ts`), parallel und abseits d
 | Rauschunterdrückung | Spektrale Subtraktion (STFT) |
 | Clipping-Reduktion | Abrunden von Spitzen über 0.9 |
 | Dynamikkompression | Kompressor (Threshold −24 dB, Ratio 12:1, Attack 3 ms, Release 250 ms) |
+| Album-Modus | Gemeinsamer Gain für alle markierten Titel (gepoolte BS.1770-Lautheit, `utils/loudnessMath.ts`), True-Peak-Grenze für das ganze Album |
 | Analyse | Sample-Peak, RMS, LUFS-I, True Peak, LRA (EBU Tech 3342); Report als CSV/JSON (`utils/loudnessReport.ts`) |
 | Wellenform | 400-Punkte-Hüllkurve je Take (`utils/waveform.ts`), im Worker berechnet |
 | Export | WAV, MP3 (320 kbps), WebM/Opus (128 kbps), mehrere Dateien als ZIP |

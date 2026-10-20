@@ -246,6 +246,8 @@
   "app.confirmDeleteAll": "Are you sure you want to delete all files? You can revert this with Undo (Ctrl+Z).",
   "app.confirmResetAll": "Are you sure you want to reset all changes? Files will be restored to their original state. You can revert this with Undo (Ctrl+Z).",
   "app.r128Warning": "EBU R128 has already been applied. RMS/dB scaling will override the broadcast standard and may break the True Peak protection.",
+  "app.albumMode": "Album mode",
+  "app.albumModeHint": "Same gain for all selected tracks with EBU R128 and presets – their relative loudness is kept.",
   "app.sharedFilesLoading": "Importing {count} file(s) from Audio Converter…",
   "app.sharedFilesLoaded": "{count} file(s) successfully imported from Audio Converter",
   "app.sharedFilesEmpty": "No files found from Audio Converter",
@@ -255,6 +257,7 @@
   "dsp.rmsScaling": "RMS scaling",
   "dsp.dbScaling": "dB scaling",
   "dsp.ebu": "EBU R128",
+  "dsp.albumMeasure": "Measuring album loudness",
   "dsp.noise": "Noise reduction",
   "dsp.clipping": "Clipping reduction",
   "dsp.compression": "Dynamic compression",
@@ -282,6 +285,9 @@
   "status.dbDone": "dB scaling complete",
   "status.ebuDone": "EBU R128 normalization complete",
   "status.presetDone": "Preset “{preset}” applied ({lufs} LUFS, {dbtp} dBTP)",
+  "status.albumDone": "Album normalized: {count} tracks, shared gain {gain} dB (before {lufs} LUFS)",
+  "status.albumTooQuiet": "The selected tracks are too quiet for album mode",
+  "status.albumFailed": "The album loudness could not be measured",
   "status.noiseDone": "Noise reduction complete",
   "status.clippingDone": "Clipping reduction complete",
   "status.compressionDone": "Dynamic compression complete",
@@ -327,5 +333,6 @@
   "history.resetAll": "All reset ({count})",
   "history.editFile": "“{name}” scaled to RMS {rms}",
   "history.batch": "{action} · {count} file(s)",
-  "history.preset": "Preset “{preset}”"
+  "history.preset": "Preset “{preset}”",
+  "history.album": "Album · {action}"
 }

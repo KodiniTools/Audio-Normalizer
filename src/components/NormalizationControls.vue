@@ -67,6 +67,14 @@
         <Zap :size="14" />{{ t('app.applyEBU') }}
       </button>
     </div>
+
+    <label class="album-toggle">
+      <input v-model="albumMode" type="checkbox" :disabled="isProcessing" />
+      <span class="album-toggle-text">
+        <span class="album-toggle-label">{{ t('app.albumMode') }}</span>
+        <span class="album-toggle-hint">{{ t('app.albumModeHint') }}</span>
+      </span>
+    </label>
   </div>
 </template>
 
@@ -78,7 +86,14 @@
 
   const { t } = useI18n()
   const store = useAudioStore()
-  const { audioFiles, globalRmsValue, globalDbValue, downloadFormat, isProcessing, r128Applied } =
-    storeToRefs(store)
+  const {
+    audioFiles,
+    globalRmsValue,
+    globalDbValue,
+    downloadFormat,
+    isProcessing,
+    r128Applied,
+    albumMode,
+  } = storeToRefs(store)
   const { applyGlobalRms, applyGlobalDb, applyEBUR128 } = store
 </script>

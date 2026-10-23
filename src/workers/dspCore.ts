@@ -5,11 +5,8 @@
 // GainNode + WaveShaperNode + DynamicsCompressorNode) are reproduced here as
 // plain math so the work can run off the main thread and in parallel.
 //
-// Biquad coefficients follow the exact Web Audio API formulas so the K-weighting
-// used for loudness measurement matches the previous Web Audio results. For the
-// high-pass the `Q` value is interpreted in dB, exactly as the Web Audio spec
-// does:  Q_lin = 10^(Q/20),
-//   alpha = (sin w0 / 2) · √((4 − √(16 − 16/Q_lin²)) / 2)
+// Loudness uses the exact ITU-R BS.1770-4 K-weighting filters (see kShelf /
+// kHighpass), so LUFS values match reference meters such as ffmpeg's ebur128.
 // Noise reduction is now spectral subtraction (STFT), further down in the file.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -31,7 +28,7 @@ export interface DspOutput {
   blocks?: number[]
 }
 
-interface Biquad {
+export interface Biquad {
   b0: number
   b1: number
   b2: number
@@ -48,35 +45,43 @@ const normalize = (
   a2: number,
 ): Biquad => ({ b0: b0 / a0, b1: b1 / a0, b2: b2 / a0, a1: a1 / a0, a2: a2 / a0 })
 
-// Web Audio alpha for lowpass/highpass (Q in dB).
-const alphaLpHp = (sinw0: number, qDb: number): number => {
-  const qLin = Math.pow(10, qDb / 20)
-  return (sinw0 / 2) * Math.sqrt((4 - Math.sqrt(16 - 16 / (qLin * qLin))) / 2)
-}
+// ITU-R BS.1770-4 K-weighting, recomputed for any sample rate by the bilinear
+// transform of the analogue prototypes (same derivation as libebur128/pyloudnorm).
+// At 48 kHz this reproduces the coefficient tables of the standard.
 
-const makeHighpass = (f0: number, fs: number, qDb: number): Biquad => {
-  const w0 = (2 * Math.PI * f0) / fs
-  const cos = Math.cos(w0)
-  const alpha = alphaLpHp(Math.sin(w0), qDb)
-  return normalize((1 + cos) / 2, -(1 + cos), (1 + cos) / 2, 1 + alpha, -2 * cos, 1 - alpha)
-}
-
-// Web Audio high-shelf (shelf slope S = 1 → alpha = sin(w0)/√2).
-const makeHighshelf = (f0: number, fs: number, gainDb: number): Biquad => {
-  const A = Math.pow(10, gainDb / 40)
-  const w0 = (2 * Math.PI * f0) / fs
-  const cos = Math.cos(w0)
-  const alpha = (Math.sin(w0) / 2) * Math.SQRT2
-  const twoSqrtAAlpha = 2 * Math.sqrt(A) * alpha
+// Stage 1: high shelf (+4 dB above ~1.7 kHz, models the head).
+const kShelf = (fs: number): Biquad => {
+  const f0 = 1681.974450955533
+  const gainDb = 3.999843853973347
+  const q = 0.7071752369554196
+  const k = Math.tan((Math.PI * f0) / fs)
+  const vh = Math.pow(10, gainDb / 20)
+  const vb = Math.pow(vh, 0.4996667741545416)
+  const a0 = 1 + k / q + k * k
   return normalize(
-    A * (A + 1 + (A - 1) * cos + twoSqrtAAlpha),
-    -2 * A * (A - 1 + (A + 1) * cos),
-    A * (A + 1 + (A - 1) * cos - twoSqrtAAlpha),
-    A + 1 - (A - 1) * cos + twoSqrtAAlpha,
-    2 * (A - 1 - (A + 1) * cos),
-    A + 1 - (A - 1) * cos - twoSqrtAAlpha,
+    vh + (vb * k) / q + k * k,
+    2 * (k * k - vh),
+    vh - (vb * k) / q + k * k,
+    a0,
+    2 * (k * k - 1),
+    1 - k / q + k * k,
   )
 }
+
+// Stage 2: RLB high-pass (~38 Hz).
+const kHighpass = (fs: number): Biquad => {
+  const f0 = 38.13547087602444
+  const q = 0.5003270373238773
+  const k = Math.tan((Math.PI * f0) / fs)
+  const a0 = 1 + k / q + k * k
+  return { b0: 1, b1: -2, b2: 1, a1: (2 * (k * k - 1)) / a0, a2: (1 - k / q + k * k) / a0 }
+}
+
+/** Both K-weighting stages for a sample rate (exported for tests). */
+export const kWeightingFilters = (fs: number): { shelf: Biquad; highpass: Biquad } => ({
+  shelf: kShelf(fs),
+  highpass: kHighpass(fs),
+})
 
 // Direct Form I biquad, applied in place.
 const applyBiquad = (x: Float32Array, c: Biquad): void => {
@@ -150,8 +155,8 @@ const calcWindowedRMS = (channels: Float32Array[], fs: number): number => {
 
 // K-weighted copies of the channels, so the source stays untouched.
 const kWeight = (channels: Float32Array[], fs: number): Float32Array[] => {
-  const highshelf = makeHighshelf(1500, fs, 4)
-  const highpass = makeHighpass(80, fs, Math.SQRT1_2)
+  const highshelf = kShelf(fs)
+  const highpass = kHighpass(fs)
   return channels.map((ch) => {
     const copy = new Float32Array(ch)
     applyBiquad(copy, highshelf)

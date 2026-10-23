@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { isReceivableSource } from '../utils/sharedFileRepository'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -55,10 +56,10 @@ const router = createRouter({
   },
 })
 
-// Redirect to /app when arriving with ?source=audiokonverter on the landing page
+// Redirect to /app when arriving with a hand-over (?source=<tool>) on the landing page
 router.beforeEach((to, _from, next) => {
-  if (to.name === 'landing' && to.query.source === 'audiokonverter') {
-    next({ name: 'app', query: { source: 'audiokonverter' } })
+  if (to.name === 'landing' && isReceivableSource(to.query.source)) {
+    next({ name: 'app', query: { source: to.query.source } })
   } else {
     next()
   }

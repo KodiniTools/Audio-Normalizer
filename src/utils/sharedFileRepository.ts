@@ -1,9 +1,9 @@
 /**
  * Shared File Repository – IndexedDB bridge between KodiniTools apps.
  *
- * The converter writes converted audio blobs here; receiving tools
- * (Visualizer, Normalisierer, Equalizer) read from the same store
- * when opened with ?source=audiokonverter.
+ * The converter and the audio cutter write audio blobs here; receiving
+ * tools (Visualizer, Normalisierer, Equalizer) read from the same store
+ * when opened with ?source=<tool>.
  */
 
 import type { SharedFileRecord } from '../types'
@@ -11,6 +11,14 @@ import type { SharedFileRecord } from '../types'
 const DB_NAME = 'kodinitools-shared-files'
 const STORE_NAME = 'audio-files'
 const DB_VERSION = 1
+
+/** Tools whose hand-over (?source=<tool>) the Normalisierer accepts. */
+export const RECEIVABLE_SOURCES = ['audiokonverter', 'audio-cutter'] as const
+export type ReceivableSource = (typeof RECEIVABLE_SOURCES)[number]
+
+export function isReceivableSource(value: unknown): value is ReceivableSource {
+  return typeof value === 'string' && (RECEIVABLE_SOURCES as readonly string[]).includes(value)
+}
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {

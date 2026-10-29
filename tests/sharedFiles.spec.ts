@@ -29,9 +29,10 @@ const flush = async () => {
 }
 
 describe('isReceivableSource', () => {
-  it('accepts converter and cutter, rejects others', () => {
+  it('accepts converter, cutter and playlist converter, rejects others', () => {
     expect(isReceivableSource('audiokonverter')).toBe(true)
     expect(isReceivableSource('audio-cutter')).toBe(true)
+    expect(isReceivableSource('playlistkonverter')).toBe(true)
     expect(isReceivableSource('audionormalizer')).toBe(false)
     expect(isReceivableSource(undefined)).toBe(false)
   })
@@ -53,6 +54,13 @@ describe('useSharedFiles', () => {
     const { handle } = setup('audiokonverter')
     await flush()
     expect(handle).toHaveBeenCalledTimes(1)
+  })
+
+  it('imports the playlist handed over by the playlist converter', async () => {
+    const { handle, sharedBanner } = setup('playlistkonverter')
+    await flush()
+    expect(handle).toHaveBeenCalledTimes(1)
+    expect(sharedBanner.value?.message).toContain('app.sharedSource.playlistkonverter')
   })
 
   it('ignores unknown or missing sources', async () => {

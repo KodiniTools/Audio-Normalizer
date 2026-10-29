@@ -1,7 +1,7 @@
 /**
  * Shared File Repository – IndexedDB bridge between KodiniTools apps.
  *
- * The converter and the audio cutter write audio blobs here; receiving
+ * The converter, the audio cutter and the playlist converter write audio blobs here; receiving
  * tools (Visualizer, Normalisierer, Equalizer) read from the same store
  * when opened with ?source=<tool>.
  */
@@ -13,7 +13,7 @@ const STORE_NAME = 'audio-files'
 const DB_VERSION = 1
 
 /** Tools whose hand-over (?source=<tool>) the Normalisierer accepts. */
-export const RECEIVABLE_SOURCES = ['audiokonverter', 'audio-cutter'] as const
+export const RECEIVABLE_SOURCES = ['audiokonverter', 'audio-cutter', 'playlistkonverter'] as const
 export type ReceivableSource = (typeof RECEIVABLE_SOURCES)[number]
 
 export function isReceivableSource(value: unknown): value is ReceivableSource {

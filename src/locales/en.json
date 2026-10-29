@@ -253,6 +253,7 @@
   "app.sharedFilesEmpty": "No files found from {tool}",
   "app.sharedSource.audiokonverter": "Audio Converter",
   "app.sharedSource.audio-cutter": "Audio Cutter",
+  "app.sharedSource.playlistkonverter": "Playlist Converter",
   "app.sharedFilesError": "Error importing files from {tool}",
   "dsp.processing": "Processing...",
   "dsp.upload": "Upload",

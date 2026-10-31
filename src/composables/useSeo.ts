@@ -9,11 +9,10 @@
 import { watch } from 'vue'
 import type { Router } from 'vue-router'
 import { useI18n } from './useI18n'
+import { localeUrls, type Locale } from '../utils/localeUrl'
 
 const SITE_ORIGIN = 'https://kodinitools.com'
 const BASE_PATH = '/audionormalisierer'
-
-type Locale = 'de' | 'en'
 
 interface RouteSeo {
   title: Record<Locale, string>
@@ -86,17 +85,28 @@ const setCanonical = (href: string): void => {
   el.setAttribute('href', href)
 }
 
+const setAlternate = (hreflang: string, href: string): void => {
+  const el = ensureTag(`link[rel="alternate"][hreflang="${hreflang}"]`, () => {
+    const l = document.createElement('link')
+    l.setAttribute('rel', 'alternate')
+    l.setAttribute('hreflang', hreflang)
+    return l
+  })
+  el.setAttribute('href', href)
+}
+
 const applySeo = (routeName: string, locale: Locale): void => {
   const seo = ROUTE_SEO[routeName] ?? ROUTE_SEO.landing
   const title = seo.title[locale]
   const description = seo.description[locale]
-  const url = `${SITE_ORIGIN}${seo.canonicalPath}`
+  const { canonical: url, alternates } = localeUrls(`${SITE_ORIGIN}${seo.canonicalPath}`, locale)
 
   document.title = title
   document.documentElement.setAttribute('lang', locale)
 
   setMeta('name', 'description', description)
   setCanonical(url)
+  for (const { hreflang, href } of alternates) setAlternate(hreflang, href)
 
   setMeta('property', 'og:title', title)
   setMeta('property', 'og:description', description)

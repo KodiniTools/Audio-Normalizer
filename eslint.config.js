@@ -28,6 +28,7 @@ export default [
         console: 'readonly',
         navigator: 'readonly',
         URL: 'readonly',
+        URLSearchParams: 'readonly',
         Blob: 'readonly',
         File: 'readonly',
         FileReader: 'readonly',

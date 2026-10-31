@@ -1,7 +1,7 @@
 import { ref, computed, shallowRef } from 'vue'
 import de from '../locales/de.json'
+import { isLocale, resolveInitialLocale, type Locale } from '../utils/localeUrl'
 
-type Locale = 'de' | 'en'
 type Messages = Record<string, string>
 
 // Deutsch ist im Haupt-Bundle; Englisch wird erst bei Bedarf als eigener Chunk geladen.
@@ -11,15 +11,14 @@ const loaders: Record<Locale, () => Promise<Messages>> = {
 }
 const messages = shallowRef<Partial<Record<Locale, Messages>>>({ de })
 
-const isLocale = (value: string | null): value is Locale => value === 'de' || value === 'en'
-
-// Standardsprache ist immer Deutsch - localStorage wird nur gesetzt wenn explizit gewechselt
-const storedLocale = localStorage.getItem('locale')
-// Wenn kein Wert gespeichert ist, auf Deutsch setzen
-if (!storedLocale) {
-  localStorage.setItem('locale', 'de')
-}
-const currentLocale = ref(storedLocale || 'de')
+// Startsprache: ?lang=de|en (Ziel der hreflang-Links) vor gespeicherter Wahl, sonst Deutsch.
+// Wird gespeichert, damit die SSI-Navigation (liest `locale`) dieselbe Sprache zeigt.
+const initialLocale = resolveInitialLocale(
+  globalThis.location?.search ?? '',
+  localStorage.getItem('locale'),
+)
+localStorage.setItem('locale', initialLocale)
+const currentLocale = ref<string>(initialLocale)
 
 const loadMessages = async (locale: string): Promise<void> => {
   if (!isLocale(locale) || messages.value[locale]) return

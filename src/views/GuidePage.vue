@@ -519,12 +519,26 @@
     color: var(--ds-text);
   }
 
-  .tip-box strong {
-    color: var(--ds-accent);
+  /* Label-Text bleibt --ds-text (Akzent/Warnfarbe auf --ds-surface-2 liegt im
+     Light-Theme unter 4,5:1); die Farbe trägt ein Punkt davor. */
+  .tip-box strong::before,
+  .warning-box strong::before {
+    content: '';
+    display: inline-block;
+    width: var(--ds-space-2);
+    height: var(--ds-space-2);
+    margin-right: var(--ds-space-2);
+    border-radius: var(--ds-radius-full);
+    vertical-align: middle;
   }
 
-  .warning-box strong {
-    color: var(--ds-warning);
+  .tip-box strong::before {
+    background: var(--ds-accent);
+    color: var(--ds-on-accent);
+  }
+
+  .warning-box strong::before {
+    background: var(--ds-warning);
   }
 
   .info-box ul,

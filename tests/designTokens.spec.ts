@@ -149,6 +149,15 @@ describe('Farben und Effekte', () => {
     expect(offenders.map((r) => `${r.file}: ${r.selector}`)).toEqual([])
   })
 
+  it('nutzen Gold nicht als Schriftfarbe für Text (Light-Theme nur ~2,6:1)', () => {
+    // Erlaubt: Icons, Deko-Pseudoelemente, kurzzeitiges Hover, die Pill auf der Gold-Fläche.
+    const allowed = /icon|cover|count-pill|::?before|::?after|:hover/
+    const offenders = rules.filter(
+      (r) => /(?:^|[\s;])color\s*:\s*var\(--ds-accent\)/.test(r.body) && !allowed.test(r.selector),
+    )
+    expect(offenders.map((r) => `${r.file}: ${r.selector}`)).toEqual([])
+  })
+
   it('setzen auf Gold-Flächen immer --ds-on-accent als Textfarbe', () => {
     // Flächen ohne Text (Daumen, Füllbalken) sind ausgenommen.
     const offenders = rules.filter(

@@ -1,12 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { isReceivableSource } from '../utils/sharedFileRepository'
+// Startseite im Haupt-Bundle: sie ist die Einstiegsseite und ihr Hero-Bild das LCP-Element.
+// Lazy geladen käme ein weiterer Request-Roundtrip vor dem ersten Render dazu.
+import LandingPage from '../views/LandingPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'landing',
-    component: () => import('../views/LandingPage.vue'),
+    component: LandingPage,
   },
   {
     path: '/app',

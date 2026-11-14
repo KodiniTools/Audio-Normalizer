@@ -88,8 +88,48 @@
     <meta name="twitter:image:alt" content="Audio Normalizer von KodiniTools" />
 
     <!-- Performance hints -->
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <!-- gtm.js wird ohne CORS geladen; eine crossorigin-Verbindung bliebe ungenutzt. -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <!-- Schrift für Fließtext und Überschriften früh laden (sonst erst nach dem CSS entdeckt). -->
+    <link
+      rel="preload"
+      href="/src/assets/fonts/Supreme-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/src/assets/fonts/Supreme-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <!-- LCP: Hero-Bild der Startseite vorladen, bevor die App gerendert hat.
+         Sprache wie resolveInitialLocale (src/utils/localeUrl.ts): ?lang vor gespeicherter Wahl.
+         Nicht bei Übergaben (?source=…), die direkt zu /app weiterleiten. -->
+    <script>
+      ;(function () {
+        try {
+          var base = '%BASE_URL%'
+          var path = location.pathname
+          if (path !== base && path !== base.replace(/\/$/, '') && path !== base + 'index.html')
+            return
+          var params = new URLSearchParams(location.search)
+          if (params.get('source')) return
+          var lang = params.get('lang')
+          if (lang !== 'de' && lang !== 'en') lang = localStorage.getItem('locale')
+          if (lang !== 'en') lang = 'de'
+          var link = document.createElement('link')
+          link.rel = 'preload'
+          link.as = 'image'
+          link.href = base + 'normalizer-landingpage-' + lang + '.webp'
+          link.setAttribute('fetchpriority', 'high')
+          document.head.appendChild(link)
+        } catch (e) {}
+      })()
+    </script>
 
     <!-- Structured data (schema.org) -->
     <script type="application/ld+json">
@@ -226,8 +266,24 @@
       })(window, document, 'script', 'dataLayer', 'GTM-T7NS656K')
     </script>
     <!-- End Google Tag Manager -->
-    <link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" />
-    <link rel="stylesheet" href="/fontawesome/css/solid.min.css" />
+    <!-- Font Awesome (nur für die SSI-Partials, die App nutzt Lucide) blockiert das
+         Rendern nicht mehr: erst als print laden, nach dem Laden auf all schalten. -->
+    <link
+      rel="stylesheet"
+      href="/fontawesome/css/fontawesome.min.css"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <link
+      rel="stylesheet"
+      href="/fontawesome/css/solid.min.css"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" />
+      <link rel="stylesheet" href="/fontawesome/css/solid.min.css" />
+    </noscript>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->

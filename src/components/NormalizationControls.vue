@@ -2,9 +2,10 @@
   <div class="controls-panel">
     <div class="controls-row">
       <div class="ctrl-field">
-        <label class="ctrl-label">{{ t('app.globalRms') }}</label>
+        <label class="ctrl-label" :for="rmsInputId">{{ t('app.globalRms') }}</label>
         <div class="ctrl-row">
           <input
+            :id="rmsInputId"
             v-model.number="globalRmsValue"
             type="number"
             step="0.01"
@@ -23,9 +24,10 @@
         </div>
       </div>
       <div class="ctrl-field">
-        <label class="ctrl-label">{{ t('app.globalDb') }}</label>
+        <label class="ctrl-label" :for="dbInputId">{{ t('app.globalDb') }}</label>
         <div class="ctrl-row">
           <input
+            :id="dbInputId"
             v-model.number="globalDbValue"
             type="number"
             step="1"
@@ -52,8 +54,8 @@
 
     <div class="controls-row controls-row--bottom">
       <div class="ctrl-field ctrl-field--format">
-        <label class="ctrl-label">{{ t('app.downloadFormat') }}</label>
-        <select v-model="downloadFormat" class="ctrl-select">
+        <label class="ctrl-label" :for="formatSelectId">{{ t('app.downloadFormat') }}</label>
+        <select :id="formatSelectId" v-model="downloadFormat" class="ctrl-select">
           <option value="wav">WAV</option>
           <option value="mp3">MP3 320 kbps</option>
           <option value="webm">WebM / Opus</option>
@@ -79,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useId } from 'vue'
   import { storeToRefs } from 'pinia'
   import { AlertTriangle, Zap } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
@@ -86,6 +89,11 @@
 
   const { t } = useI18n()
   const store = useAudioStore()
+
+  // Label ↔ Feld verknüpfen (Screenreader, Klick aufs Label fokussiert das Feld)
+  const rmsInputId = useId()
+  const dbInputId = useId()
+  const formatSelectId = useId()
   const {
     audioFiles,
     globalRmsValue,

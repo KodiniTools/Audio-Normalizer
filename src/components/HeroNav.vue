@@ -175,8 +175,11 @@
     background: var(--ds-surface-2);
   }
 
+  /* Aktiver Tab: Text in --ds-text (Akzent als Schrift erreicht im Light-Theme
+     nur 2,6:1 statt 4,5:1), Akzent bleibt als getönte Fläche sichtbar. */
   .hero-nav-link.active {
-    color: var(--ds-accent);
+    color: var(--ds-text);
+    background: var(--ds-accent-soft);
   }
 
   .hero-nav-brand:focus-visible,
@@ -213,8 +216,15 @@
   }
 
   @media (max-width: 600px) {
+    /* Platz für die Tabs: Text nur visuell ausblenden, damit der Link für
+       Screenreader weiter „Audio Normalizer“ heißt. */
     .hero-nav-brand-text {
-      display: none; /* Platz für die Tabs */
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   }
 

@@ -94,8 +94,9 @@
     <!-- Row 3: controls -->
     <div class="item-controls">
       <div class="input-pair">
-        <label class="input-label">{{ t('app.rms') }}</label>
+        <label class="input-label" :for="rmsInputId">{{ t('app.rms') }}</label>
         <input
+          :id="rmsInputId"
           v-model.number="localRms"
           type="number"
           step="0.01"
@@ -105,8 +106,9 @@
         />
       </div>
       <div class="input-pair">
-        <label class="input-label">{{ t('app.peak') }}</label>
+        <label class="input-label" :for="peakInputId">{{ t('app.peak') }}</label>
         <input
+          :id="peakInputId"
           type="number"
           :value="file.peak?.toFixed(3)"
           readonly
@@ -138,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from 'vue'
+  import { ref, useId, watch } from 'vue'
   import { X, Download, Play, Volume2, RotateCcw } from 'lucide-vue-next'
   import { useI18n } from '../composables/useI18n'
   import WaveformView from './WaveformView.vue'
@@ -152,6 +154,10 @@
   const emit = defineEmits(['update', 'reset', 'remove', 'export', 'toggle-select', 'play'])
 
   const { t } = useI18n()
+
+  // Label ↔ Feld verknüpfen (pro Datei eindeutig)
+  const rmsInputId = useId()
+  const peakInputId = useId()
 
   const localRms = ref(props.file.rms || 0)
   // Per-file export format, seeded from the global default at mount time.

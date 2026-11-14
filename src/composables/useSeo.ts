@@ -25,12 +25,12 @@ interface RouteSeo {
 const ROUTE_SEO: Record<string, RouteSeo> = {
   landing: {
     title: {
-      de: 'Audio Normalizer – Audio kostenlos normalisieren (EBU R128 / LUFS) im Browser',
-      en: 'Audio Normalizer – Normalize Audio Free (EBU R128 / LUFS) in the Browser',
+      de: 'Audio Lautstärke normalisieren online – LUFS | KodiniTools',
+      en: 'Normalize Audio Online – LUFS Loudness Normalizer | KodiniTools',
     },
     description: {
-      de: 'Audiodateien kostenlos und ohne Upload direkt im Browser normalisieren – EBU R128, LUFS, RMS und Peak. Batch-Verarbeitung, Export als WAV, MP3 & WebM. 100 % lokal.',
-      en: 'Normalize audio files for free, right in your browser, with no upload – EBU R128, LUFS, RMS and Peak. Batch processing, export to WAV, MP3 & WebM. 100 % local.',
+      de: 'Audio Lautstärke normalisieren, kostenlos und ohne Upload im Browser: MP3 gleich laut machen nach EBU R128/LUFS, RMS oder Peak. Export als WAV, MP3, WebM.',
+      en: 'Normalize audio online for free with no upload: make MP3 files the same volume with EBU R128/LUFS, RMS or Peak. Batch processing, export to WAV, MP3 and WebM.',
     },
     canonicalPath: `${BASE_PATH}/`,
   },

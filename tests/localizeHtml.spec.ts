@@ -3,7 +3,7 @@ import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { escapeHtml, localizeHtml } from '../src/utils/localizeHtml'
-import { ROUTE_SEO, SITE_ORIGIN } from '../src/config/routeSeo'
+import { EN_PAGES, ROUTE_SEO, SITE_ORIGIN } from '../src/config/routeSeo'
 
 // Prüft die englische Sprachfassung, die der Build als dist/index.en.html schreibt
 // (nginx liefert sie für ?lang=en aus), gegen die echte index.html.
@@ -94,4 +94,43 @@ test('maskiert Sonderzeichen und bricht bei fehlenden oder doppelten Pflicht-Tag
     /description/,
   )
   assert.throws(() => localizeHtml('<html lang="de"><title>x</title>', head), /head/)
+})
+
+test('jede englische Seite des Builds hat eigenen Titel, Description und Canonical', () => {
+  assert.deepEqual(
+    EN_PAGES.map((page) => page.file),
+    ['index.en.html', 'app.en.html', 'anleitung.en.html'],
+  )
+  const titles = new Set<string>()
+  for (const { file, route } of EN_PAGES) {
+    const seo = ROUTE_SEO[route]
+    assert.ok(seo, `ROUTE_SEO.${route} fehlt (${file})`)
+    const deUrl = `${SITE_ORIGIN}${seo.canonicalPath}`
+    const url = `${deUrl}?lang=en`
+    const page = localizeHtml(html, {
+      lang: 'en',
+      title: seo.title.en,
+      description: seo.description.en,
+      canonical: url,
+      alternates: { de: deUrl, en: url, 'x-default': deUrl },
+    })
+    assert.deepEqual(
+      hreflangs(page).map((link) => pick(link, /\shref="([^"]*)"/i)),
+      [deUrl, url, deUrl],
+      file,
+    )
+    assert.equal(lang(page), 'en', file)
+    assert.equal(title(page), seo.title.en, file)
+    assert.equal(meta(page, 'description'), seo.description.en, file)
+    assert.equal(canonical(page), url, file)
+    titles.add(seo.title.en)
+  }
+  assert.equal(titles.size, EN_PAGES.length)
+})
+
+test('alternates: unbekannter hreflang-Wert bricht ab', () => {
+  assert.throws(
+    () => localizeHtml(html, { lang: 'en', ...EN, canonical: EN_URL, alternates: { fr: EN_URL } }),
+    /hreflang="fr"/,
+  )
 })

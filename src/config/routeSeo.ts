@@ -48,3 +48,14 @@ export const ROUTE_SEO: Record<string, RouteSeo> = {
     canonicalPath: `${BASE_PATH}/anleitung`,
   },
 }
+
+/**
+ * Englische Sprachfassungen, die der Build neben dist/index.html schreibt (vite.config.js).
+ * `file` ist der Dateiname in dist/, `route` der Schlüssel in ROUTE_SEO. Unterseiten heißen
+ * wie ihr Pfad (/app -> app.en.html), damit nginx sie für `?lang=en` per map findet.
+ */
+export const EN_PAGES: ReadonlyArray<{ file: string; route: string }> = [
+  { file: 'index.en.html', route: 'landing' },
+  { file: 'app.en.html', route: 'app' },
+  { file: 'anleitung.en.html', route: 'guide' },
+]

@@ -1,18 +1,14 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { localizeHtml } from './src/utils/localizeHtml'
-import { ROUTE_SEO, SITE_ORIGIN } from './src/config/routeSeo'
-
-const landing = ROUTE_SEO.landing
-/** Öffentliche URL der deutschen Startseite (Englisch: `?lang=en`). */
-const LANDING_URL = `${SITE_ORIGIN}${landing.canonicalPath}`
-const LANDING_EN = { title: landing.title.en, description: landing.description.en }
+import { EN_PAGES, ROUTE_SEO, SITE_ORIGIN } from './src/config/routeSeo'
 
 /**
- * Schreibt neben dist/index.html eine englische Fassung dist/index.en.html mit
- * englischem <html lang>, Titel, Description, Canonical (?lang=en) sowie og:* und twitter:*.
- * nginx liefert sie für /audionormalisierer/?lang=en aus, damit Crawler ohne JavaScript schon im
- * HTML Englisch sehen. Laufzeit-i18n und die deutsche index.html bleiben unverändert.
+ * Schreibt neben dist/index.html je Seite aus EN_PAGES eine englische Fassung mit
+ * englischem <html lang>, Titel, Description, Canonical (?lang=en), hreflang sowie og:* und twitter:*.
+ * nginx liefert sie für /audionormalisierer/?lang=en, /audionormalisierer/app?lang=en und
+ * /audionormalisierer/anleitung?lang=en aus, damit Crawler ohne JavaScript schon im HTML
+ * Englisch sehen. Laufzeit-i18n und die deutsche index.html bleiben unverändert.
  */
 function localizedIndexHtml() {
   return {
@@ -26,11 +22,22 @@ function localizedIndexHtml() {
       }
       const html =
         typeof index.source === 'string' ? index.source : new TextDecoder().decode(index.source)
-      this.emitFile({
-        type: 'asset',
-        fileName: 'index.en.html',
-        source: localizeHtml(html, { lang: 'en', ...LANDING_EN, canonical: `${LANDING_URL}?lang=en` }),
-      })
+      for (const { file, route } of EN_PAGES) {
+        const seo = ROUTE_SEO[route]
+        if (!seo) this.error(`localized-index-html: ROUTE_SEO.${route} fehlt`)
+        const url = `${SITE_ORIGIN}${seo.canonicalPath}`
+        this.emitFile({
+          type: 'asset',
+          fileName: file,
+          source: localizeHtml(html, {
+            lang: 'en',
+            title: seo.title.en,
+            description: seo.description.en,
+            canonical: `${url}?lang=en`,
+            alternates: { de: url, en: `${url}?lang=en`, 'x-default': url },
+          }),
+        })
+      }
     },
   }
 }

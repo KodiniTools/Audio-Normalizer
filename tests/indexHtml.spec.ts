@@ -41,9 +41,7 @@ describe('index.html', () => {
     }
   })
 
-  it('öffnet die GTM-Verbindung ohne crossorigin (gtm.js lädt ohne CORS)', () => {
-    const preconnect = head.match(/<link[^>]*rel="preconnect"[^>]*googletagmanager[^>]*>/)?.[0]
-    expect(preconnect).toBeDefined()
-    expect(preconnect).not.toMatch(/crossorigin/)
+  it('lädt keinen Google Tag Manager und kein Tracking (nur Search Console)', () => {
+    expect(html).not.toMatch(/googletagmanager|GTM-|gtag\(|dataLayer|google-analytics/)
   })
 })

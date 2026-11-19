@@ -88,9 +88,6 @@
     <meta name="twitter:image:alt" content="Audio Normalizer von KodiniTools" />
 
     <!-- Performance hints -->
-    <!-- gtm.js wird ohne CORS geladen; eine crossorigin-Verbindung bliebe ungenutzt. -->
-    <link rel="preconnect" href="https://www.googletagmanager.com" />
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <!-- Schrift für Fließtext und Überschriften früh laden (sonst erst nach dem CSS entdeckt). -->
     <link
       rel="preload"
@@ -252,20 +249,6 @@
       }
     </script>
 
-    <!-- Google Tag Manager -->
-    <script>
-      ;(function (w, d, s, l, i) {
-        w[l] = w[l] || []
-        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' })
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != 'dataLayer' ? '&l=' + l : ''
-        j.async = true
-        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl
-        f.parentNode.insertBefore(j, f)
-      })(window, document, 'script', 'dataLayer', 'GTM-T7NS656K')
-    </script>
-    <!-- End Google Tag Manager -->
     <!-- Font Awesome (nur für die SSI-Partials, die App nutzt Lucide) blockiert das
          Rendern nicht mehr: erst als print laden, nach dem Laden auf all schalten. -->
     <link
@@ -286,16 +269,6 @@
     </noscript>
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript
-      ><iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-T7NS656K"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe
-    ></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <!--#include virtual="/partials/nav.html" -->
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>

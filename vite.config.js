@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { localizeHtml } from './src/utils/localizeHtml'
-import { EN_PAGES, ROUTE_SEO, SITE_ORIGIN } from './src/config/routeSeo'
+import { DE_PAGES, EN_PAGES, ROUTE_SEO, SITE_ORIGIN } from './src/config/routeSeo'
 
 /**
  * Schreibt neben dist/index.html je Seite aus EN_PAGES eine englische Fassung mit
@@ -34,6 +34,23 @@ function localizedIndexHtml() {
             title: seo.title.en,
             description: seo.description.en,
             canonical: `${url}?lang=en`,
+            alternates: { de: url, en: `${url}?lang=en`, 'x-default': url },
+          }),
+        })
+      }
+      // Deutsche Unterseiten (z. B. anleitung.html): eigener Titel und Canonical statt Startseite.
+      for (const { file, route } of DE_PAGES) {
+        const seo = ROUTE_SEO[route]
+        if (!seo) this.error(`localized-index-html: ROUTE_SEO.${route} fehlt`)
+        const url = `${SITE_ORIGIN}${seo.canonicalPath}`
+        this.emitFile({
+          type: 'asset',
+          fileName: file,
+          source: localizeHtml(html, {
+            lang: 'de',
+            title: seo.title.de,
+            description: seo.description.de,
+            canonical: url,
             alternates: { de: url, en: `${url}?lang=en`, 'x-default': url },
           }),
         })

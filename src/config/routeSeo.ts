@@ -31,7 +31,7 @@ export const ROUTE_SEO: Record<string, RouteSeo> = {
       en: 'Normalize Audio – Audio Normalizer App (EBU R128, RMS, Peak)',
     },
     description: {
-      de: 'Lade deine Audiodateien und normalisiere sie mit EBU R128, RMS oder Peak – inklusive Plattform-Presets, Rauschunterdrückung und Export als WAV, MP3 & WebM. Alles lokal im Browser.',
+      de: 'Laden Sie Ihre Audiodateien und normalisieren Sie sie nach EBU R128, RMS oder Peak – mit Plattform-Presets, Rauschunterdrückung und Export als WAV, MP3 & WebM. Lokal im Browser.',
       en: 'Load your audio files and normalize them with EBU R128, RMS or Peak – including platform presets, noise reduction and export to WAV, MP3 & WebM. All local in your browser.',
     },
     canonicalPath: `${BASE_PATH}/app`,
@@ -58,4 +58,13 @@ export const EN_PAGES: ReadonlyArray<{ file: string; route: string }> = [
   { file: 'index.en.html', route: 'landing' },
   { file: 'app.en.html', route: 'app' },
   { file: 'anleitung.en.html', route: 'guide' },
+]
+
+/**
+ * Deutsche Unterseiten mit eigenem Head (Titel, Description, Canonical auf sich selbst).
+ * Ohne diese Datei liefert nginx die index.html der Startseite aus, deren Canonical auf
+ * /audionormalisierer/ zeigt. nginx liefert sie per map für den Pfad ohne ?lang aus.
+ */
+export const DE_PAGES: ReadonlyArray<{ file: string; route: string }> = [
+  { file: 'anleitung.html', route: 'guide' },
 ]

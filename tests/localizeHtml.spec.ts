@@ -3,7 +3,7 @@ import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { escapeHtml, localizeHtml } from '../src/utils/localizeHtml'
-import { EN_PAGES, ROUTE_SEO, SITE_ORIGIN } from '../src/config/routeSeo'
+import { DE_PAGES, EN_PAGES, ROUTE_SEO, SITE_ORIGIN } from '../src/config/routeSeo'
 
 // Prüft die englische Sprachfassung, die der Build als dist/index.en.html schreibt
 // (nginx liefert sie für ?lang=en aus), gegen die echte index.html.
@@ -126,6 +126,31 @@ test('jede englische Seite des Builds hat eigenen Titel, Description und Canonic
     titles.add(seo.title.en)
   }
   assert.equal(titles.size, EN_PAGES.length)
+})
+
+test('deutsche Unterseiten haben eigenen Titel und Canonical auf sich selbst', () => {
+  assert.deepEqual(
+    DE_PAGES.map((page) => page.file),
+    ['anleitung.html'],
+  )
+  for (const { file, route } of DE_PAGES) {
+    const seo = ROUTE_SEO[route]
+    assert.ok(seo, `ROUTE_SEO.${route} fehlt (${file})`)
+    const url = `${SITE_ORIGIN}${seo.canonicalPath}`
+    const page = localizeHtml(html, {
+      lang: 'de',
+      title: seo.title.de,
+      description: seo.description.de,
+      canonical: url,
+      alternates: { de: url, en: `${url}?lang=en`, 'x-default': url },
+    })
+    assert.equal(lang(page), 'de', file)
+    assert.equal(title(page), seo.title.de, file)
+    assert.notEqual(seo.title.de, ROUTE_SEO.landing.title.de, file)
+    assert.equal(meta(page, 'description'), seo.description.de, file)
+    assert.equal(canonical(page), url, file)
+    assert.equal(meta(page, 'og:url'), url, file)
+  }
 })
 
 test('alternates: unbekannter hreflang-Wert bricht ab', () => {

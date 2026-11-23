@@ -4,6 +4,7 @@ import router from './router'
 import { initSeo } from './composables/useSeo'
 import { loadActiveLocale } from './composables/useI18n'
 import './assets/styles.css'
+import './assets/kodini-layout-stage1.css'
 
 const app = createApp(App)
 app.use(router)

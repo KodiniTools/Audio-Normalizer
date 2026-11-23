@@ -44,6 +44,11 @@
   --ds-danger: #ef6b6b;
   --ds-info: #6aaef5;
 
+  /* Layout-Verläufe und Hero-Akzent (Etappe 1) */
+  --ds-glow-blue: rgba(55, 114, 202, 0.2);
+  --ds-glow-cyan: rgba(38, 167, 187, 0.16);
+  --ds-heading-accent: #69d7e9;
+
   /* Effekte (theme-abhängig) */
   --ds-focus-ring: 0 0 0 2px var(--ds-surface-0), 0 0 0 4px var(--ds-accent);
   --ds-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -138,6 +143,10 @@
   --ds-danger: #c93c3c;
   --ds-info: #0f5aa8;
 
+  --ds-glow-blue: rgba(86, 147, 216, 0.15);
+  --ds-glow-cyan: rgba(35, 162, 195, 0.16);
+  --ds-heading-accent: #086a80;
+
   --ds-focus-ring: 0 0 0 2px var(--ds-surface-0), 0 0 0 4px var(--ds-accent);
   --ds-shadow-overlay: 0 8px 24px rgba(20, 33, 58, 0.12);
 }
@@ -165,6 +174,10 @@
   --ds-warning: #9a6416;
   --ds-danger: #c93c3c;
   --ds-info: #0f5aa8;
+
+  --ds-glow-blue: rgba(86, 147, 216, 0.15);
+  --ds-glow-cyan: rgba(35, 162, 195, 0.16);
+  --ds-heading-accent: #086a80;
 
   --ds-focus-ring: 0 0 0 2px var(--ds-surface-0), 0 0 0 4px var(--ds-accent);
   --ds-shadow-overlay: 0 8px 24px rgba(20, 33, 58, 0.12);

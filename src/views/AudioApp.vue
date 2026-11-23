@@ -75,6 +75,7 @@
   import ToastStack from '../components/ToastStack.vue'
   import '../assets/audio-app.css'
   import '../assets/kodini-controls-stage3.css'
+  import '../assets/kodini-workspace-stage4.css'
 
   const { t } = useI18n()
   const route = useRoute()

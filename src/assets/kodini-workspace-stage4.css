@@ -1,0 +1,73 @@
+/* Dateiliste, Wellenform und Player innerhalb des Audio-Arbeitsbereichs. */
+#app .audio-app :is(.playlist-header, .file-meta--empty, .file-item, .player-bar) {
+  border-radius: var(--ds-radius-lg);
+}
+
+#app .audio-app .playlist-header {
+  flex-wrap: wrap;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-color: var(--ds-border-strong);
+}
+
+#app .audio-app .file-meta--empty {
+  padding: clamp(var(--ds-space-5), 4vw, var(--ds-space-10));
+}
+
+#app .audio-app .file-list {
+  gap: var(--ds-space-3);
+  scroll-padding-block: var(--ds-space-2);
+  padding: var(--ds-space-2);
+}
+
+#app .audio-app .file-item {
+  gap: var(--ds-space-3);
+  padding: clamp(var(--ds-space-3), 2vw, var(--ds-space-5));
+}
+
+#app .audio-app .file-item--selected {
+  border-inline-start-color: var(--ds-accent);
+}
+
+#app .audio-app .item-controls {
+  padding-top: var(--ds-space-3);
+  border-top: var(--ds-border-width) solid var(--ds-border);
+}
+
+#app .audio-app .waveform {
+  gap: var(--ds-space-2);
+}
+
+#app .audio-app .waveform-svg {
+  height: clamp(var(--ds-space-10), 7vw, var(--ds-space-16));
+  border-radius: var(--ds-radius-md);
+  outline: var(--ds-border-width) solid var(--ds-border);
+  outline-offset: calc(-1 * var(--ds-border-width));
+}
+
+#app .audio-app .waveform-legend {
+  flex-wrap: wrap;
+  row-gap: var(--ds-space-1);
+}
+
+#app .audio-app .player-bar {
+  border-color: var(--ds-border-strong);
+  border-top-color: var(--ds-accent);
+  padding-block: var(--ds-space-3);
+}
+
+#app .audio-app .pb-seek {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  #app .audio-app .player-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 640px) {
+  #app .audio-app .item-header {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    gap: var(--ds-space-2);
+  }
+}

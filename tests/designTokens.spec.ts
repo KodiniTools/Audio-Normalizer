@@ -7,7 +7,8 @@
  * src/assets/*.css und in den <style>-Blöcken aller Vue-Komponenten:
  *
  * - nur --ds-*-Variablen (plus wenige lokale Hilfsvariablen), alle definiert,
- * - keine festen Farbwerte, Gradients, Blur, Karten-Schatten, Hover-Transforms,
+ * - keine festen Farbwerte; Gradients nur für das definierte Etappe-1-Layout,
+ * - kein Blur, keine Hover-Transforms, Schatten nur über Tokens,
  * - nur Token-Radien, -Dauern und -Schriftgrade,
  * - Gold-Flächen tragen immer --ds-on-accent als Textfarbe,
  * - Supreme wird in allen genutzten Gewichten gebündelt geladen.
@@ -75,13 +76,25 @@ const show = (d: { file: string; property: string; value: string }) =>
 
 /** Lokale Hilfsvariablen von Komponenten (Statusfarbe des Toasts, Fortschritt des Players). */
 const LOCAL_VARS = new Set(['--toast-accent', '--pb-progress'])
+const LAYOUT_FILE = join('src', 'assets', 'kodini-layout-stage1.css')
+/** Lokale Layout-Hilfsvariablen der Etappe-1-Datei (Breite, Seitenabstand). */
+const LAYOUT_VARS = new Set(['--normalizer-layout-width', '--normalizer-gutter'])
+const LAYOUT_GRADIENTS = new Set([
+  'radial-gradient(ellipse at 85% 0%, var(--ds-glow-cyan), transparent 68%), radial-gradient(ellipse at 12% 0%, var(--ds-glow-blue), transparent 62%)',
+  'linear-gradient(150deg, var(--ds-surface-1), var(--ds-surface-0))',
+  'linear-gradient(145deg, var(--ds-surface-1), var(--ds-surface-0))',
+])
+
+function isLocalVariable(file: string, name: string): boolean {
+  return LOCAL_VARS.has(name) || (file === LAYOUT_FILE && LAYOUT_VARS.has(name))
+}
 
 describe('Variablen', () => {
   it('nutzen nur --ds-* und die lokalen Hilfsvariablen (keine alte Palette)', () => {
     const offenders = declarations.flatMap((d) =>
       [...d.value.matchAll(/var\((--[\w-]+)/g)]
         .map((m) => m[1] ?? '')
-        .filter((name) => !name.startsWith('--ds-') && !LOCAL_VARS.has(name))
+        .filter((name) => !name.startsWith('--ds-') && !isLocalVariable(d.file, name))
         .map((name) => `${show(d)} (${name})`),
     )
     expect(offenders).toEqual([])
@@ -89,7 +102,7 @@ describe('Variablen', () => {
 
   it('deklarieren außerhalb der Token-Datei keine eigenen Custom Properties', () => {
     const offenders = declarations.filter(
-      (d) => d.property.startsWith('--') && !LOCAL_VARS.has(d.property),
+      (d) => d.property.startsWith('--') && !isLocalVariable(d.file, d.property),
     )
     expect(offenders.map(show)).toEqual([])
   })
@@ -113,9 +126,16 @@ describe('Farben und Effekte', () => {
     expect(offenders.map(show)).toEqual([])
   })
 
-  it('nutzen keine Gradients (außer der harten Fortschrittskante des Players)', () => {
+  it('erlauben Gradients nur im Layout und im Player-Fortschritt', () => {
     const offenders = declarations.filter(
-      (d) => /gradient\(/.test(d.value) && !d.value.includes('var(--pb-progress'),
+      (d) =>
+        /gradient\(/.test(d.value) &&
+        !d.value.includes('var(--pb-progress') &&
+        !(
+          d.file === LAYOUT_FILE &&
+          /^background(?:-image)?$/.test(d.property) &&
+          LAYOUT_GRADIENTS.has(d.value)
+        ),
     )
     expect(offenders.map(show)).toEqual([])
   })
@@ -187,10 +207,11 @@ describe('Form, Motion, Typografie', () => {
     expect(offenders.map(show)).toEqual([])
   })
 
-  it('bleiben in der Token-Skala --ds-text-xs … --ds-text-3xl', () => {
+  it('nutzen die Token-Skala für Schriftgrössen und die definierte Hero-Grösse', () => {
     const offenders = declarations.filter(
       (d) =>
         d.property === 'font-size' &&
+        !(d.file === LAYOUT_FILE && d.value === 'clamp(2.25rem, 5.25vw, 4.5rem)') &&
         !/^var\(--ds-text-(?:xs|sm|md|lg|xl|2xl|3xl)\)(?: !important)?$/.test(d.value),
     )
     expect(offenders.map(show)).toEqual([])

@@ -1,0 +1,83 @@
+/* Etappe 1: Grundlayout der Startseite und des Arbeitsbereichs. Farben kommen aus
+   den Tokens --ds-glow-blue, --ds-glow-cyan und --ds-heading-accent (tokens-v2.css). */
+#app > :is(.landing-page, .audio-app) {
+  --normalizer-layout-width: 1160px;
+  --normalizer-gutter: clamp(var(--ds-space-3), 3vw, var(--ds-space-6));
+
+  background-color: var(--ds-surface-0);
+  background-image:
+    radial-gradient(ellipse at 85% 0%, var(--ds-glow-cyan), transparent 68%),
+    radial-gradient(ellipse at 12% 0%, var(--ds-glow-blue), transparent 62%);
+  background-repeat: no-repeat;
+  background-size: 100% 42rem;
+}
+
+#app .landing-page > section > .container,
+#app .audio-app .app-section > .container {
+  max-width: var(--normalizer-layout-width);
+  padding-inline: var(--normalizer-gutter);
+}
+
+#app .landing-page .hero {
+  padding-block: clamp(var(--ds-space-8), 7vw, 6rem) clamp(var(--ds-space-8), 5vw, 4rem);
+}
+
+#app .landing-page .hero > .container {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(var(--ds-space-6), 5vw, var(--ds-space-16));
+}
+
+#app .landing-page .hero-content {
+  margin: 0;
+  text-align: start;
+}
+
+#app .landing-page .hero-title {
+  font-size: clamp(2.25rem, 5.25vw, 4.5rem);
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+#app .landing-page .hero-subtitle {
+  color: var(--ds-heading-accent);
+}
+
+#app .landing-page .hero-media {
+  margin: 0;
+  border-color: var(--ds-border-strong);
+  box-shadow: var(--ds-shadow-overlay);
+}
+
+#app .landing-page :is(.features, .benefits, .faq) {
+  padding-block: clamp(var(--ds-space-8), 5vw, var(--ds-space-16));
+}
+
+#app .landing-page :is(.features-grid, .benefits-grid) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+#app .landing-page :is(.feature-card, .benefit-card, .faq-item) {
+  background: linear-gradient(150deg, var(--ds-surface-1), var(--ds-surface-0));
+}
+
+#app .audio-app .app-section {
+  padding-block: clamp(var(--ds-space-4), 3vw, var(--ds-space-8)) var(--ds-space-12);
+}
+
+#app .audio-app .app-container {
+  gap: clamp(var(--ds-space-3), 2vw, var(--ds-space-5));
+}
+
+#app .audio-app :is(.controls-panel, .send-to-panel) {
+  background-image: linear-gradient(145deg, var(--ds-surface-1), var(--ds-surface-0));
+  border-color: var(--ds-border-strong);
+}
+
+@media (max-width: 760px) {
+  #app .landing-page .hero > .container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

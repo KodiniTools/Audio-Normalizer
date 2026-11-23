@@ -64,9 +64,9 @@
   --ds-text-2xl: 24px;
   --ds-text-3xl: 32px;
   --ds-weight-regular: 400;
-  --ds-weight-medium: 500;
-  --ds-weight-semibold: 600;
-  --ds-weight-bold: 700;
+  --ds-weight-medium: 400;
+  --ds-weight-semibold: 400;
+  --ds-weight-bold: 400;
   --ds-leading: 1.5;
   --ds-leading-tight: 1.25;
   --ds-tracking-tight: -0.01em;

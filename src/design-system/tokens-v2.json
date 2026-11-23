@@ -329,15 +329,15 @@
       },
       "medium": {
         "$type": "fontWeight",
-        "$value": 500,
+        "$value": 400,
         "$extensions": { "css": "--ds-weight-medium" }
       },
       "semibold": {
         "$type": "fontWeight",
-        "$value": 600,
+        "$value": 400,
         "$extensions": { "css": "--ds-weight-semibold" }
       },
-      "bold": { "$type": "fontWeight", "$value": 700, "$extensions": { "css": "--ds-weight-bold" } }
+      "bold": { "$type": "fontWeight", "$value": 400, "$extensions": { "css": "--ds-weight-bold" } }
     },
     "leading": {
       "base": { "$type": "number", "$value": 1.5, "$extensions": { "css": "--ds-leading" } },

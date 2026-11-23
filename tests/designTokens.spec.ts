@@ -11,7 +11,7 @@
  * - kein Blur, keine Hover-Transforms, Schatten nur über Tokens,
  * - nur Token-Radien, -Dauern und -Schriftgrade,
  * - Gold-Flächen tragen immer --ds-on-accent als Textfarbe,
- * - Supreme wird in allen genutzten Gewichten gebündelt geladen.
+ * - Supreme wird ausschließlich als Regular (400) gebündelt geladen.
  */
 import { describe, expect, it } from 'vitest'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
@@ -251,15 +251,20 @@ describe('UI-Schrift Supreme', () => {
     /font-family:\s*'Supreme'/.test(face),
   )
 
-  it.each([
-    [400, 'Regular'],
-    [500, 'Medium'],
-    [700, 'Bold'],
-  ])('deklariert @font-face für Gewicht %i aus dem Bundle', (weight, name) => {
-    const face = faces.find((f) => new RegExp(`font-weight:\\s*${weight}\\b`).test(f))
-    expect(face, `Kein @font-face für Supreme ${weight}`).toBeDefined()
-    expect(face).toContain(`url('./fonts/Supreme-${name}.woff2')`)
-    expect(existsSync(join(SRC, 'assets', 'fonts', `Supreme-${name}.woff2`))).toBe(true)
+  it('deklariert genau ein @font-face: Supreme Regular (400) aus dem Bundle', () => {
+    expect(faces).toHaveLength(1)
+    const face = faces[0] ?? ''
+    expect(face).toMatch(/font-weight:\s*400\b/)
+    expect(face).toContain("url('./fonts/Supreme-Regular.woff2')")
+    expect(existsSync(join(SRC, 'assets', 'fonts', 'Supreme-Regular.woff2'))).toBe(true)
+  })
+
+  it('bündelt keine weiteren Schriftschnitte und setzt alle Gewichts-Tokens auf 400', () => {
+    expect(readdirSync(join(SRC, 'assets', 'fonts'))).toEqual(['Supreme-Regular.woff2'])
+    const weights = [...tokensCss.matchAll(/--ds-weight-[\w-]+:\s*(\d+)/g)].map((m) => m[1])
+    expect(weights.length).toBeGreaterThanOrEqual(4)
+    expect(new Set(weights)).toEqual(new Set(['400']))
+    expect(stylesCss).toMatch(/body \{[^}]*font-synthesis: none/)
   })
 
   it('setzt Schrift und Grundgröße des Body aus den Tokens', () => {

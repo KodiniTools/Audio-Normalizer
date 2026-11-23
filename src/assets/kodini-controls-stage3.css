@@ -1,0 +1,104 @@
+/* Bedienfelder des Audio Normalizers. Farben folgen den vorhandenen Theme-Tokens. */
+#app .audio-app .drop-zone {
+  flex-wrap: wrap;
+  padding: clamp(var(--ds-space-4), 3vw, var(--ds-space-8));
+  border-radius: var(--ds-radius-lg);
+}
+
+#app .audio-app .drop-zone:focus-within {
+  border-color: var(--ds-accent);
+}
+
+#app .audio-app .drop-label-group {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+#app .audio-app .drop-label {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+}
+
+#app .audio-app :is(.drop-paste-hint, .send-to-hint) {
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+
+#app .audio-app .drop-actions {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+#app .audio-app :is(.toolbar, .effects-strip, .preset-section) {
+  padding: var(--ds-space-4);
+  background: var(--ds-surface-1);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+}
+
+#app .audio-app :is(.controls-panel, .send-to-panel) {
+  gap: var(--ds-space-4);
+  padding: clamp(var(--ds-space-4), 2vw, var(--ds-space-6));
+  border-radius: var(--ds-radius-lg);
+}
+
+#app .audio-app :is(.ctrl-label, .preset-title) {
+  font-size: var(--ds-text-sm);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+#app .audio-app .album-toggle {
+  padding: var(--ds-space-3);
+  border: var(--ds-border-width) solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-1);
+}
+
+#app .audio-app .album-toggle:focus-within {
+  border-color: var(--ds-accent);
+}
+
+#app .audio-app :is(.drop-actions, .toolbar, .controls-panel, .send-to-panel) .btn,
+#app .audio-app :is(.effects-strip .chip, .preset-btn) {
+  height: auto;
+  min-height: var(--ds-row-height);
+  padding-block: var(--ds-space-2);
+  line-height: var(--ds-leading-tight);
+  white-space: normal;
+}
+
+#app .audio-app :is(.ctrl-input, .ctrl-select) {
+  height: var(--ds-row-height);
+}
+
+#app .audio-app .preset-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+#app .audio-app .preset-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#app .audio-app :is(.history-pop, .loading-card) {
+  border-color: var(--ds-border-strong);
+  border-radius: var(--ds-radius-lg);
+}
+
+@media (max-width: 768px) {
+  #app .audio-app .toolbar {
+    position: relative;
+  }
+
+  #app .audio-app .history-menu {
+    position: static;
+  }
+
+  #app .audio-app .history-pop {
+    inset-inline: var(--ds-space-2);
+    min-width: 0;
+    max-width: none;
+  }
+}

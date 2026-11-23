@@ -218,7 +218,7 @@
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 800 / 447;
+    aspect-ratio: 1120 / 630;
   }
 
   /* Sections alternate between page and panel surface. */

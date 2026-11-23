@@ -10,28 +10,15 @@
 
 @import '../design-system/tokens-v2.css';
 
-/* === Schrift: Supreme in den drei genutzten Gewichten (500 = medium,
-   600/700 = semibold/bold), gebündelt aus src/assets/fonts. === */
+/* === Schrift: ausschließlich Supreme Regular (400), gebündelt aus src/assets/fonts.
+   Alle Gewichts-Tokens stehen auf 400; font-synthesis verhindert, dass der Browser
+   für fette Standard-Elemente (h1–h6, strong, th, SSI-Partials) ein Pseudo-Fett erzeugt. === */
 @font-face {
   font-family: 'Supreme';
   font-weight: 400;
   font-style: normal;
   font-display: swap;
   src: url('./fonts/Supreme-Regular.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Supreme';
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-  src: url('./fonts/Supreme-Medium.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Supreme';
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-  src: url('./fonts/Supreme-Bold.woff2') format('woff2');
 }
 
 /* === Farbschema für native Controls (Select-Listen, Scrollbalken) === */
@@ -66,6 +53,8 @@ textarea {
 /* === Body === */
 body {
   font-family: var(--ds-font-sans);
+  font-weight: var(--ds-weight-regular);
+  font-synthesis: none;
   font-size: var(--ds-text-lg);
   line-height: var(--ds-leading);
   -webkit-font-smoothing: antialiased;
@@ -93,6 +82,12 @@ h6 {
   font-weight: var(--ds-weight-bold);
   line-height: var(--ds-leading-tight);
   color: var(--ds-text);
+}
+
+b,
+strong,
+th {
+  font-weight: var(--ds-weight-regular);
 }
 
 a {

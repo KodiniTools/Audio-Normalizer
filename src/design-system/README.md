@@ -18,7 +18,7 @@ dieselbe Motion und dieselbe Schrift (Supreme). Werte werden dort gepflegt und h
 | `tests/useTheme.spec.ts`                | Theme-Mechanik und Pre-Paint-Skript.                                                                                             |
 
 Eingebunden werden die Tokens über `src/assets/styles.css` (`@import` als erste Regel), das
-`main.ts` lädt. Dort stehen auch die `@font-face`-Regeln für Supreme 400/500/700 aus
+`main.ts` lädt. Dort stehen auch die `@font-face`-Regeln für Supreme Regular (400) aus
 `src/assets/fonts/`, die Basis-Styles und die Angleichung der SSI-Partials (Nav, Footer,
 Cookie-Banner). App-spezifische Styles: `src/assets/audio-app.css`.
 
@@ -46,7 +46,7 @@ Ein Inline-Skript in `index.html` setzt `data-theme` vor dem ersten Paint aus
 | Schatten                     | `--ds-shadow-overlay` (nur Player, Toast, Popover, Dialog) · `--ds-focus-ring`   |
 | Motion                       | `--ds-duration` (150 ms) · `--ds-duration-slow` (250 ms) · `--ds-ease`           |
 | Schriftgrade                 | `--ds-text-xs` 12 · `sm` 13 · `md` 14 · `lg` 16 · `xl` 20 · `2xl` 24 · `3xl` 32  |
-| Schrift, Gewichte            | `--ds-font-sans`, `--ds-weight-medium` 500 · `semibold` 600 · `bold` 700         |
+| Schrift, Gewichte            | `--ds-font-sans`, nur Supreme Regular: alle `--ds-weight-*` stehen auf 400       |
 | Controls                     | `--ds-control-sm` 28 · `md` 36 · `lg` 40 · `--ds-row-height` 44 (Touch)          |
 
 Gold ist Vollfläche nur für die Primäraktion, Fokus und aktive Zustände. Ein Rahmen (1 px), drei

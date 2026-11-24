@@ -549,7 +549,7 @@
 /* On the gold primary button the pill sits on the accent fill. */
 .audio-app .btn--primary .count-pill {
   background: var(--ds-on-accent);
-  color: var(--ds-accent);
+  color: var(--ds-accent-fill);
 }
 
 .audio-app .selection-hint {
@@ -644,12 +644,12 @@
 
 /* Primary: the only gold fill. */
 .audio-app .btn--primary {
-  background: var(--ds-accent);
+  background: var(--ds-accent-fill);
   color: var(--ds-on-accent);
   font-weight: var(--ds-weight-semibold);
 }
 .audio-app .btn--primary:hover:not(:disabled) {
-  background: var(--ds-accent-hover);
+  background: var(--ds-accent-fill-hover);
 }
 
 /* Secondary (named --accent / --ghost / --send in the templates). */

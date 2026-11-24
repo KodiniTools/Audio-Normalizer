@@ -178,13 +178,21 @@ describe('Farben und Effekte', () => {
     expect(offenders.map((r) => `${r.file}: ${r.selector}`)).toEqual([])
   })
 
-  it('setzen auf Gold-Flächen immer --ds-on-accent als Textfarbe', () => {
-    // Flächen ohne Text (Daumen, Füllbalken) sind ausgenommen.
+  it('setzen auf gefüllten Gold-Flächen (--ds-accent-fill) immer --ds-on-accent als Textfarbe', () => {
     const offenders = rules.filter(
       (r) =>
-        /background(?:-color)?\s*:\s*var\(--ds-accent\)/.test(r.body) &&
-        !/thumb|fill/.test(r.selector) &&
+        /background(?:-color)?\s*:\s*var\(--ds-accent-fill\)/.test(r.body) &&
         !/(?:^|[\s;])color\s*:\s*var\(--ds-on-accent\)/.test(r.body),
+    )
+    expect(offenders.map((r) => `${r.file}: ${r.selector}`)).toEqual([])
+  })
+
+  it('nutzen --ds-accent als Fläche nur ohne Text (Daumen, Füllbalken), Text braucht --ds-accent-fill', () => {
+    const offenders = rules.filter(
+      (r) =>
+        /background(?:-color)?\s*:\s*var\(--ds-accent(?:-hover)?\)/.test(r.body) &&
+        (!/thumb|fill/.test(r.selector) ||
+          /(?:^|[\s;])color\s*:\s*var\(--ds-on-accent\)/.test(r.body)),
     )
     expect(offenders.map((r) => `${r.file}: ${r.selector}`)).toEqual([])
   })

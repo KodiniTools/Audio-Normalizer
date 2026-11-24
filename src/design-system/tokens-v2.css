@@ -35,7 +35,11 @@
   --ds-accent: #d4a257;
   --ds-accent-hover: #e0b06a;
   --ds-accent-soft: rgba(212, 162, 87, 0.14);
-  --ds-on-accent: #0a1324;
+  /* Gefüllte Goldflächen mit Text (Primär-Button, Abzeichen): dunkler, damit Weiß lesbar ist.
+     Werte wie im Playlist Generator. */
+  --ds-accent-fill: #8f6320;
+  --ds-accent-fill-hover: #9a6b24;
+  --ds-on-accent: #ffffff;
   --ds-link: #6aaef5;
 
   /* Status */
@@ -132,10 +136,12 @@
   --ds-text-2: #3f4a60;
   --ds-text-3: #5f6b84;
 
-  --ds-accent: #c9984d;
-  --ds-accent-hover: #b8842f;
+  --ds-accent: #8f6320;
+  --ds-accent-hover: #7d561c;
   --ds-accent-soft: rgba(201, 152, 77, 0.16);
-  --ds-on-accent: #14213a;
+  --ds-accent-fill: #8f6320;
+  --ds-accent-fill-hover: #7d561c;
+  --ds-on-accent: #ffffff;
   --ds-link: #0f5aa8;
 
   --ds-success: #177a42;
@@ -164,10 +170,12 @@
   --ds-text-2: #3f4a60;
   --ds-text-3: #5f6b84;
 
-  --ds-accent: #c9984d;
-  --ds-accent-hover: #b8842f;
+  --ds-accent: #8f6320;
+  --ds-accent-hover: #7d561c;
   --ds-accent-soft: rgba(201, 152, 77, 0.16);
-  --ds-on-accent: #14213a;
+  --ds-accent-fill: #8f6320;
+  --ds-accent-fill-hover: #7d561c;
+  --ds-on-accent: #ffffff;
   --ds-link: #0f5aa8;
 
   --ds-success: #177a42;

@@ -109,10 +109,15 @@ describe('Kontrast (WCAG AA, mindestens 4.5:1)', () => {
     expect(failures).toEqual([])
   })
 
-  it.each(THEMES)('%s: Text auf Akzent und Akzent-Hover', (theme) => {
+  it.each(THEMES)('%s: Text auf gefüllter Goldfläche und deren Hover', (theme) => {
     const colors = themeColorsV2(theme)
-    expect(contrastRatio(colors.onAccent, colors.accent)).toBeGreaterThanOrEqual(AA)
-    expect(contrastRatio(colors.onAccent, colors.accentHover)).toBeGreaterThanOrEqual(AA)
+    expect(contrastRatio(colors.onAccent, colors.accentFill)).toBeGreaterThanOrEqual(AA)
+    expect(contrastRatio(colors.onAccent, colors.accentFillHover)).toBeGreaterThanOrEqual(AA)
+  })
+
+  it.each(THEMES)('%s: Gold-Füllung als Schrift auf der hellen Zähl-Pill', (theme) => {
+    const colors = themeColorsV2(theme)
+    expect(contrastRatio(colors.accentFill, colors.onAccent)).toBeGreaterThanOrEqual(AA)
   })
 
   it.each(THEMES)('%s: Status- und Linkfarben als Text auf Panel', (theme) => {
@@ -137,7 +142,9 @@ describe('Kontrast (WCAG AA, mindestens 4.5:1)', () => {
 describe('tokens-v2.ts', () => {
   it('liefert Farbwerte, Variablennamen und var()-Ausdrücke', () => {
     expect(colorTokenV2('dark', 'accent')).toBe('#d4a257')
-    expect(colorTokenV2('light', 'accent')).toBe('#c9984d')
+    expect(colorTokenV2('light', 'accent')).toBe('#8f6320')
+    expect(colorTokenV2('dark', 'accentFill')).toBe('#8f6320')
+    expect(colorTokenV2('light', 'onAccent')).toBe('#ffffff')
     expect(colorCssVarV2('text2')).toBe('--ds-text-2')
     expect(cssVarV2('text2')).toBe('var(--ds-text-2)')
     expect(cssVarV2('surface1', '#111d33')).toBe('var(--ds-surface-1, #111d33)')

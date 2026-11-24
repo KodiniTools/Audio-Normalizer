@@ -401,14 +401,14 @@
   .pb-btn--play {
     width: var(--ds-control-lg);
     height: var(--ds-control-lg);
-    background: var(--ds-accent);
+    background: var(--ds-accent-fill);
     color: var(--ds-on-accent);
-    border-color: var(--ds-accent);
+    border-color: var(--ds-accent-fill);
   }
 
   .pb-btn--play:hover:not(:disabled) {
-    background: var(--ds-accent-hover);
-    border-color: var(--ds-accent-hover);
+    background: var(--ds-accent-fill-hover);
+    border-color: var(--ds-accent-fill-hover);
     color: var(--ds-on-accent);
   }
 

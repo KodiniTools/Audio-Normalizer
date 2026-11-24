@@ -184,7 +184,7 @@
     justify-content: center;
     height: var(--ds-control-lg);
     padding: 0 var(--ds-space-5);
-    background: var(--ds-accent);
+    background: var(--ds-accent-fill);
     color: var(--ds-on-accent);
     border-radius: var(--ds-radius-md);
     font-size: var(--ds-text-lg);
@@ -194,7 +194,7 @@
   }
 
   .btn-hero:hover {
-    background: var(--ds-accent-hover);
+    background: var(--ds-accent-fill-hover);
     color: var(--ds-on-accent);
   }
 

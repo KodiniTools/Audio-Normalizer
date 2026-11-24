@@ -533,7 +533,7 @@
   }
 
   .tip-box strong::before {
-    background: var(--ds-accent);
+    background: var(--ds-accent-fill);
     color: var(--ds-on-accent);
   }
 

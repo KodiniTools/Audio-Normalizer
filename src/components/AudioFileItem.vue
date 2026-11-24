@@ -252,9 +252,9 @@
 
   .play-btn--active,
   .play-btn--active:hover {
-    background: var(--ds-accent);
+    background: var(--ds-accent-fill);
     color: var(--ds-on-accent);
-    border-color: var(--ds-accent);
+    border-color: var(--ds-accent-fill);
   }
 
   .play-btn:focus-visible,

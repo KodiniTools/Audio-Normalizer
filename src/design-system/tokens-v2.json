@@ -76,10 +76,22 @@
         "$description": "Ausgewählte Zeile, aktive Fläche",
         "$extensions": { "css": "--ds-accent-soft" }
       },
+      "accentFill": {
+        "$type": "color",
+        "$value": "#8f6320",
+        "$description": "Gefüllte Goldfläche mit Text: Primär-Button, Abzeichen",
+        "$extensions": { "css": "--ds-accent-fill" }
+      },
+      "accentFillHover": {
+        "$type": "color",
+        "$value": "#9a6b24",
+        "$description": "Gefüllte Goldfläche :hover",
+        "$extensions": { "css": "--ds-accent-fill-hover" }
+      },
       "onAccent": {
         "$type": "color",
-        "$value": "#0a1324",
-        "$description": "Text und Icons auf Akzent",
+        "$value": "#ffffff",
+        "$description": "Text und Icons auf gefüllter Goldfläche",
         "$extensions": { "css": "--ds-on-accent" }
       },
       "link": {
@@ -176,13 +188,13 @@
       },
       "accent": {
         "$type": "color",
-        "$value": "#c9984d",
+        "$value": "#8f6320",
         "$description": "Primäraktion, Fokus, aktive Zustände",
         "$extensions": { "css": "--ds-accent" }
       },
       "accentHover": {
         "$type": "color",
-        "$value": "#b8842f",
+        "$value": "#7d561c",
         "$description": "Primäraktion :hover",
         "$extensions": { "css": "--ds-accent-hover" }
       },
@@ -192,10 +204,22 @@
         "$description": "Ausgewählte Zeile, aktive Fläche",
         "$extensions": { "css": "--ds-accent-soft" }
       },
+      "accentFill": {
+        "$type": "color",
+        "$value": "#8f6320",
+        "$description": "Gefüllte Goldfläche mit Text: Primär-Button, Abzeichen",
+        "$extensions": { "css": "--ds-accent-fill" }
+      },
+      "accentFillHover": {
+        "$type": "color",
+        "$value": "#7d561c",
+        "$description": "Gefüllte Goldfläche :hover",
+        "$extensions": { "css": "--ds-accent-fill-hover" }
+      },
       "onAccent": {
         "$type": "color",
-        "$value": "#14213a",
-        "$description": "Text und Icons auf Akzent",
+        "$value": "#ffffff",
+        "$description": "Text und Icons auf gefüllter Goldfläche",
         "$extensions": { "css": "--ds-on-accent" }
       },
       "link": {

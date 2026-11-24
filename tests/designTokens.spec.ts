@@ -280,6 +280,17 @@ describe('UI-Schrift Supreme', () => {
     expect(stylesCss).toMatch(/body \{[^}]*font-size: var\(--ds-text-lg\)/)
   })
 
+  it('markiert die aktive Sprache der SSI-Navigation nach den pauschalen Partial-Regeln', () => {
+    const rule = stylesCss.match(/[^{}]*\.global-nav-lang-btn\.active\s*\{[^}]*\}/)?.[0] ?? ''
+    expect(rule).toContain('background-color: var(--ds-accent-fill) !important')
+    expect(rule).toContain('color: var(--ds-on-accent) !important')
+    // Gleicher Vorspann wie die Textfarben-Regel der Partials, sonst verliert die Markierung.
+    expect(rule).toContain(':not(#app):not(script)')
+    const generic = stylesCss.lastIndexOf('color: var(--ds-text) !important')
+    expect(generic).toBeGreaterThan(-1)
+    expect(stylesCss.indexOf('.global-nav-lang-btn.active')).toBeGreaterThan(generic)
+  })
+
   it('verweist auf keine Schriftdatei außerhalb des Bundles (/fonts/…)', () => {
     expect(stylesCss).not.toMatch(/url\(['"]?\/fonts\//)
   })

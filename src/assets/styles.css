@@ -214,6 +214,20 @@ body
   color: var(--ds-accent) !important;
 }
 
+/* Aktive Sprache im Umschalter der SSI-Navigation: dunkles Gold mit weißer Schrift,
+   wie der Primär-Button und wie im Playlist Generator. Die Regeln oben nehmen jedem
+   Element der Partials den Hintergrund und erzwingen die Textfarbe; ohne diese Ausnahme
+   bleibt die .active-Markierung des Partials unsichtbar. Gleicher Selektor-Vorspann wie
+   die Textfarben-Regel (gleiche Spezifität, steht danach und gewinnt). */
+body
+  > :not(#app):not(script):not(.cookie-banner):not(.cookie-consent):not([class*='cookie']):not(
+    [id*='cookie']
+  )
+  .global-nav-lang-btn.active {
+  background-color: var(--ds-accent-fill) !important;
+  color: var(--ds-on-accent) !important;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
    Touch / Mobile
    ───────────────────────────────────────────────────────────────────────── */

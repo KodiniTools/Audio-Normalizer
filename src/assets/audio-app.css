@@ -644,12 +644,12 @@
 
 /* Primary: the only gold fill. */
 .audio-app .btn--primary {
-  background: var(--ds-accent-fill);
+  background: var(--ds-accent-fill-grad);
   color: var(--ds-on-accent);
   font-weight: var(--ds-weight-semibold);
 }
 .audio-app .btn--primary:hover:not(:disabled) {
-  background: var(--ds-accent-fill-hover);
+  background: var(--ds-accent-fill-grad-hover);
 }
 
 /* Secondary (named --accent / --ghost / --send in the templates). */

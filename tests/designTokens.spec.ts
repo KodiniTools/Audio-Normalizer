@@ -282,7 +282,7 @@ describe('UI-Schrift Supreme', () => {
 
   it('markiert die aktive Sprache der SSI-Navigation nach den pauschalen Partial-Regeln', () => {
     const rule = stylesCss.match(/[^{}]*\.global-nav-lang-btn\.active\s*\{[^}]*\}/)?.[0] ?? ''
-    expect(rule).toContain('background-color: var(--ds-accent-fill) !important')
+    expect(rule).toContain('background: var(--ds-accent-fill-grad) !important')
     expect(rule).toContain('color: var(--ds-on-accent) !important')
     // Gleicher Vorspann wie die Textfarben-Regel der Partials, sonst verliert die Markierung.
     expect(rule).toContain(':not(#app):not(script)')

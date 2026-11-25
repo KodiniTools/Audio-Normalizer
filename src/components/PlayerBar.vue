@@ -401,13 +401,13 @@
   .pb-btn--play {
     width: var(--ds-control-lg);
     height: var(--ds-control-lg);
-    background: var(--ds-accent-fill);
+    background: var(--ds-accent-fill-grad);
     color: var(--ds-on-accent);
     border-color: var(--ds-accent-fill);
   }
 
   .pb-btn--play:hover:not(:disabled) {
-    background: var(--ds-accent-fill-hover);
+    background: var(--ds-accent-fill-grad-hover);
     border-color: var(--ds-accent-fill-hover);
     color: var(--ds-on-accent);
   }

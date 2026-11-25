@@ -224,7 +224,7 @@ body
     [id*='cookie']
   )
   .global-nav-lang-btn.active {
-  background-color: var(--ds-accent-fill) !important;
+  background: var(--ds-accent-fill-grad) !important;
   color: var(--ds-on-accent) !important;
 }
 

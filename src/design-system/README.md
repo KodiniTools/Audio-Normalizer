@@ -56,4 +56,6 @@ textbasiert (`--ds-danger`) auf einer flachen Fläche. Hinweise liegen auf `--ds
 Statusfarbe steht nur im Icon. `tests/designTokens.spec.ts` verhindert die Rückkehr der alten
 Palette, fester Farbwerte, Gradients, Blur, Karten-Schatten und Hover-Transforms. Ausnahme ist
 das Grundlayout aus Etappe 1 (`src/assets/kodini-layout-stage1.css`): Es darf die dort
-festgelegten Blau-Cyan- und Flächenverläufe sowie die flexible Hero-Schriftgröße nutzen.
+festgelegten Blau-Cyan- und Flächenverläufe sowie die flexible Hero-Schriftgröße nutzen. Zweite Ausnahme:
+Primär-Buttons tragen `--ds-accent-fill-grad` (Hover `--ds-accent-fill-grad-hover`), den dreistufigen
+dunkelgoldenen Verlauf der KodiniTools-Startseite; der Verlauf steht nur in der Token-Datei.

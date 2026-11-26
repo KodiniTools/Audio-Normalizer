@@ -1,13 +1,13 @@
 /**
  * Sprachen, für die ein Landingpage-Bild in `public/` liegt. Das aktuelle Motiv
- * (Wellenform Original/Normalisiert) ist sprachneutral; beide Dateien sind identisch.
+ * (Tonstudio mit Wellenform-Vergleich Original/Normalisiert) ist sprachneutral; beide Dateien sind identisch.
  */
 export const LANDING_IMAGE_LOCALES = ['de', 'en'] as const
 export type LandingImageLocale = (typeof LANDING_IMAGE_LOCALES)[number]
 
 /** Intrinsische Bildmaße (px) – verhindern Layout-Shift beim Laden. */
 export const LANDING_IMAGE_WIDTH = 1120
-export const LANDING_IMAGE_HEIGHT = 630
+export const LANDING_IMAGE_HEIGHT = 625
 
 /**
  * URL des sprachabhängigen Landingpage-Bildes.

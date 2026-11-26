@@ -126,15 +126,21 @@
       },
       "headingAccent": {
         "$type": "color",
-        "$value": "#48a0d8",
-        "$description": "Unterzeile im Hero der Startseite (helleres Logo-Blau)",
+        "$value": "#69d7e9",
+        "$description": "Unterzeile im Hero der Startseite",
         "$extensions": { "css": "--ds-heading-accent" }
       },
       "heroTitle": {
         "$type": "color",
         "$value": "#e6bc76",
-        "$description": "Titel im Hero der Startseite (helleres Gold)",
+        "$description": "Erstes Wort des Hero-Titels, „Audio“ (helleres Gold)",
         "$extensions": { "css": "--ds-hero-title" }
+      },
+      "heroTitleBlue": {
+        "$type": "color",
+        "$value": "#48a0d8",
+        "$description": "Restlicher Hero-Titel, „Normalizer“ (helleres Logo-Blau)",
+        "$extensions": { "css": "--ds-hero-title-blue" }
       }
     },
     "light": {
@@ -258,13 +264,18 @@
       },
       "headingAccent": {
         "$type": "color",
-        "$value": "#0058a0",
+        "$value": "#086a80",
         "$extensions": { "css": "--ds-heading-accent" }
       },
       "heroTitle": {
         "$type": "color",
         "$value": "#775115",
         "$extensions": { "css": "--ds-hero-title" }
+      },
+      "heroTitleBlue": {
+        "$type": "color",
+        "$value": "#0058a0",
+        "$extensions": { "css": "--ds-hero-title-blue" }
       }
     }
   },

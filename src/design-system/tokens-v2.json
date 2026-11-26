@@ -126,9 +126,15 @@
       },
       "headingAccent": {
         "$type": "color",
-        "$value": "#69d7e9",
-        "$description": "Unterzeile im Hero der Startseite",
+        "$value": "#48a0d8",
+        "$description": "Unterzeile im Hero der Startseite (helleres Logo-Blau)",
         "$extensions": { "css": "--ds-heading-accent" }
+      },
+      "heroTitle": {
+        "$type": "color",
+        "$value": "#e6bc76",
+        "$description": "Titel im Hero der Startseite (helleres Gold)",
+        "$extensions": { "css": "--ds-hero-title" }
       }
     },
     "light": {
@@ -252,8 +258,13 @@
       },
       "headingAccent": {
         "$type": "color",
-        "$value": "#086a80",
+        "$value": "#0058a0",
         "$extensions": { "css": "--ds-heading-accent" }
+      },
+      "heroTitle": {
+        "$type": "color",
+        "$value": "#775115",
+        "$extensions": { "css": "--ds-hero-title" }
       }
     }
   },

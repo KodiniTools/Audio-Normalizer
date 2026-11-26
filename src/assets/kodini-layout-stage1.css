@@ -1,5 +1,6 @@
 /* Etappe 1: Grundlayout der Startseite und des Arbeitsbereichs. Farben kommen aus
-   den Tokens --ds-glow-blue, --ds-glow-cyan und --ds-heading-accent (tokens-v2.css). */
+   den Tokens --ds-glow-blue, --ds-glow-cyan, --ds-heading-accent (Unterzeile) und
+   --ds-hero-title (Titel), siehe tokens-v2.css. */
 #app > :is(.landing-page, .audio-app) {
   --normalizer-layout-width: 1160px;
   --normalizer-gutter: clamp(var(--ds-space-3), 3vw, var(--ds-space-6));
@@ -39,6 +40,10 @@
   letter-spacing: -0.045em;
   line-height: 1.05;
   overflow-wrap: anywhere;
+}
+
+#app .landing-page .hero-title {
+  color: var(--ds-hero-title);
 }
 
 #app .landing-page .hero-subtitle {

@@ -33,22 +33,22 @@ Ein Inline-Skript in `index.html` setzt `data-theme` vor dem ersten Paint aus
 
 ## Regeln
 
-| Rolle                        | Variable                                                                                                                 |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Seite, Panel, Eingabe, Hover | `--ds-surface-0` … `--ds-surface-3`                                                                                      |
-| Rahmen, Feldrahmen           | `--ds-border`, `--ds-border-strong`                                                                                      |
-| Text 1–3                     | `--ds-text`, `--ds-text-2`, `--ds-text-3`                                                                                |
-| Primäraktion                 | Fläche `--ds-accent-fill`, Hover `--ds-accent-fill-hover`, Text `--ds-on-accent` (weiß); Werte wie im Playlist Generator |
-| Gold ohne Text               | `--ds-accent`, `--ds-accent-hover` (Rahmen, Fokus, Icons, Regler, Wellenform)                                            |
-| Auswahl, aktive Fläche       | `--ds-accent-soft` + Rahmen `--ds-accent`                                                                                |
-| Link, Status                 | `--ds-link`, `--ds-success`, `--ds-warning`, `--ds-danger`, `--ds-info`                                                  |
-| Layout-Verläufe, Hero-Akzent | `--ds-glow-blue`, `--ds-glow-cyan`, `--ds-heading-accent` (nur Audio Normalizer)                                         |
-| Radien                       | `--ds-radius-sm` (6) · `md` (10) · `lg` (16) · `full`                                                                    |
-| Schatten                     | `--ds-shadow-overlay` (nur Player, Toast, Popover, Dialog) · `--ds-focus-ring`                                           |
-| Motion                       | `--ds-duration` (150 ms) · `--ds-duration-slow` (250 ms) · `--ds-ease`                                                   |
-| Schriftgrade                 | `--ds-text-xs` 12 · `sm` 13 · `md` 14 · `lg` 16 · `xl` 20 · `2xl` 24 · `3xl` 32                                          |
-| Schrift, Gewichte            | `--ds-font-sans`, nur Supreme Regular: alle `--ds-weight-*` stehen auf 400                                               |
-| Controls                     | `--ds-control-sm` 28 · `md` 36 · `lg` 40 · `--ds-row-height` 44 (Touch)                                                  |
+| Rolle                        | Variable                                                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Seite, Panel, Eingabe, Hover | `--ds-surface-0` … `--ds-surface-3`                                                                                                       |
+| Rahmen, Feldrahmen           | `--ds-border`, `--ds-border-strong`                                                                                                       |
+| Text 1–3                     | `--ds-text`, `--ds-text-2`, `--ds-text-3`                                                                                                 |
+| Primäraktion                 | Fläche `--ds-accent-fill`, Hover `--ds-accent-fill-hover`, Text `--ds-on-accent` (weiß); Werte wie im Playlist Generator                  |
+| Gold ohne Text               | `--ds-accent`, `--ds-accent-hover` (Rahmen, Fokus, Icons, Regler, Wellenform)                                                             |
+| Auswahl, aktive Fläche       | `--ds-accent-soft` + Rahmen `--ds-accent`                                                                                                 |
+| Link, Status                 | `--ds-link`, `--ds-success`, `--ds-warning`, `--ds-danger`, `--ds-info`                                                                   |
+| Layout-Verläufe, Hero-Akzent | `--ds-glow-blue`, `--ds-glow-cyan`, `--ds-heading-accent` (Unterzeile, Logo-Blau), `--ds-hero-title` (Titel, Gold) (nur Audio Normalizer) |
+| Radien                       | `--ds-radius-sm` (6) · `md` (10) · `lg` (16) · `full`                                                                                     |
+| Schatten                     | `--ds-shadow-overlay` (nur Player, Toast, Popover, Dialog) · `--ds-focus-ring`                                                            |
+| Motion                       | `--ds-duration` (150 ms) · `--ds-duration-slow` (250 ms) · `--ds-ease`                                                                    |
+| Schriftgrade                 | `--ds-text-xs` 12 · `sm` 13 · `md` 14 · `lg` 16 · `xl` 20 · `2xl` 24 · `3xl` 32                                                           |
+| Schrift, Gewichte            | `--ds-font-sans`, nur Supreme Regular: alle `--ds-weight-*` stehen auf 400                                                                |
+| Controls                     | `--ds-control-sm` 28 · `md` 36 · `lg` 40 · `--ds-row-height` 44 (Touch)                                                                   |
 
 Gold ist Vollfläche nur für die Primäraktion, Fokus und aktive Zustände. Ein Rahmen (1 px), drei
 Radien, Schatten nur für Overlays. Hover ändert Farbe, nie Größe. Destruktive Aktionen sind

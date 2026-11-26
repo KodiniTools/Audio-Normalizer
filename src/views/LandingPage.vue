@@ -6,7 +6,12 @@
     <section class="hero">
       <div class="container">
         <div class="hero-content">
-          <h1 class="hero-title">{{ t('hero-title') }}</h1>
+          <h1 class="hero-title">
+            <span class="hero-title-first">{{ heroTitleParts.first }}</span>
+            <template v-if="heroTitleParts.rest">
+              {{ ' ' }}<span class="hero-title-rest">{{ heroTitleParts.rest }}</span>
+            </template>
+          </h1>
           <p class="hero-subtitle">{{ t('hero-subtitle') }}</p>
           <p class="hero-description">{{ t('hero-description') }}</p>
           <router-link to="/app" class="btn-hero"> {{ t('hero-cta') }} → </router-link>
@@ -88,11 +93,14 @@
   import { computed, ref } from 'vue'
   import { useI18n } from '../composables/useI18n'
   import HeroNav from '../components/HeroNav.vue'
+  import { splitHeroTitle } from '../utils/heroTitle'
   import { LANDING_IMAGE_HEIGHT, LANDING_IMAGE_WIDTH, landingImageSrc } from '../utils/landingImage'
 
   const { t, locale } = useI18n()
 
   /** Hero-Bild folgt der UI-Sprache (DE/EN). */
+  /** Erstes Wort in Gold, Rest in Logo-Blau (siehe kodini-layout-stage1.css). */
+  const heroTitleParts = computed(() => splitHeroTitle(t('hero-title')))
   const heroImageSrc = computed(() => landingImageSrc(locale.value, import.meta.env.BASE_URL))
 
   const features = [

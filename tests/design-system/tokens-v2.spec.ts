@@ -129,12 +129,23 @@ describe('Kontrast (WCAG AA, mindestens 4.5:1)', () => {
     expect(failures).toEqual([])
   })
 
-  it.each(THEMES)('%s: Hero-Akzent als Text auf Fläche 0–2', (theme) => {
+  it.each(THEMES)('%s: Hero-Unterzeile als Text auf Fläche 0–2', (theme) => {
     const colors = themeColorsV2(theme)
     const failures = SURFACE_TOKENS.flatMap((surface) => {
       const ratio = contrastRatio(colors.headingAccent, colors[surface])
       return ratio >= AA ? [] : [`headingAccent auf ${surface}: ${ratio.toFixed(2)}`]
     })
+    expect(failures).toEqual([])
+  })
+
+  it.each(THEMES)('%s: Hero-Titel (Gold und Blau) als Text auf Fläche 0–2', (theme) => {
+    const colors = themeColorsV2(theme)
+    const failures = (['heroTitle', 'heroTitleBlue'] as const).flatMap((title) =>
+      SURFACE_TOKENS.flatMap((surface) => {
+        const ratio = contrastRatio(colors[title], colors[surface])
+        return ratio >= AA ? [] : [`${title} auf ${surface}: ${ratio.toFixed(2)}`]
+      }),
+    )
     expect(failures).toEqual([])
   })
 })
